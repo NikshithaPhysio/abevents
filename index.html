@@ -44,13 +44,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:66px;padding:0 40px;d
 .u-drop a:hover,.u-drop button:hover{background:rgba(201,168,76,.1);color:var(--gold);}
 .hidden{display:none!important;}
 
-/* HERO — Photo Slideshow */
+/* HERO */
 #hero{position:relative;min-height:100svh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .h-slides{position:absolute;inset:0;}
 .h-slide{position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease;}
 .h-slide.active{opacity:1;}
 .h-slide img{width:100%;height:100%;object-fit:cover;}
-.h-slide::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,8,8,.28) 0%,rgba(8,8,8,.48) 50%,rgba(8,8,8,.86) 100%);}
+.h-slide::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,8,8,.25) 0%,rgba(8,8,8,.5) 55%,rgba(8,8,8,.88) 100%);}
 .h-content{position:relative;z-index:2;text-align:center;padding:0 20px;max-width:840px;}
 .h-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);padding:6px 18px;border-radius:100px;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:22px;opacity:0;animation:fu .8s .3s forwards;}
 .h-h1{font-family:var(--fd);font-size:clamp(3rem,8vw,6.4rem);font-weight:300;line-height:1.02;color:var(--white);margin-bottom:18px;opacity:0;animation:fu .8s .5s forwards;}
@@ -61,9 +61,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:66px;padding:0 40px;d
 .h-dots{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3;}
 .h-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:var(--tr);}
 .h-dot.active{background:var(--gold);width:20px;border-radius:3px;}
-/* Slide label badge */
-.h-slide-label{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);z-index:3;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(201,168,76,.7);opacity:0;transition:opacity .5s ease;}
-.h-slide-label.show{opacity:1;}
 @keyframes fu{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:none;}}
 
 /* LAYOUT */
@@ -325,19 +322,18 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
   </div>
 </div>
 
-<!-- HERO — Indian Wedding Thematic Slideshow -->
+<!-- HERO -->
 <section id="hero">
   <div class="h-slides" id="hSlides"></div>
   <div class="h-content">
-    <div class="h-tag">✦ Hyderabad's Premier Event Studio ✦</div>
+    <div class="h-tag">✦ Hyderabad's Premier Event Studio</div>
     <h1 class="h-h1">Where Every<br>Moment Becomes<br><em>Extraordinary</em></h1>
-    <p class="h-p">Bespoke decor, world-class catering, immersive lighting &amp; photography — all under one roof for your perfect celebration.</p>
+    <p class="h-p">Bespoke decor, world-class catering, immersive lighting & photography — all under one roof for your perfect celebration.</p>
     <div class="h-acts">
       <a href="#booking" class="btn btn-gold">Book Your Event</a>
       <a href="#services" class="btn btn-ghost">Explore Services</a>
     </div>
   </div>
-  <div class="h-slide-label" id="hSlideLabel"></div>
   <div class="h-dots" id="hDots"></div>
 </section>
 
@@ -393,7 +389,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
         <div class="bk-contacts">
           <div class="c-item"><div class="c-icon">📍</div><span>Jubilee Hills, Hyderabad, Telangana</span></div>
           <div class="c-item"><div class="c-icon">📞</div><span>+91 98765 43210</span></div>
-          <div class="c-item"><div class="c-icon">✉️</div><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="afc7cac3c3c0efcecdcad9cac1dbdc81c6c1">[email&#160;protected]</a></span></div>
+          <div class="c-item"><div class="c-icon">✉️</div><span>hello@abevents.in</span></div>
           <div class="c-item"><div class="c-icon">🕐</div><span>Mon–Sat: 10 AM – 7 PM</span></div>
         </div>
       </div>
@@ -586,7 +582,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 <div class="toast" id="toast"></div>
 
 <!-- ══ FIREBASE ══ -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -764,134 +760,47 @@ function fe(c) {
 
 <!-- ══ UI JS ══ -->
 <script>
-// ══ SERVICE DATA — Service-specific photos (no god images) ══
+// INDIAN EVENT PHOTOS
 const SVCS = [
-  {
-    name:'Luxury Decor & Styling', icon:'🌸',
-    desc:'Transformative floral arrangements, table settings, draperies, and thematic setups that turn any venue into a masterpiece.',
-    tags:['Floral','Drapery','Thematic','Centerpieces'],
-    // Decor: floral mandap, flower walls, table centerpieces, draping
-    photos:[
-      'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80',
-      'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80',
-      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80',
-      'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=800&q=80',
-      'https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&q=80',
-      'https://images.unsplash.com/photo-1561489413-985b06da5bee?w=800&q=80'
-    ]
-  },
-  {
-    name:'Professional Photography', icon:'📷',
-    desc:'Cinematic photography and videography capturing every raw emotion, candid moment, and curated detail.',
-    tags:['Photo','Videography','Drone','Album'],
-    // Photography: camera, couple portraits, wedding shots, candid
-    photos:[
-      'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80',
-      'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80',
-      'https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800&q=80',
-      'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800&q=80',
-      'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&q=80'
-    ]
-  },
-  {
-    name:'Live Music & Entertainment', icon:'🎵',
-    desc:'From classical ensembles and folk performances to high-energy DJs — the perfect sound for your celebration.',
-    tags:['DJ','Live Band','Classical','Shehnai'],
-    // Music: live band on stage, DJ setup, concert lights, performers
-    photos:[
-      'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80',
-      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',
-      'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80',
-      'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80',
-      'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80'
-    ]
-  },
-  {
-    name:'Premium Lighting Design', icon:'✨',
-    desc:'Fairy lights, LED installations, diya arrangements, and intelligent wash systems that set the perfect mood.',
-    tags:['Fairy Lights','LED','Diya Decor','Uplighting'],
-    // Lighting: fairy lights, event hall lighting, LED decor
-    photos:[
-      'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&q=80',
-      'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80',
-      'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80',
-      'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=800&q=80',
-      'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80'
-    ]
-  },
-  {
-    name:'Gourmet Catering', icon:'🍽️',
-    desc:'Multi-cuisine Indian menus by award-winning chefs. Lavish buffets, live chaat stations & elegant plated dinners.',
-    tags:['Buffet','Plated','Live Stations','Mithai'],
-    // Catering: food spread, Indian cuisine, buffet setup, chefs
-    photos:[
-      'https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80',
-      'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80',
-      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80',
-      'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&q=80',
-      'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80'
-    ]
-  },
-  {
-    name:'Complete Event Management', icon:'🎊',
-    desc:'Full-spectrum orchestration from concept to cleanup. Weddings, galas, birthdays, anniversaries and corporate events.',
-    tags:['Wedding','Corporate','Birthday','Anniversary'],
-    // Event management: grand venues, wedding halls, event setups
-    photos:[
-      'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80',
-      'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80',
-      'https://images.unsplash.com/photo-1520854221256-17452cc3a785?w=800&q=80',
-      'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80',
-      'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80'
-    ]
-  }
+  {name:'Luxury Decor & Styling',icon:'🌸',desc:'Transformative floral arrangements, table settings, draperies, and thematic setups that turn any venue into a masterpiece.',tags:['Floral','Drapery','Thematic','Centerpieces'],
+   photos:['https://images.unsplash.com/photo-1583089892943-e02e5b017b6a?w=800&q=80','https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80','https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80','https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80','https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=800&q=80','https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&q=80']},
+  {name:'Professional Photography',icon:'📷',desc:'Cinematic photography and videography capturing every raw emotion, candid moment, and curated detail.',tags:['Photo','Videography','Drone','Album'],
+   photos:['https://images.unsplash.com/photo-1607861716497-e65ab29fc7ac?w=800&q=80','https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800&q=80','https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80','https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80','https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800&q=80']},
+  {name:'Live Music & Entertainment',icon:'🎵',desc:'From classical ensembles and folk performances to high-energy DJs — the perfect sound for your celebration.',tags:['DJ','Live Band','Classical','Shehnai'],
+   photos:['https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80','https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80','https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80','https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80','https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80']},
+  {name:'Premium Lighting Design',icon:'✨',desc:'Fairy lights, LED installations, diya arrangements, and intelligent wash systems that set the perfect mood.',tags:['Fairy Lights','LED','Diya Decor','Uplighting'],
+   photos:['https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&q=80','https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80','https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80','https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=800&q=80','https://images.unsplash.com/photo-1541532713592-79a0317b6b77?w=800&q=80']},
+  {name:'Gourmet Catering',icon:'🍽️',desc:'Multi-cuisine Indian menus by award-winning chefs. Lavish buffets, live chaat stations & elegant plated dinners.',tags:['Buffet','Plated','Live Stations','Mithai'],
+   photos:['https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80','https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80','https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80','https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&q=80','https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80']},
+  {name:'Complete Event Management',icon:'🎊',desc:'Full-spectrum orchestration from concept to cleanup. Weddings, galas, birthdays, anniversaries and corporate events.',tags:['Wedding','Corporate','Birthday','Anniversary'],
+   photos:['https://images.unsplash.com/photo-1630650263997-3440aca7e19f?w=800&q=80','https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80','https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80','https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80','https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80']}
 ];
 window._svcPhotos = {};
 SVCS.forEach(s => { window._svcPhotos[s.name] = s.photos; });
 
-// ══ HERO SLIDESHOW — Indian wedding mandapam & decor themes (NO god images) ══
-const heroSlides = [
-  { url:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80', label:'Floral Mandap Decor' },
-  { url:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1600&q=80', label:'Grand Wedding Mandapam' },
-  { url:'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=1600&q=80', label:'Elegant Reception Hall' },
-  { url:'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=1600&q=80', label:'Premium Lighting Design' },
-  { url:'https://images.unsplash.com/photo-1555244162-803834f70033?w=1600&q=80', label:'Gourmet Indian Catering' },
-  { url:'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1600&q=80', label:'Complete Event Setup' },
+// HERO — Indian event photos
+const heroPhotos = [
+  'https://images.unsplash.com/photo-1583089892943-e02e5b017b6a?w=1600&q=80',
+  'https://images.unsplash.com/photo-1630650263997-3440aca7e19f?w=1600&q=80',
+  'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80',
+  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80',
+  'https://images.unsplash.com/photo-1567337710282-00832b415979?w=1600&q=80',
 ];
-let curSlide = 0, slideTimer;
-
+let curSlide=0;
 function initHero() {
-  const sc = document.getElementById('hSlides');
-  const dc = document.getElementById('hDots');
-  const lbl = document.getElementById('hSlideLabel');
-
-  heroSlides.forEach((slide, i) => {
-    // Slide
-    const s = document.createElement('div');
-    s.className = 'h-slide' + (i === 0 ? ' active' : '');
-    s.innerHTML = `<img src="${slide.url}" alt="${slide.label}" loading="${i === 0 ? 'eager' : 'lazy'}"/>`;
-    sc.appendChild(s);
-    // Dot
-    const d = document.createElement('div');
-    d.className = 'h-dot' + (i === 0 ? ' active' : '');
-    d.onclick = () => goSlide(i);
-    dc.appendChild(d);
+  const sc=document.getElementById('hSlides'), dc=document.getElementById('hDots');
+  heroPhotos.forEach((url,i)=>{
+    const s=document.createElement('div'); s.className='h-slide'+(i===0?' active':'');
+    s.innerHTML=`<img src="${url}" alt="" loading="${i===0?'eager':'lazy'}"/>`; sc.appendChild(s);
+    const d=document.createElement('div'); d.className='h-dot'+(i===0?' active':'');
+    d.onclick=()=>goSlide(i); dc.appendChild(d);
   });
-
-  // Show first label
-  if (lbl) { lbl.textContent = heroSlides[0].label; lbl.classList.add('show'); }
-  slideTimer = setInterval(() => goSlide((curSlide + 1) % heroSlides.length), 5500);
+  setInterval(()=>goSlide((curSlide+1)%heroPhotos.length),5500);
 }
-
 function goSlide(n) {
-  document.querySelectorAll('.h-slide').forEach((s, i) => s.classList.toggle('active', i === n));
-  document.querySelectorAll('.h-dot').forEach((d, i) => d.classList.toggle('active', i === n));
-  const lbl = document.getElementById('hSlideLabel');
-  if (lbl) {
-    lbl.classList.remove('show');
-    setTimeout(() => { lbl.textContent = heroSlides[n].label; lbl.classList.add('show'); }, 200);
-  }
-  curSlide = n;
+  document.querySelectorAll('.h-slide').forEach((s,i)=>s.classList.toggle('active',i===n));
+  document.querySelectorAll('.h-dot').forEach((d,i)=>d.classList.toggle('active',i===n));
+  curSlide=n;
 }
 
 // SERVICE CARDS
@@ -1007,7 +916,8 @@ window.showToast=(msg)=>{const t=document.getElementById('toast');t.textContent=
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeAuth();closeGl();closeViewer();}
-  if(e.key==='ArrowRight'&&document.getElementBy  if(e.key==='ArrowLeft'&&document.getElementById('glViewer').classList.contains('open'))viewNav(-1);
+  if(e.key==='ArrowRight'&&document.getElementById('glViewer').classList.contains('open'))viewNav(1);
+  if(e.key==='ArrowLeft'&&document.getElementById('glViewer').classList.contains('open'))viewNav(-1);
 });
 
 initHero(); initServices(); initStrip();
