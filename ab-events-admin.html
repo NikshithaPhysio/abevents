@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AB Events — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0C0C0E;--s1:#141416;--s2:#1A1A1E;--s3:#222228;--s4:#2A2A32;
+  --bdr:rgba(255,255,255,0.06);--bdr2:rgba(255,255,255,0.04);
+  --gold:#C9A84C;--gold-a:rgba(201,168,76,0.14);--gold-a2:rgba(201,168,76,0.07);
+  --green:#22C55E;--green-a:rgba(34,197,94,0.14);
+  --red:#EF4444;--red-a:rgba(239,68,68,0.12);
+  --yellow:#F59E0B;--yellow-a:rgba(245,158,11,0.14);
+  --blue:#60A5FA;--blue-a:rgba(96,165,250,0.12);
+  --purple:#A78BFA;
+  --t1:#EAEAF0;--t2:#9999A8;--t3:#55555F;--t4:#3A3A44;
+  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+  --r:8px;--r2:12px;--ease:cubic-bezier(.4,0,.2,1);--tr:0.25s var(--ease);
+  --sidebar-w:248px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--t1);font-family:var(--fb);font-size:14px;font-weight:400;display:flex;}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--s4);border-radius:4px;}
+
+/* ═══ LOGIN ═══ */
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+#loginScreen.gone{display:none;}
+.login-wrap{width:100%;max-width:400px;padding:24px;}
+.login-logo{font-family:var(--fh);font-size:1.2rem;font-weight:700;color:var(--gold);margin-bottom:4px;}
+.login-sub{font-size:.8rem;color:var(--t3);margin-bottom:32px;}
+.login-chip{display:inline-flex;align-items:center;gap:6px;background:var(--gold-a);border:1px solid rgba(201,168,76,.22);padding:5px 12px;border-radius:100px;font-size:.68rem;color:var(--gold);letter-spacing:.08em;margin-bottom:24px;}
+.lf-group{margin-bottom:16px;}
+.lf-label{display:block;font-size:.7rem;font-weight:500;color:var(--t2);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase;}
+.lf-input{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:11px 14px;border-radius:var(--r);font-family:var(--fb);font-size:.875rem;outline:none;transition:var(--tr);}
+.lf-input:focus{border-color:rgba(201,168,76,.4);box-shadow:0 0 0 3px rgba(201,168,76,.08);}
+.lbtn{width:100%;background:var(--gold);color:#000;padding:12px;border-radius:var(--r);font-family:var(--fh);font-weight:700;font-size:.85rem;cursor:pointer;border:none;transition:var(--tr);letter-spacing:.04em;}
+.lbtn:hover{background:#D4B05C;}
+.l-err{font-size:.75rem;color:var(--red);margin-top:8px;min-height:16px;}
+.l-hint{font-size:.72rem;color:var(--t4);margin-top:16px;text-align:center;line-height:1.6;}
+.l-hint a{color:var(--gold);}
+
+/* ═══ LAYOUT ═══ */
+#sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);height:100vh;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;transition:var(--tr);flex-shrink:0;}
+#main{flex:1;height:100vh;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+/* ═══ SIDEBAR ═══ */
+.sb-top{padding:20px 18px;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.sb-logo{font-family:var(--fh);font-weight:800;font-size:1rem;color:var(--gold);}
+.sb-tag{font-size:.65rem;color:var(--t3);margin-top:2px;letter-spacing:.04em;}
+.sb-nav{padding:12px 10px;flex:1;overflow-y:auto;}
+.sb-sec{font-size:.62rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);padding:0 8px;margin:14px 0 6px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:6px;cursor:pointer;color:var(--t2);font-size:.83rem;font-weight:500;transition:var(--tr);text-decoration:none;border:1px solid transparent;user-select:none;}
+.nav-item:hover{background:var(--s2);color:var(--t1);}
+.nav-item.active{background:var(--gold-a);color:var(--gold);border-color:rgba(201,168,76,.18);}
+.nav-icon{width:16px;text-align:center;flex-shrink:0;font-size:.95rem;}
+.n-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:100px;min-width:18px;text-align:center;}
+.n-badge.gold{background:var(--gold);color:#000;}
+.sb-foot{padding:14px;border-top:1px solid var(--bdr);flex-shrink:0;}
+.admin-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r);background:var(--s2);cursor:pointer;transition:var(--tr);}
+.admin-card:hover{background:var(--s3);}
+.a-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#D4B05C);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;flex-shrink:0;font-family:var(--fh);}
+.a-name{font-size:.82rem;font-weight:600;color:var(--t1);}
+.a-role{font-size:.67rem;color:var(--gold);}
+.sb-out{background:none;border:none;color:var(--t3);font-size:.9rem;cursor:pointer;margin-left:auto;padding:4px;transition:var(--tr);flex-shrink:0;}
+.sb-out:hover{color:var(--red);}
+
+/* ═══ TOPBAR ═══ */
+.topbar{padding:0 24px;height:60px;background:var(--s1);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.tb-left{display:flex;align-items:center;gap:14px;}
+.tb-menu{background:none;border:none;color:var(--t2);cursor:pointer;font-size:1.1rem;padding:4px;display:none;}
+.tb-title{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--t1);}
+.tb-bread{font-size:.78rem;color:var(--t3);margin-top:1px;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 12px;transition:var(--tr);}
+.search-box:focus-within{border-color:rgba(201,168,76,.3);}
+.search-box input{background:none;border:none;outline:none;color:var(--t1);font-size:.82rem;font-family:var(--fb);width:160px;}
+.search-box input::placeholder{color:var(--t3);}
+.search-icon{color:var(--t3);font-size:.9rem;}
+.tb-btn{background:var(--s2);border:1px solid var(--bdr);color:var(--t2);padding:7px 14px;border-radius:var(--r);font-size:.75rem;cursor:pointer;transition:var(--tr);font-family:var(--fb);display:flex;align-items:center;gap:6px;}
+.tb-btn:hover{border-color:rgba(201,168,76,.3);color:var(--gold);}
+.tb-btn-primary{background:var(--gold);border-color:var(--gold);color:#000;font-weight:600;}
+.tb-btn-primary:hover{background:#D4B05C;color:#000;}
+.notif-btn{position:relative;width:34px;height:34px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--tr);}
+.notif-btn:hover{border-color:rgba(201,168,76,.3);}
+.notif-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--red);border-radius:50%;border:1.5px solid var(--s1);}
+#content{flex:1;overflow-y:auto;padding:24px;}
+
+/* ═══ PANELS ═══ */
+.panel{display:none;animation:pIn .2s var(--ease);}
+.panel.active{display:block;}
+@keyframes pIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* ═══ STATS GRID ═══ */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);padding:20px;position:relative;overflow:hidden;transition:var(--tr);}
+.stat-card:hover{border-color:rgba(201,168,76,.15);}
+.stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.03),transparent);pointer-events:none;}
+.stat-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.stat-icon-wrap{width:38px;height:38px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.stat-trend{font-size:.68rem;padding:3px 8px;border-radius:100px;font-weight:600;}
+.trend-up{background:var(--green-a);color:var(--green);}
+.trend-down{background:var(--red-a);color:var(--red);}
+.trend-neu{background:var(--s3);color:var(--t2);}
+.stat-val{font-family:var(--fh);font-size:1.9rem;font-weight:800;color:var(--t1);line-height:1;margin-bottom:4px;}
+.stat-lbl{font-size:.72rem;color:var(--t2);font-weight:500;}
+.stat-sub{font-size:.68rem;color:var(--t3);margin-top:3px;}
+
+/* ═══ CARDS ═══ */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;}
+.card-hdr{padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.card-ttl{font-family:var(--fh);font-size:.9rem;font-weight:700;color:var(--t1);}
+.card-sub{font-size:.72rem;color:var(--t3);margin-top:2px;}
+.card-body{padding:20px;}
+
+/* filter tabs */
+.ftabs{display:flex;gap:3px;background:var(--s2);padding:3px;border-radius:var(--r);}
+.ftab{padding:5px 13px;border-radius:5px;font-size:.72rem;font-weight:600;cursor:pointer;transition:var(--tr);color:var(--t2);border:none;background:transparent;font-family:var(--fb);}
+.ftab.active{background:var(--s3);color:var(--t1);}
+
+/* ═══ TABLE ═══ */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:700px;}
+th{padding:11px 16px;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);background:var(--s2);border-bottom:1px solid var(--bdr);white-space:nowrap;}
+td{padding:13px 16px;font-size:.8rem;border-bottom:1px solid var(--bdr2);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.012);}
+.cell-primary{font-weight:500;color:var(--t1);}
+.cell-sub{font-size:.7rem;color:var(--t3);margin-top:2px;}
+
+/* badges */
+.bdg{display:inline-flex;align-items:center;gap:4px;font-size:.67rem;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap;}
+.bdg::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.bdg-pending{background:var(--yellow-a);color:var(--yellow);}
+.bdg-confirmed{background:var(--green-a);color:var(--green);}
+.bdg-declined{background:var(--red-a);color:var(--red);}
+.bdg-new{background:var(--blue-a);color:var(--blue);}
+
+/* action buttons */
+.act-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.act-btn{padding:4px 10px;border-radius:5px;font-size:.68rem;font-weight:600;cursor:pointer;border:1px solid;transition:var(--tr);font-family:var(--fb);white-space:nowrap;}
+.act-view{color:var(--t2);border-color:var(--bdr);background:transparent;}
+.act-view:hover{color:var(--gold);border-color:rgba(201,168,76,.3);}
+.act-ok{color:var(--green);border-color:rgba(34,197,94,.25);background:var(--green-a);}
+.act-ok:hover{background:rgba(34,197,94,.22);}
+.act-no{color:var(--red);border-color:rgba(239,68,68,.25);background:var(--red-a);}
+.act-no:hover{background:rgba(239,68,68,.22);}
+.act-del{color:var(--t3);border-color:var(--bdr);background:transparent;}
+.act-del:hover{color:var(--red);border-color:var(--red-a);}
+.empty-rows{text-align:center;padding:48px;color:var(--t3);font-size:.83rem;}
+
+/* ═══ TWO-COL GRID ═══ */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+
+/* mini bar chart */
+.mini-bar-chart{display:flex;flex-direction:column;gap:10px;padding:4px 0;}
+.mbc-row{display:flex;align-items:center;gap:10px;}
+.mbc-label{font-size:.73rem;color:var(--t2);min-width:100px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mbc-track{flex:1;background:var(--s3);border-radius:100px;height:7px;overflow:hidden;}
+.mbc-fill{height:7px;border-radius:100px;background:linear-gradient(to right,var(--gold-dark,#8B6914),var(--gold));transition:width .8s var(--ease);}
+.mbc-val{font-size:.72rem;font-weight:700;color:var(--t1);min-width:24px;text-align:right;}
+
+/* donut chart placeholder */
+.donut-wrap{display:flex;flex-direction:column;gap:10px;}
+.donut-row{display:flex;align-items:center;gap:10px;}
+.donut-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.donut-lbl{font-size:.75rem;color:var(--t2);flex:1;}
+.donut-val{font-size:.75rem;font-weight:700;color:var(--t1);}
+
+/* activity feed */
+.activity-feed{display:flex;flex-direction:column;gap:0;}
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--bdr2);}
+.activity-item:last-child{border-bottom:none;}
+.act-dot-wrap{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;padding-top:2px;}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.act-line{width:1px;height:30px;background:var(--bdr);margin-top:4px;}
+.act-item:last-child .act-line{display:none;}
+.act-text{font-size:.78rem;color:var(--t1);line-height:1.5;flex:1;}
+.act-time{font-size:.68rem;color:var(--t3);margin-top:2px;}
+
+/* ═══ DETAIL PANEL (slide-in) ═══ */
+.detail-ov{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:5000;display:none;justify-content:flex-end;backdrop-filter:blur(3px);}
+.detail-ov.open{display:flex;}
+.detail-panel{width:420px;max-width:100vw;height:100vh;background:var(--s1);border-left:1px solid var(--bdr);overflow-y:auto;animation:slideIn .28s var(--ease);}
+@keyframes slideIn{from{transform:translateX(100%);}to{transform:none;}}
+.dp-hdr{padding:18px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--s1);z-index:1;}
+.dp-ttl{font-family:var(--fh);font-size:.95rem;font-weight:700;}
+.dp-x{background:none;border:none;color:var(--t2);font-size:1.2rem;cursor:pointer;padding:4px 8px;transition:var(--tr);border-radius:5px;}
+.dp-x:hover{background:var(--s2);color:var(--t1);}
+.dp-body{padding:20px;}
+.dp-sec{margin-bottom:24px;}
+.dp-sec-ttl{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--bdr2);}
+.dp-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;}
+.dp-key{font-size:.75rem;color:var(--t2);}
+.dp-val{font-size:.78rem;color:var(--t1);font-weight:500;text-align:right;max-width:220px;word-break:break-word;}
+.dp-actions{display:flex;flex-direction:column;gap:8px;}
+.dp-btn{padding:10px;border-radius:var(--r);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid;transition:var(--tr);text-align:center;font-family:var(--fh);letter-spacing:.04em;}
+.dp-ok{background:var(--green-a);border-color:rgba(34,197,94,.3);color:var(--green);}
+.dp-ok:hover{background:rgba(34,197,94,.22);}
+.dp-no{background:var(--red-a);border-color:rgba(239,68,68,.3);color:var(--red);}
+.dp-no:hover{background:rgba(239,68,68,.22);}
+.note-ta{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:10px;border-radius:var(--r);font-family:var(--fb);font-size:.8rem;resize:vertical;min-height:85px;outline:none;transition:var(--tr);}
+.note-ta:focus{border-color:rgba(201,168,76,.35);}
+.note-save{margin-top:7px;background:var(--s3);border:1px solid var(--bdr);color:var(--t2);padding:7px 14px;border-radius:var(--r);font-size:.74rem;cursor:pointer;transition:var(--tr);font-family:var(--fb);}
+.note-save:hover{color:var(--gold);border-color:rgba(201,168,76,.3);}
+
+/* ═══ PHOTO UPLOAD — Gallery Manager ═══ */
+.gallery-manager{display:grid;grid-template-columns:1fr 1.4fr;gap:16px;align-items:start;}
+.upload-zone{border:2px dashed rgba(201,168,76,.25);border-radius:var(--r2);padding:32px 20px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--gold-a2);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:var(--gold-a);}
+.uz-icon{font-size:2.4rem;margin-bottom:12px;}
+.uz-title{font-size:.88rem;font-weight:600;color:var(--t1);margin-bottom:4px;}
+.uz-sub{font-size:.75rem;color:var(--t2);margin-bottom:16px;}
+.uz-input{display:none;}
+.uz-btn{background:var(--gold);color:#000;padding:9px 22px;border-radius:var(--r);font-size:.78rem;font-weight:700;cursor:pointer;border:none;transition:var(--tr);font-family:var(--fh);}
+.uz-btn:hover{background:#D4B05C;}
+.upload-form{padding:20px;background:var(--s2);border-radius:var(--r2);border:1px solid var(--bdr);}
+.uf-label{display:block;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:5px;}
+.uf-select,.uf-input,.uf-ta{width:100%;background:var(--s3);border:1px solid var(--bdr);color:var(--t1);padding:9px 12px;border-radius:var(--r);font-family:var(--fb);font-size:.82rem;outline:none;transition:var(--tr);margin-bottom:12px;}
+.uf-select:focus,.uf-input:focus,.uf-ta:focus{border-color:rgba(201,168,76,.35);}
+.uf-select option{background:var(--s3);}
+.uf-ta{resize:vertical;min-height:70px;}
+#uploadPreview{width:100%;aspect-ratio:16/9;background:var(--s3);border-radius:var(--r);margin-bottom:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:.8rem;border:1px solid var(--bdr);}
+#uploadPreview img{width:100%;height:100%;object-fit:cover;}
+.upload-progress{height:4px;background:var(--s4);border-radius:100px;overflow:hidden;margin-bottom:12px;display:none;}
+.upload-progress-bar{height:4px;background:linear-gradient(to right,var(--gold),var(--gold2));border-radius:100px;width:0%;transition:width .3s;}
+#uploadBtn{width:100%;background:var(--gold);color:#000;padding:11px;border-radius:var(--r);font-family:var(--fh);font-size:.85rem;font-weight:700;cursor:pointer;border:none;transition:var(--tr);}
+#uploadBtn:hover{background:#D4B05C;}
+#uploadBtn:disabled{opacity:.5;cursor:not-allowed;}
+#uploadMsg{font-size:.75rem;margin-top:8px;min-height:16px;}
+.msg-ok{color:var(--green);}.msg-err{color:var(--red);}
+
+/* gallery grid */
+.gallery-grid-admin{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:16px;max-height:500px;overflow-y:auto;}
+.gga-item{aspect-ratio:4/3;background:var(--s2);border-radius:var(--r);overflow:hidden;position:relative;group:true;}
+.gga-item img{width:100%;height:100%;object-fit:cover;transition:.3s;}
+.gga-item:hover img{transform:scale(1.04);}
+.gga-overlay{position:absolute;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;gap:8px;flex-direction:column;}
+.gga-item:hover .gga-overlay{display:flex;}
+.gga-svc{font-size:.62rem;letter-spacing:.08em;color:var(--gold);text-transform:uppercase;text-align:center;padding:0 6px;}
+.gga-del{background:var(--red-a);border:1px solid rgba(239,68,68,.3);color:var(--red);font-size:.68rem;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:var(--fb);transition:var(--tr);}
+.gga-del:hover{background:rgba(239,68,68,.25);}
+.gga-empty{grid-column:1/-1;text-align:center;padding:40px;color:var(--t3);font-size:.82rem;}
+
+/* ═══ USERS PANEL ═══ */
+.user-item{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--bdr2);}
+.user-item:last-child{border-bottom:none;}
+.u-av-sm{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;flex-shrink:0;font-family:var(--fh);}
+
+/* ═══ SETTINGS ═══ */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.setting-card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--bdr2);}
+.setting-row:last-child{border-bottom:none;}
+.sr-info{flex:1;}
+.sr-label{font-size:.82rem;font-weight:600;color:var(--t1);}
+.sr-desc{font-size:.7rem;color:var(--t3);margin-top:2px;}
+/* toggle */
+.toggle{width:40px;height:22px;background:var(--s4);border-radius:100px;position:relative;cursor:pointer;transition:var(--tr);border:none;flex-shrink:0;}
+.toggle.on{background:var(--gold);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:var(--tr);}
+.toggle.on::after{left:21px;}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;bottom:20px;right:20px;z-index:9500;background:var(--s2);border:1px solid var(--bdr);border-left:3px solid var(--gold);padding:13px 18px;border-radius:var(--r);font-size:.8rem;min-width:230px;transform:translateX(130%);transition:var(--tr);box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.toast.show{transform:none;}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1100px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .two-col{grid-template-columns:1fr;}
+  .gallery-manager{grid-template-columns:1fr;}
+  .settings-grid{grid-template-columns:1fr;}
+}
+@media(max-width:900px){
+  :root{--sidebar-w:0px;}
+  #sidebar{position:fixed;left:0;top:0;bottom:0;z-index:800;transform:translateX(-248px);width:248px;min-width:248px;}
+  #sidebar.mob-open{transform:none;}
+  .tb-menu{display:flex!important;}
+  .search-box input{width:120px;}
+  .three-col{grid-template-columns:1fr 1fr;}
+  .detail-panel{width:100vw;}
+}
+@media(max-width:640px){
+  #content{padding:14px;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .topbar{padding:0 14px;}
+  .three-col{grid-template-columns:1fr;}
+  .gallery-grid-admin{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
+  .card-hdr{flex-direction:column;align-items:flex-start;}
+}
+@media(max-width:400px){
+  .stats-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-chip">⚡ Admin Portal</div>
+    <div class="login-logo">AB Events & Decors</div>
+    <div class="login-sub">Sign in to your administration dashboard</div>
+    <div class="lf-group"><label class="lf-label">Admin Email</label><input class="lf-input" type="email" id="adEmail" placeholder="admin@abevents.in" autocomplete="username"/></div>
+    <div class="lf-group"><label class="lf-label">Password</label><input class="lf-input" type="password" id="adPwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
+    <button class="lbtn" onclick="adminLogin()">Sign In →</button>
+    <div class="l-err" id="loginErr"></div>
+    <div class="l-hint">Restricted to authorised administrators only.<br>Customer site: <a href="ab-events-customer.html">ab-events-customer.html ↗</a></div>
+  </div>
+</div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside id="sidebar">
+  <div class="sb-top">
+    <div class="sb-logo">AB Events</div>
+    <div class="sb-tag">Administration Dashboard</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Overview</div>
+    <a class="nav-item active" href="#" onclick="showPanel('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</a>
+    <a class="nav-item" href="#" onclick="showPanel('bookings',this)"><span class="nav-icon">📋</span>Bookings<span class="n-badge" id="pendingBadge">0</span></a>
+    <a class="nav-item" href="#" onclick="showPanel('users',this)"><span class="nav-icon">👥</span>Customers</a>
+    <div class="sb-sec">Content</div>
+    <a class="nav-item" href="#" onclick="showPanel('gallery',this)"><span class="nav-icon">🖼️</span>Gallery & Photos<span class="n-badge gold" id="galBadge">0</span></a>
+    <div class="sb-sec">System</div>
+    <a class="nav-item" href="#" onclick="showPanel('services',this)"><span class="nav-icon">🎊</span>Services</a>
+    <a class="nav-item" href="#" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</a>
+  </nav>
+  <div class="sb-foot">
+    <div class="admin-card">
+      <div class="a-av" id="sbAvatar">A</div>
+      <div>
+        <div class="a-name" id="sbName">Admin</div>
+        <div class="a-role">Administrator</div>
+      </div>
+      <button class="sb-out" onclick="adminSignOut()" title="Sign Out">↪</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div id="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="tb-title" id="tbTitle">Dashboard</div>
+        <div class="tb-bread" id="tbBread">AB Events & Decors · Admin</div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search bookings…" id="globalSearch" oninput="filterBookings()"/>
+      </div>
+      <button class="tb-btn" onclick="refreshAll()">↻ Refresh</button>
+      <a href="ab-events-customer.html" target="_blank" class="tb-btn">↗ View Site</a>
+      <div class="notif-btn" id="notifBtn"><span>🔔</span><span class="notif-dot" id="notifDot"></span></div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- ───── DASHBOARD ───── -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon-wrap" style="background:var(--gold-a)">📋</div>
+            <span class="stat-trend trend-up" id="trendTotal">↑ New</span>
+          </div>
+          <div class="stat-val" id="statTotal">—</div>
+          <div class="stat-lbl">Total Bookings</div>
+          <div class="stat-sub" id="statTotalSub">Loading…</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon-wrap" style="background:var(--yellow-a)">⏳</div>
+            <span class="stat-trend trend-neu" id="trendPending">Review</span>
+          </div>
+          <div class="stat-val" id="statPending">—</div>
+          <div class="stat-lbl">Pending Review</div>
+          <div class="stat-sub">Awaiting your action</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon-wrap" style="background:var(--green-a)">✅</div>
+            <span class="stat-trend trend-up" id="trendConfirmed">Active</span>
+          </div>
+          <div class="stat-val" id="statConfirmed">—</div>
+          <div class="stat-lbl">Confirmed Events</div>
+          <div class="stat-sub">Ready to execute</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon-wrap" style="background:var(--blue-a)">👥</div>
+            <span class="stat-trend trend-up" id="trendUsers">Growing</span>
+          </div>
+          <div class="stat-val" id="statUsers">—</div>
+          <div class="stat-lbl">Registered Customers</div>
+          <div class="stat-sub">Active accounts</div>
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="card-hdr"><div><div class="card-ttl">Bookings by Service</div><div class="card-sub">Demand breakdown</div></div></div>
+          <div class="card-body"><div class="mini-bar-chart" id="svcChart"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div><div class="card-ttl">Status Overview</div><div class="card-sub">Current booking states</div></div></div>
+          <div class="card-body"><div class="donut-wrap" id="statusChart"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr">
+          <div><div class="card-ttl">Recent Booking Requests</div><div class="card-sub">Latest 8 submissions</div></div>
+          <button class="tb-btn" onclick="showPanel('bookings',document.querySelector('.nav-item:nth-child(3)'))">View All →</button>
+        </div>
+        <div class="tbl-wrap">
+          <table><thead><tr><th>Client</th><th>Service</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="recentTbl"><tr><td colspan="6" class="empty-rows">Loading…</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ───── BOOKINGS ───── -->
+    <div class="panel" id="panel-bookings">
+      <div class="card">
+        <div class="card-hdr">
+          <div><div class="card-ttl">All Booking Requests</div><div class="card-sub" id="bkSubtitle">Loading…</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <div class="ftabs">
+              <button class="ftab active" onclick="setFilter('all',this)">All</button>
+              <button class="ftab" onclick="setFilter('pending',this)">Pending</button>
+              <button class="ftab" onclick="setFilter('confirmed',this)">Confirmed</button>
+              <button class="ftab" onclick="setFilter('declined',this)">Declined</button>
+            </div>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table><thead><tr><th>Client</th><th>Service</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="allTbl"><tr><td colspan="7" class="empty-rows">Loading…</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ───── USERS ───── -->
+    <div class="panel" id="panel-users">
+      <div class="card">
+        <div class="card-hdr">
+          <div><div class="card-ttl">Registered Customers</div><div class="card-sub" id="userSubtitle">Loading…</div></div>
+          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search customers…" id="userSearch" oninput="filterUsers()"/></div>
+        </div>
+        <div id="userList"><div class="empty-rows">Loading customers…</div></div>
+      </div>
+    </div>
+
+    <!-- ───── GALLERY & PHOTO UPLOAD ───── -->
+    <div class="panel" id="panel-gallery">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-hdr">
+          <div><div class="card-ttl">📸 Upload New Photo</div><div class="card-sub">Add images to service galleries — shown to customers instantly</div></div>
+        </div>
+        <div class="card-body">
+          <div class="gallery-manager">
+            <!-- Upload Zone -->
+            <div>
+              <div class="upload-zone" id="dropZone" onclick="document.getElementById('photoFileInput').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+                <div class="uz-icon">📁</div>
+                <div class="uz-title">Drop image here</div>
+                <div class="uz-sub">or click to browse — JPG, PNG, WebP up to 5MB</div>
+                <button class="uz-btn" type="button">Choose File</button>
+              </div>
+              <input type="file" id="photoFileInput" class="uz-input" accept="image/*" onchange="onFileSelect(event)"/>
+            </div>
+            <!-- Upload Form -->
+            <div class="upload-form">
+              <label class="uf-label">Preview</label>
+              <div id="uploadPreview">No image selected</div>
+              <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
+              <label class="uf-label">Assign to Service *</label>
+              <select class="uf-select" id="uploadService">
+                <option value="">— Select Service —</option>
+                <option>Luxury Decor & Styling</option>
+                <option>Professional Photography</option>
+                <option>Live Music & Entertainment</option>
+                <option>Premium Lighting Design</option>
+                <option>Gourmet Catering</option>
+                <option>Complete Event Management</option>
+              </select>
+              <label class="uf-label">Caption (optional)</label>
+              <input class="uf-input" id="uploadCaption" placeholder="e.g. Floral arch at Taj Falaknuma"/>
+              <button id="uploadBtn" onclick="uploadPhoto()" disabled>Upload Photo →</button>
+              <div id="uploadMsg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div class="card">
+        <div class="card-hdr">
+          <div><div class="card-ttl">Uploaded Gallery Photos</div><div class="card-sub" id="gallerySubtitle">Photos uploaded via admin dashboard</div></div>
+          <div class="ftabs" id="galleryFilterTabs">
+            <button class="ftab active" onclick="setGalleryFilter('',this)">All</button>
+            <button class="ftab" onclick="setGalleryFilter('Luxury Decor & Styling',this)">Decor</button>
+            <button class="ftab" onclick="setGalleryFilter('Professional Photography',this)">Photo</button>
+            <button class="ftab" onclick="setGalleryFilter('Gourmet Catering',this)">Catering</button>
+            <button class="ftab" onclick="setGalleryFilter('Premium Lighting Design',this)">Lighting</button>
+          </div>
+        </div>
+        <div class="gallery-grid-admin" id="adminGalleryGrid">
+          <div class="gga-empty">Loading photos…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ───── SERVICES ───── -->
+    <div class="panel" id="panel-services">
+      <div class="three-col">
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--gold-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🌸</div><div class="stat-val" id="svcStat0">—</div><div class="stat-lbl">Decor & Styling</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--blue-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">📷</div><div class="stat-val" id="svcStat1">—</div><div class="stat-lbl">Photography</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--purple);background:rgba(167,139,250,.14);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🎵</div><div class="stat-val" id="svcStat2">—</div><div class="stat-lbl">Music & Entertainment</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--yellow-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">✨</div><div class="stat-val" id="svcStat3">—</div><div class="stat-lbl">Lighting Design</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--green-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🍽️</div><div class="stat-val" id="svcStat4">—</div><div class="stat-lbl">Gourmet Catering</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--red-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🎊</div><div class="stat-val" id="svcStat5">—</div><div class="stat-lbl">Event Management</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-ttl">Service Demand Breakdown</div></div>
+        <div class="card-body"><div class="mini-bar-chart" id="svcChartFull"></div></div>
+      </div>
+    </div>
+
+    <!-- ───── SETTINGS ───── -->
+    <div class="panel" id="panel-settings">
+      <div class="settings-grid">
+        <div class="card setting-card">
+          <div class="card-hdr"><div class="card-ttl">Account Settings</div></div>
+          <div style="padding:20px;">
+            <div class="lf-group"><label class="lf-label">Display Name</label><input class="lf-input" id="setName" placeholder="Admin Name"/></div>
+            <div class="lf-group"><label class="lf-label">Email</label><input class="lf-input" type="email" id="setEmail" disabled style="opacity:.45;"/></div>
+            <div class="lf-group"><label class="lf-label">New Password</label><input class="lf-input" type="password" id="setPwd" placeholder="Leave blank to keep current"/></div>
+            <button class="lbtn" style="max-width:180px;" onclick="saveSettings()">Save Changes</button>
+            <div id="settingsMsg" style="font-size:.75rem;margin-top:10px;min-height:16px;"></div>
+          </div>
+        </div>
+        <div class="card setting-card">
+          <div class="card-hdr"><div class="card-ttl">Notifications</div></div>
+          <div class="setting-row"><div class="sr-info"><div class="sr-label">New Booking Alerts</div><div class="sr-desc">Get notified on new booking requests</div></div><button class="toggle on" id="tog1" onclick="this.classList.toggle('on')"></button></div>
+          <div class="setting-row"><div class="sr-info"><div class="sr-label">Customer Registration</div><div class="sr-desc">Alert when new customers register</div></div><button class="toggle on" id="tog2" onclick="this.classList.toggle('on')"></button></div>
+          <div class="setting-row"><div class="sr-info"><div class="sr-label">Daily Summary Email</div><div class="sr-desc">Receive daily booking summary</div></div><button class="toggle" id="tog3" onclick="this.classList.toggle('on')"></button></div>
+          <div class="setting-row"><div class="sr-info"><div class="sr-label">Customer Site Maintenance</div><div class="sr-desc">Show maintenance banner on customer site</div></div><button class="toggle" id="tog4" onclick="this.classList.toggle('on')"></button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- BOOKING DETAIL PANEL -->
+<div class="detail-ov" id="detailOv" onclick="closeDetail(event)">
+  <div class="detail-panel" id="detailPanel">
+    <div class="dp-hdr">
+      <div class="dp-ttl">Booking Details</div>
+      <button class="dp-x" onclick="closeDetailPanel()">✕</button>
+    </div>
+    <div class="dp-body" id="dpBody"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════ FIREBASE ══════════ -->
+<script type="module">
+import { initializeApp } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore,collection,getDocs,doc,updateDoc,addDoc,deleteDoc,query,where,orderBy,serverTimestamp } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage,ref,uploadBytesResumable,getDownloadURL,deleteObject } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+// ▸ Replace with your Firebase config
+const cfg={apiKey:"AIzaSyDo8u-SZMHPXBLdJV4oq5rNiPz6p33KSF4",authDomain:"abevents-38a91.firebaseapp.com",projectId:"abevents-38a91",storageBucket:"abevents-38a91.firebasestorage.app",messagingSenderId:"408468587854",appId:"1:408468587854:web:09c108c41c4fb7cd81ca1f"};
+const app=initializeApp(cfg);
+const auth=getAuth(app);
+const db=getFirestore(app);
+const storage=getStorage(app);
+
+// ── ADMIN WHITELIST ──
+const ADMIN_EMAILS=['admin@abevents.in','owner@abevents.in','abevents@gmail.com'];
+
+let allBookings=[],allUsers=[],allGallery=[],currentFilter='all',currentGalleryFilter='',curDetailId=null;
+let selectedFile=null;
+
+// ── AUTH ──
+onAuthStateChanged(auth,async user=>{
+  if(user&&ADMIN_EMAILS.includes(user.email)){
+    document.getElementById('loginScreen').classList.add('gone');
+    document.getElementById('sbName').textContent=user.displayName||user.email.split('@')[0];
+    document.getElementById('sbAvatar').textContent=(user.displayName||user.email)[0].toUpperCase();
+    document.getElementById('setEmail').value=user.email;
+    await loadAll();
+  } else if(user){
+    await signOut(auth); showErr('Access denied. Admins only.');
+  } else {
+    document.getElementById('loginScreen').classList.remove('gone');
+  }
+});
+
+window.adminLogin=async()=>{
+  showErr('');
+  try{ await signInWithEmailAndPassword(auth,document.getElementById('adEmail').value.trim(),document.getElementById('adPwd').value); }
+  catch(e){ showErr(fe(e.code)); }
+};
+window.adminSignOut=async()=>{ await signOut(auth); window.location.reload(); };
+
+// ── LOAD ALL ──
+async function loadAll(){
+  await Promise.all([loadBookings(),loadUsers(),loadGallery()]);
+  renderDashboard();
+}
+window.refreshAll=loadAll;
+
+async function loadBookings(){
+  try{
+    const snap=await getDocs(collection(db,'bookings'));
+    allBookings=snap.docs.map(d=>({id:d.id,...d.data()}));
+    allBookings.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    renderBookings(); updateBadges();
+  } catch(e){ console.error(e); }
+}
+
+async function loadUsers(){
+  try{
+    const snap=await getDocs(collection(db,'users'));
+    allUsers=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderUsers();
+  } catch(e){ console.error(e); }
+}
+
+async function loadGallery(){
+  try{
+    const snap=await getDocs(collection(db,'gallery'));
+    allGallery=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderAdminGallery();
+    document.getElementById('galBadge').textContent=allGallery.length;
+    document.getElementById('gallerySubtitle').textContent=`${allGallery.length} photos uploaded`;
+  } catch(e){ console.error(e); }
+}
+
+// ── DASHBOARD ──
+function renderDashboard(){
+  const p=allBookings.filter(b=>b.status==='pending').length;
+  const c=allBookings.filter(b=>b.status==='confirmed').length;
+  document.getElementById('statTotal').textContent=allBookings.length;
+  document.getElementById('statTotalSub').textContent=`${p} pending review`;
+  document.getElementById('statPending').textContent=p;
+  document.getElementById('statConfirmed').textContent=c;
+  document.getElementById('statUsers').textContent=allUsers.length;
+  renderSvcChart('svcChart'); renderStatusChart('statusChart');
+  renderRows('recentTbl',allBookings.slice(0,8),true);
+  renderServicesPanel();
+}
+
+function renderSvcChart(id){
+  const counts={};
+  allBookings.forEach(b=>{if(b.service)counts[b.service]=(counts[b.service]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max=sorted[0]?.[1]||1;
+  const el=document.getElementById(id);
+  if(!sorted.length){el.innerHTML='<div style="color:var(--t3);font-size:.8rem;text-align:center;padding:20px">No bookings yet</div>';return;}
+  el.innerHTML=sorted.map(([nm,cnt])=>`
+    <div class="mbc-row">
+      <div class="mbc-label" title="${nm}">${nm.split(' ').slice(0,2).join(' ')}</div>
+      <div class="mbc-track"><div class="mbc-fill" style="width:${Math.round(cnt/max*100)}%"></div></div>
+      <div class="mbc-val">${cnt}</div>
+    </div>`).join('');
+}
+
+function renderStatusChart(id){
+  const tot=allBookings.length||1;
+  const p=allBookings.filter(b=>b.status==='pending').length;
+  const c=allBookings.filter(b=>b.status==='confirmed').length;
+  const d=allBookings.filter(b=>b.status==='declined').length;
+  document.getElementById(id).innerHTML=`
+    <div class="donut-row"><div class="donut-dot" style="background:var(--yellow)"></div><div class="donut-lbl">⏳ Pending</div><div class="donut-val">${p} <span style="color:var(--t3)">(${Math.round(p/tot*100)}%)</span></div></div>
+    <div class="donut-row"><div class="donut-dot" style="background:var(--green)"></div><div class="donut-lbl">✅ Confirmed</div><div class="donut-val">${c} <span style="color:var(--t3)">(${Math.round(c/tot*100)}%)</span></div></div>
+    <div class="donut-row"><div class="donut-dot" style="background:var(--red)"></div><div class="donut-lbl">✕ Declined</div><div class="donut-val">${d} <span style="color:var(--t3)">(${Math.round(d/tot*100)}%)</span></div></div>
+    <div class="donut-row" style="margin-top:4px;border-top:1px solid var(--bdr2);padding-top:10px;"><div class="donut-dot" style="background:var(--t3)"></div><div class="donut-lbl">📊 Total</div><div class="donut-val">${allBookings.length}</div></div>`;
+}
+
+// ── BOOKINGS TABLE ──
+function renderRows(tbodyId,data,short=false){
+  const tbody=document.getElementById(tbodyId);
+  if(!data.length){tbody.innerHTML=`<tr><td colspan="${short?6:8}" class="empty-rows">No bookings found.</td></tr>`;return;}
+  tbody.innerHTML=data.map(b=>{
+    const sCls=b.status==='confirmed'?'bdg-confirmed':b.status==='declined'?'bdg-declined':'bdg-pending';
+    const sLbl=b.status||'pending';
+    const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
+    const extra=short?'':`<td>${b.eventType||'—'}</td>`;
+    const guest='';
+    return`<tr>
+      <td><div class="cell-primary">${b.name||b.userEmail||'—'}</div><div class="cell-sub">${b.email||''}</div></td>
+      <td style="font-size:.77rem">${b.service||'—'}</td>
+      ${extra}<td style="white-space:nowrap">${dt}</td>${guest}
+      <td style="white-space:nowrap">${b.budget||'—'}</td>
+      <td><span class="bdg ${sCls}">${sLbl}</span></td>
+      <td><div class="act-btns">
+        <button class="act-btn act-view" onclick="viewDetail('${b.id}')">View</button>
+        ${b.status!=='confirmed'?`<button class="act-btn act-ok" onclick="updateStatus('${b.id}','confirmed')">✓</button>`:''}
+        ${b.status!=='declined'?`<button class="act-btn act-no" onclick="updateStatus('${b.id}','declined')">✕</button>`:''}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderBookings(){
+  let data=[...allBookings];
+  if(currentFilter!=='all') data=data.filter(b=>b.status===currentFilter);
+  const search=(document.getElementById('globalSearch').value||'').toLowerCase();
+  if(search) data=data.filter(b=>(b.name||'').toLowerCase().includes(search)||(b.email||'').toLowerCase().includes(search)||(b.service||'').toLowerCase().includes(search)||(b.eventType||'').toLowerCase().includes(search));
+  renderRows('allTbl',data,false);
+  document.getElementById('bkSubtitle').textContent=`${data.length} booking${data.length!==1?'s':''} ${currentFilter!=='all'?'('+currentFilter+')':''}`;
+}
+
+window.setFilter=(f,el)=>{
+  currentFilter=f;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderBookings();
+};
+window.filterBookings=renderBookings;
+
+// ── STATUS UPDATE ──
+window.updateStatus=async(id,status)=>{
+  try{
+    await updateDoc(doc(db,'bookings',id),{status,updatedAt:serverTimestamp()});
+    const idx=allBookings.findIndex(b=>b.id===id);
+    if(idx>-1) allBookings[idx].status=status;
+    renderBookings(); renderDashboard(); updateBadges();
+    showToast(status==='confirmed'?'✅ Booking confirmed!':'✕ Booking declined.');
+    if(curDetailId===id) viewDetail(id);
+  } catch(e){ showToast('Error updating status.'); }
+};
+
+// ── DETAIL ──
+window.viewDetail=id=>{
+  const b=allBookings.find(b=>b.id===id);if(!b)return;
+  curDetailId=id;
+  const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):'—';
+  const sub=b.createdAt?new Date(b.createdAt.seconds*1000).toLocaleString('en-IN'):'—';
+  document.getElementById('dpBody').innerHTML=`
+    <div class="dp-sec">
+      <div class="dp-sec-ttl">Client Information</div>
+      <div class="dp-row"><span class="dp-key">Name</span><span class="dp-val">${b.name||'—'}</span></div>
+      <div class="dp-row"><span class="dp-key">Email</span><span class="dp-val">${b.email||'—'}</span></div>
+      <div class="dp-row"><span class="dp-key">Phone</span><span class="dp-val">${b.phone||'—'}</span></div>
+    </div>
+    <div class="dp-sec">
+      <div class="dp-sec-ttl">Event Details</div>
+      <div class="dp-row"><span class="dp-key">Service</span><span class="dp-val">${b.service||'—'}</span></div>
+      <div class="dp-row"><span class="dp-key">Event Type</span><span class="dp-val">${b.eventType||'—'}</span></div>
+      <div class="dp-row"><span class="dp-key">Date</span><span class="dp-val">${dt}</span></div>
+
+      <div class="dp-row"><span class="dp-key">Budget</span><span class="dp-val" style="color:var(--gold)">${b.budget||'—'}</span></div>
+      <div class="dp-row"><span class="dp-key">Venue</span><span class="dp-val">${b.venue||'—'}</span></div>
+      <div class="dp-row"><span class="dp-key">Submitted</span><span class="dp-val">${sub}</span></div>
+    </div>
+    ${b.message?`<div class="dp-sec"><div class="dp-sec-ttl">Client's Vision</div><div style="font-size:.78rem;line-height:1.7;color:var(--t2)">${b.message}</div></div>`:''}
+    <div class="dp-sec">
+      <div class="dp-sec-ttl">Status</div>
+      <span class="bdg bdg-${b.status||'pending'}" style="font-size:.75rem;padding:5px 13px">${b.status||'pending'}</span>
+    </div>
+    <div class="dp-sec">
+      <div class="dp-sec-ttl">Actions</div>
+      <div class="dp-actions">
+        <button class="dp-btn dp-ok" onclick="updateStatus('${id}','confirmed')">✓ Confirm Booking</button>
+        <button class="dp-btn dp-no" onclick="updateStatus('${id}','declined')">✕ Decline Booking</button>
+      </div>
+    </div>
+    <div class="dp-sec">
+      <div class="dp-sec-ttl">Admin Notes</div>
+      <textarea class="note-ta" id="noteTA" placeholder="Internal notes…">${b.adminNote||''}</textarea>
+      <button class="note-save" onclick="saveNote('${id}')">Save Note</button>
+    </div>`;
+  document.getElementById('detailOv').classList.add('open');
+};
+
+window.saveNote=async id=>{
+  const note=document.getElementById('noteTA').value;
+  await updateDoc(doc(db,'bookings',id),{adminNote:note});
+  const idx=allBookings.findIndex(b=>b.id===id);
+  if(idx>-1) allBookings[idx].adminNote=note;
+  showToast('Note saved ✓');
+};
+
+window.closeDetail=e=>{if(e.target===document.getElementById('detailOv'))closeDetailPanel();};
+window.closeDetailPanel=()=>{document.getElementById('detailOv').classList.remove('open');curDetailId=null;};
+
+// ── USERS ──
+const uvColors=['#C9A84C','#60A5FA','#22C55E','#EC4899','#F59E0B','#A78BFA'];
+function renderUsers(filter=''){
+  const uc=document.getElementById('userCount');
+  const ul=document.getElementById('userList');
+  let users=allUsers;
+  if(filter) users=users.filter(u=>(u.firstName+' '+u.lastName+u.email).toLowerCase().includes(filter.toLowerCase()));
+  document.getElementById('userSubtitle').textContent=`${users.length} registered customer${users.length!==1?'s':''}`;
+  if(!users.length){ul.innerHTML='<div class="empty-rows">No customers found.</div>';return;}
+  ul.innerHTML=users.map((u,i)=>{
+    const nm=`${u.firstName||''} ${u.lastName||''}`.trim()||u.email||'Unknown';
+    const bc=allBookings.filter(b=>b.userId===u.uid).length;
+    const c=uvColors[i%uvColors.length];
+    return`<div class="user-item">
+      <div class="u-av-sm" style="background:${c}22;color:${c}">${nm[0]?.toUpperCase()}</div>
+      <div style="flex:1">
+        <div style="font-size:.83rem;font-weight:600;color:var(--t1)">${nm}</div>
+        <div style="font-size:.72rem;color:var(--t3)">${u.email||'—'} · ${u.phone||'No phone'}</div>
+      </div>
+      <span class="bdg bdg-new">${bc} booking${bc!==1?'s':''}</span>
+    </div>`;
+  }).join('');
+}
+window.filterUsers=()=>renderUsers(document.getElementById('userSearch').value);
+
+// ── GALLERY UPLOAD ──
+window.onFileSelect=e=>{
+  const file=e.target.files[0]; if(!file)return;
+  selectedFile=file;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    document.getElementById('uploadPreview').innerHTML=`<img src="${ev.target.result}" alt="preview"/>`;
+  };
+  reader.readAsDataURL(file);
+  document.getElementById('uploadBtn').disabled=false;
+};
+
+window.onDragOver=e=>{e.preventDefault();document.getElementById('dropZone').classList.add('drag');};
+window.onDragLeave=e=>{document.getElementById('dropZone').classList.remove('drag');};
+window.onDrop=e=>{
+  e.preventDefault();document.getElementById('dropZone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];if(!file||!file.type.startsWith('image/'))return;
+  selectedFile=file;
+  const reader=new FileReader();
+  reader.onload=ev=>{document.getElementById('uploadPreview').innerHTML=`<img src="${ev.target.result}" alt="preview"/>`;};
+  reader.readAsDataURL(file);
+  document.getElementById('uploadBtn').disabled=false;
+};
+
+window.uploadPhoto=async()=>{
+  if(!selectedFile){showToast('Please select an image first.');return;}
+  const svc=document.getElementById('uploadService').value;
+  if(!svc){showToast('Please select a service category.');return;}
+  const caption=document.getElementById('uploadCaption').value.trim();
+  const btn=document.getElementById('uploadBtn');
+  const msg=document.getElementById('uploadMsg');
+  const prog=document.getElementById('uploadProgress');
+  const bar=document.getElementById('uploadProgressBar');
+  btn.disabled=true; btn.textContent='Uploading…';
+  prog.style.display='block'; bar.style.width='0%';
+  msg.innerHTML='';
+  try{
+    const fname=`gallery/${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9.]/g,'_')}`;
+    const storageRef=ref(storage,fname);
+    const task=uploadBytesResumable(storageRef,selectedFile);
+    task.on('state_changed',
+      snap=>{const pct=Math.round(snap.bytesTransferred/snap.totalBytes*100);bar.style.width=pct+'%';},
+      err=>{msg.innerHTML=`<span class="msg-err">Upload failed: ${err.message}</span>`;btn.disabled=false;btn.textContent='Upload Photo →';},
+      async()=>{
+        const url=await getDownloadURL(task.snapshot.ref);
+        await addDoc(collection(db,'gallery'),{url,service:svc,caption,storagePath:fname,uploadedAt:serverTimestamp()});
+        msg.innerHTML='<span class="msg-ok">✓ Photo uploaded and live on customer site!</span>';
+        btn.textContent='Upload Photo →'; btn.disabled=true;
+        selectedFile=null;
+        document.getElementById('uploadPreview').innerHTML='No image selected';
+        document.getElementById('uploadCaption').value='';
+        document.getElementById('uploadService').value='';
+        document.getElementById('photoFileInput').value='';
+        prog.style.display='none';
+        showToast('📸 Photo uploaded successfully!');
+        await loadGallery();
+      }
+    );
+  } catch(err){
+    msg.innerHTML=`<span class="msg-err">Error: ${err.message}</span>`;
+    btn.disabled=false; btn.textContent='Upload Photo →';
+  }
+};
+
+function renderAdminGallery(){
+  const grid=document.getElementById('adminGalleryGrid');
+  let photos=allGallery;
+  if(currentGalleryFilter) photos=photos.filter(p=>p.service===currentGalleryFilter);
+  if(!photos.length){grid.innerHTML='<div class="gga-empty">No photos uploaded yet. Use the upload form above to add images.</div>';return;}
+  grid.innerHTML=photos.map(p=>`
+    <div class="gga-item">
+      <img src="${p.url}" alt="${p.caption||''}" loading="lazy"/>
+      <div class="gga-overlay">
+        <div class="gga-svc">${(p.service||'').split(' ').slice(0,2).join(' ')}</div>
+        ${p.caption?`<div style="font-size:.65rem;color:rgba(255,255,255,.6);text-align:center;padding:0 6px">${p.caption}</div>`:''}
+        <button class="gga-del" onclick="deletePhoto('${p.id}','${(p.storagePath||'').replace(/'/g,"\\'")  }')">🗑 Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+window.setGalleryFilter=(f,el)=>{
+  currentGalleryFilter=f;
+  document.querySelectorAll('#galleryFilterTabs .ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderAdminGallery();
+};
+
+window.deletePhoto=async(id,path)=>{
+  if(!confirm('Delete this photo? It will be removed from the customer site.')) return;
+  try{
+    await deleteDoc(doc(db,'gallery',id));
+    if(path){try{await deleteObject(ref(storage,path));}catch(e){}}
+    allGallery=allGallery.filter(p=>p.id!==id);
+    renderAdminGallery();
+    document.getElementById('galBadge').textContent=allGallery.length;
+    showToast('Photo deleted.');
+  } catch(e){ showToast('Error deleting photo.'); }
+};
+
+// ── SERVICES PANEL ──
+function renderServicesPanel(){
+  const svcs=['Luxury Decor & Styling','Professional Photography','Live Music & Entertainment','Premium Lighting Design','Gourmet Catering','Complete Event Management'];
+  svcs.forEach((s,i)=>{
+    const el=document.getElementById('svcStat'+i);
+    if(el) el.textContent=allBookings.filter(b=>b.service===s).length;
+  });
+  renderSvcChart('svcChartFull');
+}
+
+// ── HELPERS ──
+function updateBadges(){
+  const p=allBookings.filter(b=>b.status==='pending').length;
+  document.getElementById('pendingBadge').textContent=p;
+  document.getElementById('notifDot').style.display=p>0?'block':'none';
+}
+function showErr(msg){document.getElementById('loginErr').textContent=msg;}
+function fe(c){const m={'auth/user-not-found':'No admin account found.','auth/wrong-password':'Incorrect password.','auth/too-many-requests':'Too many attempts. Try later.','auth/invalid-email':'Invalid email format.'};return m[c]||'Sign in failed. Try again.';}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+window.saveSettings=()=>{showToast('Settings saved ✓');document.getElementById('settingsMsg').innerHTML='<span style="color:var(--green)">Settings saved.</span>';};
+
+// expose
+window.showToast=showToast;
+window.filterUsers=window.filterUsers;
+</script>
+
+<script>
+// ── PANEL NAV ──
+let mobSidebarOpen=false;
+function showPanel(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const titles={dashboard:'Dashboard',bookings:'Booking Requests',users:'Customers',gallery:'Gallery & Photos',services:'Services Analytics',settings:'Settings'};
+  document.getElementById('tbTitle').textContent=titles[id]||id;
+  if(window.innerWidth<900){ toggleSidebar(); }
+}
+function toggleSidebar(){
+  mobSidebarOpen=!mobSidebarOpen;
+  document.getElementById('sidebar').classList.toggle('mob-open',mobSidebarOpen);
+}
+// close sidebar on outside click (mobile)
+document.addEventListener('click',e=>{
+  if(window.innerWidth<900&&mobSidebarOpen&&!e.target.closest('#sidebar')&&!e.target.closest('.tb-menu')){
+    mobSidebarOpen=false;document.getElementById('sidebar').classList.remove('mob-open');
+  }
+});
+window.showPanel=showPanel;
+window.toggleSidebar=toggleSidebar;
+</script>
+</body>
+</html>
