@@ -349,7 +349,7 @@ tbody tr:hover td{background:var(--s2);}
     <div class="auth-panel active" id="adminLoginPanel">
       <div class="lf-group"><label class="lf-label">Admin Email</label><input class="lf-input" type="email" id="adEmail" placeholder="admin@abevents.in" autocomplete="username"/></div>
       <div class="lf-group"><label class="lf-label">Password</label><input class="lf-input" type="password" id="adPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
-      <button class="lbtn" onclick="adminLogin()">Sign In to Dashboard →</button>
+      <button class="lbtn" id="loginBtn" onclick="adminLogin()">Sign In to Dashboard</button>
       <div class="l-err" id="loginErr"></div>
       <div style="text-align:center;"><button class="l-forgot-btn" onclick="switchAdminTab('forgot')">🔑 Forgot your password?</button></div>
       <div class="l-hint">Restricted to authorised administrators only.<br>Customer site: <a href="index.html">index.html ↗</a></div>
@@ -693,797 +693,929 @@ tbody tr:hover td{background:var(--s2);}
 <div class="toast" id="toast"></div>
 
 <!-- FIREBASE -->
-<script type="module">
 
-import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import{getFirestore,collection,getDocs,doc,getDoc,updateDoc,addDoc,deleteDoc,query,where,orderBy,serverTimestamp,onSnapshot,setDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<!-- Firebase Compat CDN (no ES modules — works in all browsers/deployments) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
-const cfg={apiKey:"AIzaSyDo8u-SZMHPXBLdJV4oq5rNiPz6p33KSF4",authDomain:"abevents-38a91.firebaseapp.com",projectId:"abevents-38a91",storageBucket:"abevents-38a91.appspot.com",messagingSenderId:"408468587854",appId:"1:408468587854:web:09c108c41c4fb7cd81ca1f"};
-const app=initializeApp(cfg);
-const auth=getAuth(app);
-const db=getFirestore(app);
+<script>
+// ════════════════════════════════════════════════════
+//  AB EVENTS & DECORS — ADMIN DASHBOARD
+//  Uses Firebase Compat (no ES modules) for reliability
+// ════════════════════════════════════════════════════
+
+// ── FIREBASE CONFIG ──
+const firebaseConfig = {
+  apiKey:            "AIzaSyDo8u-SZMHPXBLdJV4oq5rNiPz6p33KSF4",
+  authDomain:        "abevents-38a91.firebaseapp.com",
+  projectId:         "abevents-38a91",
+  storageBucket:     "abevents-38a91.appspot.com",
+  messagingSenderId: "408468587854",
+  appId:             "1:408468587854:web:09c108c41c4fb7cd81ca1f"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
 // ── CLOUDINARY CONFIG ──
-const CLOUDINARY_CLOUD='di0ihwmg0'; // ← CHANGE THIS to your Cloudinary cloud name
-const CLOUDINARY_PRESET='ab_events_gallery';
+// Replace YOUR_CLOUD_NAME with your Cloudinary cloud name from cloudinary.com
+var CLOUDINARY_CLOUD  = 'di0ihwmg0';
+var CLOUDINARY_PRESET = 'ab_events_gallery';
+
+// ── EMAILJS CONFIG (optional) ──
+var EMAILJS_SERVICE_ID  = 'YOUR_EMAILJS_SERVICE_ID';
+var EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
+var EMAILJS_PUBLIC_KEY  = 'YOUR_EMAILJS_PUBLIC_KEY';
 
 // ── ADMIN WHITELIST ──
-const ADMIN_EMAILS_LOCAL=['srikanth.ambati4957@gmail.com','owner@abevents.in','abevents@gmail.com'];
+// Add YOUR email address here to gain access
+var ADMIN_EMAILS = [
+  'srikanth.ambati4957@gmail.com',
+  'owner@abevents.in',
+  'abevents@gmail.com'
+  // 'youremail@gmail.com'  ← ADD YOUR EMAIL HERE
+];
 
-// ── EMAILJS CONFIG ── (optional — for email notifications)
-const EMAILJS_SERVICE_ID='YOUR_EMAILJS_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID='YOUR_EMAILJS_TEMPLATE_ID';
-const EMAILJS_PUBLIC_KEY='YOUR_EMAILJS_PUBLIC_KEY';
+// ── PIPELINE STAGES ──
+var PIPELINE_STAGES = ['New Enquiry','Consultation Scheduled','Proposal Sent','Confirmed','Completed','Declined'];
+var STAGE_COLORS    = ['var(--blue)','var(--purple)','var(--yellow)','var(--green)','var(--t3)','var(--red)'];
 
-let allBookings=[],allUsers=[],allGallery=[],allStaff=[],allReviews=[];
-let bkFilterStatus='all',bkFilterEventType='',bkFilterService='',bkFilterSort='date-desc';
-let _galSvc='',_galCat='',selectedFile=null,curDetailId=null;
-let adminNotifList=[];
+// ── STATE ──
+var allBookings=[], allUsers=[], allGallery=[], allStaff=[], allReviews=[];
+var bkFilterStatus='all', bkFilterEventType='', bkFilterService='', bkFilterSort='date-desc';
+var galSvcFilter='', galCatFilter='', selectedFile=null, curDetailId=null, draggedCardId=null;
+var adminNotifList=[];
 
-// ── AUTH STATE ──
-onAuthStateChanged(auth,async user=>{
-  if(user&&ADMIN_EMAILS_LOCAL.includes(user.email)){
+// ════════════════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════════════════
+auth.onAuthStateChanged(function(user) {
+  if (user && ADMIN_EMAILS.includes(user.email)) {
     document.getElementById('loginScreen').classList.add('gone');
-    document.getElementById('sbName').textContent=user.displayName||user.email.split('@')[0];
-    document.getElementById('sbAvatar').textContent=(user.displayName||user.email)[0].toUpperCase();
-    document.getElementById('setEmail').value=user.email;
-    document.getElementById('setName').value=user.displayName||'';
-    await loadAll();
+    document.getElementById('sbName').textContent   = user.displayName || user.email.split('@')[0];
+    document.getElementById('sbAvatar').textContent = (user.displayName || user.email)[0].toUpperCase();
+    var setEmail = document.getElementById('setEmail');
+    var setName  = document.getElementById('setName');
+    if (setEmail) setEmail.value = user.email;
+    if (setName)  setName.value  = user.displayName || '';
+    loadAll();
     listenAdminNotifications();
     loadMaintenance();
     loadReviews();
     loadStaff();
-  } else if(user){
-    await signOut(auth);
-    const el=document.getElementById('loginErr');
-    if(el) el.textContent='Access denied. Your email is not in the admin whitelist.';
+  } else if (user) {
+    auth.signOut();
+    showLoginErr('Access denied. Your email is not in the admin whitelist.');
   } else {
     document.getElementById('loginScreen').classList.remove('gone');
   }
 });
 
-// ── SIGN IN ──
-window.adminLogin=async()=>{
-  const el=document.getElementById('loginErr');
-  const btn=document.querySelector('.lbtn');
-  if(el) el.textContent='';
-  const email=document.getElementById('adEmail').value.trim();
-  const pwd=document.getElementById('adPwd').value;
-  if(!email||!pwd){if(el) el.textContent='Please enter your email and password.';return;}
-  if(btn){btn.textContent='Signing in…';btn.disabled=true;}
-  try{
-    await signInWithEmailAndPassword(auth,email,pwd);
-  } catch(e){
-    console.error('Login error:',e.code, e.message);
-    const msg = e.code==='auth/unauthorized-domain'
-      ? '🔒 Domain not authorized — see instructions below.'
-      : e.code==='auth/network-request-failed'
-      ? '🌐 Network error. Check your internet connection.'
-      : fe(e.code)+' ('+e.code+')';
-    if(el) el.innerHTML=msg;
-    if(e.code==='auth/unauthorized-domain'){
-      const dn=document.getElementById('domainNotice');
-      if(dn) dn.style.display='block';
-    }
-  } finally {
-    if(btn){btn.textContent='Sign In to Dashboard →';btn.disabled=false;}
-  }
+function showLoginErr(msg) {
+  var el = document.getElementById('loginErr');
+  if (el) el.textContent = msg;
+}
+
+window.adminLogin = function() {
+  var el  = document.getElementById('loginErr');
+  var btn = document.getElementById('loginBtn');
+  if (el) el.textContent = '';
+  var email = (document.getElementById('adEmail').value || '').trim();
+  var pwd   = document.getElementById('adPwd').value || '';
+  if (!email || !pwd) { if (el) el.textContent = 'Please enter your email and password.'; return; }
+  if (btn) { btn.textContent = 'Signing in...'; btn.disabled = true; }
+  auth.signInWithEmailAndPassword(email, pwd)
+    .then(function() {
+      // success — onAuthStateChanged handles the rest
+    })
+    .catch(function(e) {
+      console.error('Login error:', e.code, e.message);
+      if (e.code === 'auth/unauthorized-domain') {
+        if (el) el.innerHTML = 'Domain not authorized.<br>Go to <b>Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized Domains</b> and add <b>' + location.hostname + '</b>';
+        var dn = document.getElementById('domainNotice');
+        if (dn) dn.style.display = 'block';
+      } else {
+        if (el) el.textContent = fe(e.code) + ' [' + e.code + ']';
+      }
+    })
+    .finally(function() {
+      if (btn) { btn.textContent = 'Sign In to Dashboard'; btn.disabled = false; }
+    });
 };
 
-// ── REGISTER ──
-window.adminRegister=async()=>{
-  const errEl=document.getElementById('regErr'),okEl=document.getElementById('regOk');
-  if(errEl) errEl.textContent=''; if(okEl) okEl.innerHTML='';
-  errEl.innerHTML='<span style="color:var(--gold)">Creating account…</span>';
-  const email=document.getElementById('regEmail').value.trim();
-  const pwd=document.getElementById('regPwd').value;
-  const pwd2=document.getElementById('regPwd2').value;
-  if(!email||!pwd){if(errEl)errEl.textContent='Please fill all required fields.';return;}
-  if(pwd!==pwd2){if(errEl)errEl.textContent='Passwords do not match.';return;}
-  if(pwd.length<6){if(errEl)errEl.textContent='Password must be at least 6 characters.';return;}
-  try{
-    const cred=await createUserWithEmailAndPassword(auth,email,pwd);
-    const fname=document.getElementById('regFirstName').value.trim();
-    const lname=document.getElementById('regLastName').value.trim();
-    await updateProfile(cred.user,{displayName:fname+' '+lname});
-    await addDoc(collection(db,'admins'),{uid:cred.user.uid,firstName:fname,lastName:lname,email,phone:document.getElementById('regPhone').value.trim(),role:'admin',createdAt:serverTimestamp()});
-    if(okEl) okEl.innerHTML='<span style="color:var(--green)">✓ Account created! Add your email to ADMIN_EMAILS_LOCAL in the code, then sign in.</span>';
-    ['regFirstName','regLastName','regEmail','regPhone','regPwd','regPwd2'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-    setTimeout(()=>window.switchAdminTab('login'),3000);
-  } catch(e){ if(errEl) errEl.textContent=fe(e.code); }
+window.adminRegister = function() {
+  var errEl = document.getElementById('regErr');
+  var okEl  = document.getElementById('regOk');
+  if (errEl) errEl.textContent = '';
+  if (okEl)  okEl.innerHTML    = '';
+  var email = (document.getElementById('regEmail').value || '').trim();
+  var pwd   = document.getElementById('regPwd').value   || '';
+  var pwd2  = document.getElementById('regPwd2').value  || '';
+  if (!email || !pwd) { if (errEl) errEl.textContent = 'Please fill all required fields.'; return; }
+  if (pwd !== pwd2)   { if (errEl) errEl.textContent = 'Passwords do not match.'; return; }
+  if (pwd.length < 6) { if (errEl) errEl.textContent = 'Password must be at least 6 characters.'; return; }
+  auth.createUserWithEmailAndPassword(email, pwd)
+    .then(function(cred) {
+      var fname = (document.getElementById('regFirstName').value || '').trim();
+      var lname = (document.getElementById('regLastName').value  || '').trim();
+      return cred.user.updateProfile({ displayName: fname + ' ' + lname })
+        .then(function() {
+          return db.collection('admins').add({
+            uid: cred.user.uid, firstName: fname, lastName: lname, email: email,
+            phone: (document.getElementById('regPhone').value || '').trim(),
+            role: 'admin', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+    })
+    .then(function() {
+      if (okEl) okEl.innerHTML = '<span style="color:var(--green)">Account created! Add your email to ADMIN_EMAILS in the code, then sign in.</span>';
+      ['regFirstName','regLastName','regEmail','regPhone','regPwd','regPwd2'].forEach(function(id) {
+        var el = document.getElementById(id); if (el) el.value = '';
+      });
+      setTimeout(function() { switchAdminTab('login'); }, 3000);
+    })
+    .catch(function(e) { if (errEl) errEl.textContent = fe(e.code); });
 };
 
-// ── FORGOT PASSWORD ──
-window.adminForgotPwd=async()=>{
-  const errEl=document.getElementById('fpErr'),okEl=document.getElementById('fpOk');
-  if(errEl) errEl.textContent=''; if(okEl) okEl.innerHTML='';
-  const email=document.getElementById('fpEmail').value.trim();
-  if(!email){if(errEl)errEl.textContent='Please enter your email.';return;}
-  try{
-    await sendPasswordResetEmail(auth,email);
-    if(okEl) okEl.innerHTML='<span style="color:var(--green)">✓ Reset link sent! Check inbox &amp; spam.</span>';
-  } catch(e){ if(errEl) errEl.textContent=fe(e.code); }
+window.adminForgotPwd = function() {
+  var errEl = document.getElementById('fpErr');
+  var okEl  = document.getElementById('fpOk');
+  if (errEl) errEl.textContent = '';
+  if (okEl)  okEl.innerHTML    = '';
+  var email = (document.getElementById('fpEmail').value || '').trim();
+  if (!email) { if (errEl) errEl.textContent = 'Please enter your email.'; return; }
+  auth.sendPasswordResetEmail(email)
+    .then(function() {
+      if (okEl) okEl.innerHTML = '<span style="color:var(--green)">Reset link sent! Check your inbox and spam folder.</span>';
+    })
+    .catch(function(e) { if (errEl) errEl.textContent = fe(e.code); });
 };
 
-window.adminSignOut=async()=>{ await signOut(auth); window.location.reload(); };
+window.adminSignOut = function() { auth.signOut().then(function() { location.reload(); }); };
 
-// ── LOAD ALL ──
-async function loadAll(){
-  await Promise.all([loadBookings(),loadUsers(),loadGallery()]);
-  renderDashboard();
-}
-window.refreshAll=loadAll;
-
-async function loadBookings(){
-  try{
-    const snap=await getDocs(collection(db,'bookings'));
-    allBookings=snap.docs.map(d=>({id:d.id,...d.data()}));
-    allBookings.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    applyBkFilters(); updateBadges();
-  }catch(e){console.error(e);}
-}
-async function loadUsers(){
-  try{
-    const snap=await getDocs(collection(db,'users'));
-    allUsers=snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderUsers();
-  }catch(e){console.error(e);}
-}
-async function loadGallery(){
-  try{
-    const snap=await getDocs(collection(db,'gallery'));
-    allGallery=snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderAdminGallery();
-    document.getElementById('galBadge').textContent=allGallery.length;
-    document.getElementById('gallerySubtitle').textContent=allGallery.length+' photos uploaded';
-  }catch(e){console.error(e);}
-}
-async function loadReviews(){
-  try{
-    const snap=await getDocs(collection(db,'reviews'));
-    allReviews=snap.docs.map(d=>({id:d.id,...d.data()}));
-    const pending=allReviews.filter(r=>!r.approved).length;
-    const badge=document.getElementById('revBadge');
-    badge.style.display=pending>0?'inline-block':'none';
-    badge.textContent=pending;
-    document.getElementById('revSubtitle').textContent=pending+' pending approval · '+allReviews.filter(r=>r.approved).length+' published';
-    document.getElementById('revAdminList').innerHTML=allReviews.length?allReviews.map(r=>`
-      <div class="rev-admin-card">
-        <div class="rev-admin-hdr">
-          <div><span class="rev-stars-sm">${'★'.repeat(r.rating)+'☆'.repeat(5-r.rating)}</span> <strong style="font-size:.8rem;color:var(--t1)">${r.name||'Anonymous'}</strong> <span style="font-size:.68rem;color:var(--t3)">${r.event||''}</span></div>
-          <div class="rev-actions">
-            ${!r.approved?('<button class="rev-approve" onclick="approveReview(\''+r.id+'\')">Approve</button>'):''}
-            <button class="rev-reject" onclick="deleteReview('${r.id}')">🗑 Delete</button>
-          </div>
-        </div>
-        <div class="rev-txt-sm">${r.text||''}</div>
-        <div class="rev-meta-sm">${r.approved?'<span style="color:var(--green)">● Published</span>':'<span style="color:var(--yellow)">● Pending Approval</span>'}</div>
-      </div>`).join('')
-      :'<div class="gga-empty">No reviews yet.</div>';
-  }catch(e){console.error(e);}
-}
-window.approveReview=async(id)=>{
-  await updateDoc(doc(db,'reviews',id),{approved:true});
-  showToast('Review approved and published ✓');
-  await loadReviews();
-};
-window.deleteReview=async(id)=>{
-  if(!confirm('Delete this review permanently?')) return;
-  await deleteDoc(doc(db,'reviews',id));
-  showToast('Review deleted.');
-  await loadReviews();
-};
-
-async function loadStaff(){
-  try{
-    const snap=await getDocs(collection(db,'staff'));
-    allStaff=snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderStaff();
-  }catch(e){console.error(e);}
-}
-function renderStaff(){
-  const grid=document.getElementById('staffGrid');
-  document.getElementById('staffSubtitle').textContent=allStaff.length+' team member'+(allStaff.length!==1?'s':'');
-  if(!allStaff.length){grid.innerHTML='<div class="gga-empty">No team members added yet. Use the form above.</div>';return;}
-  const roleColors={'Photographer':'var(--blue)','Decorator':'var(--gold)','Coordinator':'var(--purple)','Lighting Tech':'var(--yellow)','Caterer':'var(--green)','DJ / Music':'#EC4899','Driver':'var(--t2)'};
-  grid.innerHTML=allStaff.map(s=>`
-    <div class="staff-card">
-      <div class="staff-name">${s.name||'—'}</div>
-      <div class="staff-role" style="color:${roleColors[s.role]||'var(--gold)'}">● ${s.role||'—'}</div>
-      <div class="staff-contact">📞 ${s.phone||'No phone'}</div>
-      <button class="staff-del" onclick="deleteStaff('${s.id}')">🗑 Remove</button>
-    </div>`).join('');
-}
-window.addStaff=async()=>{
-  const name=document.getElementById('staffName').value.trim();
-  const role=document.getElementById('staffRole').value;
-  const phone=document.getElementById('staffPhone').value.trim();
-  const msg=document.getElementById('staffMsg');
-  if(!name){msg.innerHTML='<span style="color:var(--red)">Name is required.</span>';return;}
-  await addDoc(collection(db,'staff'),{name,role,phone,addedAt:serverTimestamp()});
-  msg.innerHTML='<span style="color:var(--green)">✓ Team member added!</span>';
-  document.getElementById('staffName').value='';
-  document.getElementById('staffPhone').value='';
-  await loadStaff();
-  setTimeout(()=>msg.innerHTML='',3000);
-};
-window.deleteStaff=async(id)=>{
-  if(!confirm('Remove this team member?')) return;
-  await deleteDoc(doc(db,'staff',id));
-  await loadStaff();
-  showToast('Staff member removed.');
-};
-
-// ── MAINTENANCE MODE ──
-async function loadMaintenance(){
-  try{
-    const snap=await getDocs(collection(db,'settings'));
-    if(!snap.empty){
-      const s=snap.docs[0].data();
-      const tog=document.getElementById('togMaintenance');
-      const banner=document.getElementById('adminMaintBanner');
-      if(s.maintenance){tog.classList.add('on');banner.classList.add('show');}
-      else{tog.classList.remove('on');banner.classList.remove('show');}
-      document.getElementById('maintMsgInput').value=s.maintenanceMsg||'';
-    }
-  }catch(e){}
-}
-window.toggleMaintenance=()=>{document.getElementById('togMaintenance').classList.toggle('on');};
-window.saveMaintenance=async()=>{
-  const maintenance=document.getElementById('togMaintenance').classList.contains('on');
-  const maintenanceMsg=document.getElementById('maintMsgInput').value.trim();
-  const msg=document.getElementById('maintSaveMsg');
-  try{
-    const snap=await getDocs(collection(db,'settings'));
-    if(!snap.empty){await updateDoc(doc(db,'settings',snap.docs[0].id),{maintenance,maintenanceMsg});}
-    else{await addDoc(collection(db,'settings'),{maintenance,maintenanceMsg});}
-    msg.innerHTML='<span style="color:var(--green)">✓ Maintenance settings saved!</span>';
-    const banner=document.getElementById('adminMaintBanner');
-    maintenance?banner.classList.add('show'):banner.classList.remove('show');
-    showToast(maintenance?'🔧 Maintenance mode ON':'✓ Site is back online');
-    setTimeout(()=>msg.innerHTML='',3000);
-  }catch(e){msg.innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>';}
-};
-
-// ── ADMIN NOTIFICATIONS (real-time) ──
-function listenAdminNotifications(){
-  const q=query(collection(db,'admin_notifications'),orderBy('createdAt','desc'));
-  onSnapshot(q,snap=>{
-    adminNotifList=snap.docs.map(d=>({id:d.id,...d.data()}));
-    const unread=adminNotifList.filter(n=>!n.read).length;
-    const dot=document.getElementById('adminNotifDot');
-    if(unread>0){dot.style.display='block';}else{dot.style.display='none';}
-    document.getElementById('adminNotifList').innerHTML=adminNotifList.length?
-      adminNotifList.slice(0,15).map(n=>`<div class="notif-item ${n.read?'':' unread'}" onclick="readAdminNotif('${n.id}')"><div class="notif-msg">${n.message||''}</div><div class="notif-time">${n.createdAt?.toDate?n.createdAt.toDate().toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</div></div>`).join('')
-      :'<div class="notif-empty">No notifications</div>';
+// ════════════════════════════════════════════════════
+//  LOAD ALL DATA
+// ════════════════════════════════════════════════════
+function loadAll() {
+  Promise.all([loadBookings(), loadUsers(), loadGallery()]).then(function() {
+    renderDashboard();
   });
 }
-window.readAdminNotif=async(id)=>{
-  await updateDoc(doc(db,'admin_notifications',id),{read:true});
+window.refreshAll = loadAll;
+
+function loadBookings() {
+  return db.collection('bookings').get().then(function(snap) {
+    allBookings = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    allBookings.sort(function(a, b) { return (b.createdAt && b.createdAt.seconds || 0) - (a.createdAt && a.createdAt.seconds || 0); });
+    applyBkFilters(); updateBadges();
+  }).catch(function(e) { console.error('loadBookings:', e.message); });
+}
+
+function loadUsers() {
+  return db.collection('users').get().then(function(snap) {
+    allUsers = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    renderUsers();
+  }).catch(function(e) { console.error('loadUsers:', e.message); });
+}
+
+function loadGallery() {
+  return db.collection('gallery').get().then(function(snap) {
+    allGallery = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    renderAdminGallery();
+    var gb = document.getElementById('galBadge');
+    if (gb) gb.textContent = allGallery.length;
+    var gs = document.getElementById('gallerySubtitle');
+    if (gs) gs.textContent = allGallery.length + ' photos uploaded';
+  }).catch(function(e) { console.error('loadGallery:', e.message); });
+}
+
+function loadReviews() {
+  db.collection('reviews').get().then(function(snap) {
+    allReviews = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    var pending  = allReviews.filter(function(r) { return !r.approved; }).length;
+    var approved = allReviews.filter(function(r) { return r.approved;  }).length;
+    var badge = document.getElementById('revBadge');
+    if (badge) { badge.style.display = pending > 0 ? 'inline-block' : 'none'; badge.textContent = pending; }
+    var sub = document.getElementById('revSubtitle');
+    if (sub) sub.textContent = pending + ' pending approval · ' + approved + ' published';
+    var list = document.getElementById('revAdminList');
+    if (!list) return;
+    if (!allReviews.length) { list.innerHTML = '<div class="gga-empty">No reviews yet.</div>'; return; }
+    list.innerHTML = allReviews.map(function(r) {
+      var stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+      var approveBtn = !r.approved ? '<button class="rev-approve" onclick="approveReview(\'' + r.id + '\')">✓ Approve</button>' : '';
+      var badge2 = r.approved
+        ? '<div class="rev-meta-sm"><span style="color:var(--green)">● Published</span></div>'
+        : '<div class="rev-meta-sm"><span style="color:var(--yellow)">● Pending Approval</span></div>';
+      return '<div class="rev-admin-card">' +
+        '<div class="rev-admin-hdr"><div><span class="rev-stars-sm">' + stars + '</span> <strong style="font-size:.8rem;color:var(--t1)">' + (r.name || 'Anonymous') + '</strong> <span style="font-size:.68rem;color:var(--t3)">' + (r.event || '') + '</span></div>' +
+        '<div class="rev-actions">' + approveBtn + '<button class="rev-reject" onclick="deleteReview(\'' + r.id + '\')">🗑 Delete</button></div></div>' +
+        '<div class="rev-txt-sm">' + (r.text || '') + '</div>' + badge2 + '</div>';
+    }).join('');
+  }).catch(function(e) { console.error('loadReviews:', e.message); });
+}
+
+window.approveReview = function(id) {
+  db.collection('reviews').doc(id).update({ approved: true }).then(function() {
+    showToast('Review approved ✓'); loadReviews();
+  });
 };
-window.markAllAdminNotifs=async()=>{
-  const unread=adminNotifList.filter(n=>!n.read);
-  await Promise.all(unread.map(n=>updateDoc(doc(db,'admin_notifications',n.id),{read:true})));
+window.deleteReview = function(id) {
+  if (!confirm('Delete this review permanently?')) return;
+  db.collection('reviews').doc(id).delete().then(function() {
+    showToast('Review deleted.'); loadReviews();
+  });
 };
-window.toggleAdminNotifDropdown=()=>{
-  const dd=document.getElementById('adminNotifDropdown');
-  dd.classList.toggle('open');
+
+function loadStaff() {
+  db.collection('staff').get().then(function(snap) {
+    allStaff = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    renderStaff();
+  }).catch(function(e) { console.error('loadStaff:', e.message); });
+}
+
+function renderStaff() {
+  var grid = document.getElementById('staffGrid');
+  var sub  = document.getElementById('staffSubtitle');
+  if (sub) sub.textContent = allStaff.length + ' team member' + (allStaff.length !== 1 ? 's' : '');
+  if (!grid) return;
+  if (!allStaff.length) { grid.innerHTML = '<div class="gga-empty">No team members added yet.</div>'; return; }
+  var colors = { Photographer:'var(--blue)', Decorator:'var(--gold)', Coordinator:'var(--purple)', 'Lighting Tech':'var(--yellow)', Caterer:'var(--green)', 'DJ / Music':'#EC4899', Driver:'var(--t2)' };
+  grid.innerHTML = allStaff.map(function(s) {
+    return '<div class="staff-card">' +
+      '<div class="staff-name">' + (s.name || '—') + '</div>' +
+      '<div class="staff-role" style="color:' + (colors[s.role] || 'var(--gold)') + '">● ' + (s.role || '—') + '</div>' +
+      '<div class="staff-contact">📞 ' + (s.phone || 'No phone') + '</div>' +
+      '<button class="staff-del" onclick="deleteStaff(\'' + s.id + '\')">🗑 Remove</button>' +
+      '</div>';
+  }).join('');
+}
+
+window.addStaff = function() {
+  var name  = (document.getElementById('staffName').value  || '').trim();
+  var role  = document.getElementById('staffRole').value   || '';
+  var phone = (document.getElementById('staffPhone').value || '').trim();
+  var msg   = document.getElementById('staffMsg');
+  if (!name) { if (msg) msg.innerHTML = '<span style="color:var(--red)">Name is required.</span>'; return; }
+  db.collection('staff').add({ name: name, role: role, phone: phone, addedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(function() {
+    if (msg) msg.innerHTML = '<span style="color:var(--green)">✓ Team member added!</span>';
+    document.getElementById('staffName').value = '';
+    document.getElementById('staffPhone').value = '';
+    loadStaff(); setTimeout(function() { if (msg) msg.innerHTML = ''; }, 3000);
+  });
 };
-document.addEventListener('click',e=>{
-  if(!e.target.closest('.notif-wrap')){
-    document.getElementById('adminNotifDropdown')?.classList.remove('open');
+
+window.deleteStaff = function(id) {
+  if (!confirm('Remove this team member?')) return;
+  db.collection('staff').doc(id).delete().then(function() { loadStaff(); showToast('Staff member removed.'); });
+};
+
+// ════════════════════════════════════════════════════
+//  MAINTENANCE MODE
+// ════════════════════════════════════════════════════
+function loadMaintenance() {
+  db.collection('settings').get().then(function(snap) {
+    if (snap.empty) return;
+    var s      = snap.docs[0].data();
+    var tog    = document.getElementById('togMaintenance');
+    var banner = document.getElementById('adminMaintBanner');
+    var input  = document.getElementById('maintMsgInput');
+    if (s.maintenance) { if (tog) tog.classList.add('on'); if (banner) banner.classList.add('show'); }
+    else               { if (tog) tog.classList.remove('on'); if (banner) banner.classList.remove('show'); }
+    if (input && s.maintenanceMsg) input.value = s.maintenanceMsg;
+  }).catch(function(e) { console.error('loadMaintenance:', e.message); });
+}
+window.toggleMaintenance = function() { document.getElementById('togMaintenance').classList.toggle('on'); };
+window.saveMaintenance = function() {
+  var maintenance    = document.getElementById('togMaintenance').classList.contains('on');
+  var maintenanceMsg = (document.getElementById('maintMsgInput').value || '').trim();
+  var msg = document.getElementById('maintSaveMsg');
+  db.collection('settings').get().then(function(snap) {
+    var ref = snap.empty ? db.collection('settings').doc() : snap.docs[0].ref;
+    return ref.set({ maintenance: maintenance, maintenanceMsg: maintenanceMsg }, { merge: true });
+  }).then(function() {
+    if (msg) msg.innerHTML = '<span style="color:var(--green)">✓ Maintenance settings saved!</span>';
+    var banner = document.getElementById('adminMaintBanner');
+    if (banner) maintenance ? banner.classList.add('show') : banner.classList.remove('show');
+    showToast(maintenance ? '🔧 Maintenance mode ON' : '✓ Site is back online');
+    setTimeout(function() { if (msg) msg.innerHTML = ''; }, 3000);
+  }).catch(function(e) { if (msg) msg.innerHTML = '<span style="color:var(--red)">' + e.message + '</span>'; });
+};
+
+// ════════════════════════════════════════════════════
+//  ADMIN NOTIFICATIONS (real-time)
+// ════════════════════════════════════════════════════
+function listenAdminNotifications() {
+  db.collection('admin_notifications').orderBy('createdAt', 'desc')
+    .onSnapshot(function(snap) {
+      adminNotifList = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+      var unread = adminNotifList.filter(function(n) { return !n.read; }).length;
+      var dot    = document.getElementById('adminNotifDot');
+      if (dot) dot.style.display = unread > 0 ? 'block' : 'none';
+      var list = document.getElementById('adminNotifList');
+      if (!list) return;
+      if (!adminNotifList.length) { list.innerHTML = '<div class="notif-empty">No notifications</div>'; return; }
+      list.innerHTML = adminNotifList.slice(0, 15).map(function(n) {
+        var t = n.createdAt && n.createdAt.toDate ? n.createdAt.toDate().toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+        return '<div class="notif-item' + (n.read ? '' : ' unread') + '" onclick="readAdminNotif(\'' + n.id + '\')">' +
+          '<div class="notif-msg">' + (n.message || '') + '</div>' +
+          '<div class="notif-time">' + t + '</div></div>';
+      }).join('');
+    }, function(e) { console.error('notifications:', e.message); });
+}
+
+window.readAdminNotif = function(id) {
+  db.collection('admin_notifications').doc(id).update({ read: true });
+};
+window.markAllAdminNotifs = function() {
+  adminNotifList.filter(function(n) { return !n.read; }).forEach(function(n) {
+    db.collection('admin_notifications').doc(n.id).update({ read: true });
+  });
+};
+window.toggleAdminNotifDropdown = function() {
+  document.getElementById('adminNotifDropdown').classList.toggle('open');
+};
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.notif-wrap')) {
+    var dd = document.getElementById('adminNotifDropdown');
+    if (dd) dd.classList.remove('open');
   }
 });
 
-// ── DASHBOARD ──
-function renderDashboard(){
+// ════════════════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════════════════
+function renderDashboard() {
   autoStageBookings();
-  const p=allBookings.filter(b=>b.status==='pending').length;
-  const c=allBookings.filter(b=>b.status==='confirmed').length;
-  document.getElementById('statTotal').textContent=allBookings.length;
-  document.getElementById('statTotalSub').textContent=p+' pending review';
-  document.getElementById('statPending').textContent=p;
-  document.getElementById('statConfirmed').textContent=c;
-  document.getElementById('statUsers').textContent=allUsers.length;
+  var p = allBookings.filter(function(b) { return b.status === 'pending'; }).length;
+  var c = allBookings.filter(function(b) { return b.status === 'confirmed'; }).length;
+  setText('statTotal',     allBookings.length);
+  setText('statTotalSub',  p + ' pending review');
+  setText('statPending',   p);
+  setText('statConfirmed', c);
+  setText('statUsers',     allUsers.length);
   renderSvcChart('svcChart'); renderStatusChart('statusChart');
-  renderRows('recentTbl',allBookings.slice(0,8),true);
-  renderServicesPanel();
-  renderAnalytics();
-  renderKanban();
+  renderRows('recentTbl', allBookings.slice(0, 8), true);
+  renderServicesPanel(); renderAnalytics(); renderKanban();
 }
 
-// ── ANALYTICS ──
-function renderAnalytics(){
-  const confirmed=allBookings.filter(b=>b.status==='confirmed');
-  const conv=allBookings.length?Math.round(confirmed.length/allBookings.length*100):0;
-  // Use finalPrice only (agreed price), fallback to 0 if not set
-  const priceData=confirmed.filter(b=>b.finalPrice);
-  const priceSum=priceData.reduce((sum,b)=>{
-    const m=(b.finalPrice||'').replace(/[^0-9]/g,'');
-    return sum+(parseInt(m)||0);
-  },0);
-  const avg=priceData.length?Math.round(priceSum/priceData.length):0;
-  const budgetSum=priceSum; // use finalPrice sum for revenue
-  // This month
-  const now=new Date();
-  const thisMonth=allBookings.filter(b=>{
-    if(!b.createdAt?.seconds) return false;
-    const d=new Date(b.createdAt.seconds*1000);
-    return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
-  }).length;
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('anaRevenue').textContent=budgetSum>0?'₹'+budgetSum.toLocaleString('en-IN'):'₹0 — Set final prices in confirmed bookings';
-  // Smart insight
-  const pendingPriceCount=confirmed.filter(b=>!b.finalPrice).length;
-  const totalConfirmed=confirmed.length;
-  let insightMsg='';
-  if(totalConfirmed===0){
-    insightMsg='No confirmed bookings yet. Confirm bookings and set final prices to see revenue.';
-  } else if(pendingPriceCount>0){
-    insightMsg='⚠️ '+pendingPriceCount+' of '+totalConfirmed+' confirmed booking'+(totalConfirmed>1?'s':'')+' missing final price. Open each booking → set Final Price to track real revenue.';
-  } else {
-    insightMsg='✓ All '+totalConfirmed+' confirmed booking'+(totalConfirmed>1?'s':'')+' have final prices. Revenue figure is accurate.';
-  }
-  const el=document.getElementById('anaPendingPrice');
-  if(el){
-    el.textContent=insightMsg;
-    el.style.color=pendingPriceCount>0?'var(--yellow)':'var(--green)';
-  }
-  document.getElementById('anaAvg').textContent=avg>0?'₹'+avg.toLocaleString('en-IN'):'—';
-  document.getElementById('anaConv').textContent=conv+'%';
-  document.getElementById('anaThisMonth').textContent=thisMonth;
-  document.getElementById('anaMonthLabel').textContent=months[now.getMonth()]+' '+now.getFullYear();
-  // Monthly trend (last 6 months)
-  const monthCounts=[];
-  for(let i=5;i>=0;i--){
-    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    const cnt=allBookings.filter(b=>{
-      if(!b.createdAt?.seconds) return false;
-      const bd=new Date(b.createdAt.seconds*1000);
-      return bd.getMonth()===d.getMonth()&&bd.getFullYear()===d.getFullYear();
-    }).length;
-    monthCounts.push({label:months[d.getMonth()],count:cnt});
-  }
-  const maxCnt=Math.max(...monthCounts.map(m=>m.count),1);
-  document.getElementById('revBarChart').innerHTML=monthCounts.map(m=>`
-    <div class="rev-bar-col">
-      <div class="rev-bar-val">${m.count||''}</div>
-      <div class="rev-bar" style="height:${Math.max(m.count/maxCnt*150,4)}px"></div>
-      <div class="rev-bar-lbl">${m.label}</div>
-    </div>`).join('');
-  renderSvcChart('anaSvcChart');
-  // Event type breakdown
-  const evtCounts={};
-  allBookings.forEach(b=>{if(b.eventType)evtCounts[b.eventType]=(evtCounts[b.eventType]||0)+1;});
-  const evtSorted=Object.entries(evtCounts).sort((a,b)=>b[1]-a[1]);
-  const evtMax=evtSorted[0]?.[1]||1;
-  document.getElementById('anaEventChart').innerHTML=evtSorted.map(([nm,cnt])=>`
-    <div class="mbc-row"><div class="mbc-label" title="${nm}">${nm}</div>
-    <div class="mbc-track"><div class="mbc-fill" style="width:${Math.round(cnt/evtMax*100)}%"></div></div>
-    <div class="mbc-val">${cnt}</div></div>`).join('');
-}
-
-// ── KANBAN / PIPELINE ──
-const PIPELINE_STAGES=['New Enquiry','Consultation Scheduled','Proposal Sent','Confirmed','Completed','Declined'];
-const STAGE_COLORS=['var(--blue)','var(--purple)','var(--yellow)','var(--green)','var(--t3)','var(--red)'];
-function autoStageBookings(){
-  // Auto-update pipeline stage based on status and event date
-  const today = new Date().toISOString().split('T')[0];
-  allBookings.forEach(b => {
-    // Sync declined status to Declined pipeline
-    if(b.status === 'declined' && b.pipeline !== 'Declined') {
-      b.pipeline = 'Declined';
+function autoStageBookings() {
+  var today = new Date().toISOString().split('T')[0];
+  allBookings.forEach(function(b) {
+    if (!b.pipeline) b.pipeline = 'New Enquiry';
+    if (!b.status)   b.status   = 'pending';
+    if (b.status === 'declined' && b.pipeline !== 'Declined') b.pipeline = 'Declined';
+    if (b.status === 'confirmed' && b.pipeline === 'Confirmed' && b.eventDate && b.eventDate < today) {
+      b.pipeline = 'Completed'; b.status = 'completed';
     }
-    // Auto-move Confirmed → Completed if event date has passed
-    if(b.status === 'confirmed' && b.pipeline === 'Confirmed' && b.eventDate && b.eventDate < today) {
-      b.pipeline = 'Completed';
-      b.status = 'completed';
-    }
-    // New bookings default to New Enquiry
-    if(!b.pipeline) b.pipeline = 'New Enquiry';
-    if(!b.status) b.status = 'pending';
   });
 }
 
-function renderKanban(){
+// ════════════════════════════════════════════════════
+//  REVENUE ANALYTICS
+// ════════════════════════════════════════════════════
+function renderAnalytics() {
+  var confirmed   = allBookings.filter(function(b) { return b.status === 'confirmed' || b.status === 'completed'; });
+  var priceData   = confirmed.filter(function(b) { return b.finalPrice; });
+  var priceSum    = priceData.reduce(function(s, b) { return s + (parseInt((b.finalPrice || '').replace(/[^0-9]/g, '')) || 0); }, 0);
+  var avg         = priceData.length ? Math.round(priceSum / priceData.length) : 0;
+  var conv        = allBookings.length ? Math.round(confirmed.length / allBookings.length * 100) : 0;
+  var now         = new Date();
+  var months      = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var thisMonth   = allBookings.filter(function(b) {
+    if (!b.createdAt || !b.createdAt.seconds) return false;
+    var d = new Date(b.createdAt.seconds * 1000);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
+  setText('anaRevenue',    priceSum > 0 ? '\u20b9' + priceSum.toLocaleString('en-IN') : 'Set final prices');
+  setText('anaAvg',        avg > 0 ? '\u20b9' + avg.toLocaleString('en-IN') : '\u2014');
+  setText('anaConv',       conv + '%');
+  setText('anaThisMonth',  thisMonth);
+  setText('anaMonthLabel', months[now.getMonth()] + ' ' + now.getFullYear());
+
+  // Monthly bar chart
+  var monthData = [];
+  for (var i = 5; i >= 0; i--) {
+    var d2   = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var cnt  = allBookings.filter(function(b) {
+      if (!b.createdAt || !b.createdAt.seconds) return false;
+      var bd = new Date(b.createdAt.seconds * 1000);
+      return bd.getMonth() === d2.getMonth() && bd.getFullYear() === d2.getFullYear();
+    }).length;
+    monthData.push({ label: months[d2.getMonth()], count: cnt });
+  }
+  var maxCnt = Math.max.apply(null, monthData.map(function(m) { return m.count; }).concat([1]));
+  var bc = document.getElementById('revBarChart');
+  if (bc) bc.innerHTML = monthData.map(function(m) {
+    return '<div class="rev-bar-col"><div class="rev-bar-val">' + (m.count || '') + '</div>' +
+      '<div class="rev-bar" style="height:' + Math.max(m.count / maxCnt * 150, 4) + 'px"></div>' +
+      '<div class="rev-bar-lbl">' + m.label + '</div></div>';
+  }).join('');
+
+  renderSvcChart('anaSvcChart');
+
+  var evtCounts = {};
+  allBookings.forEach(function(b) { if (b.eventType) evtCounts[b.eventType] = (evtCounts[b.eventType] || 0) + 1; });
+  var evtSorted = Object.entries(evtCounts).sort(function(a, b) { return b[1] - a[1]; });
+  var evtMax    = evtSorted.length ? evtSorted[0][1] : 1;
+  var ec = document.getElementById('anaEventChart');
+  if (ec) ec.innerHTML = evtSorted.map(function(pair) {
+    return '<div class="mbc-row"><div class="mbc-label" title="' + pair[0] + '">' + pair[0] + '</div>' +
+      '<div class="mbc-track"><div class="mbc-fill" style="width:' + Math.round(pair[1] / evtMax * 100) + '%"></div></div>' +
+      '<div class="mbc-val">' + pair[1] + '</div></div>';
+  }).join('');
+
+  var pendingPriceCount = confirmed.filter(function(b) { return !b.finalPrice; }).length;
+  var insightMsg = '';
+  if (!confirmed.length) insightMsg = 'No confirmed bookings yet.';
+  else if (pendingPriceCount > 0) insightMsg = '\u26a0\ufe0f ' + pendingPriceCount + ' confirmed booking' + (confirmed.length > 1 ? 's' : '') + ' missing final price. Open each booking to set the price.';
+  else insightMsg = '\u2713 All ' + confirmed.length + ' confirmed bookings have final prices set.';
+  var pi = document.getElementById('anaPendingPrice');
+  if (pi) { pi.textContent = insightMsg; pi.style.color = pendingPriceCount > 0 ? 'var(--yellow)' : 'var(--green)'; }
+}
+
+// ════════════════════════════════════════════════════
+//  KANBAN PIPELINE
+// ════════════════════════════════════════════════════
+function renderKanban() {
   autoStageBookings();
-  const board=document.getElementById('kanbanBoard');
-  board.innerHTML=PIPELINE_STAGES.map((stage,si)=>{
-    const cards=allBookings.filter(b=>(b.pipeline||'New Enquiry')===stage);
-    return `<div class="kb-col" ondragover="event.preventDefault();this.classList.add('kb-drag-over')" ondragleave="this.classList.remove('kb-drag-over')" ondrop="dropOnStage(event,'${stage}',this)">
-      <div class="kb-col-hdr" style="color:${STAGE_COLORS[si]}">${stage}<span class="kb-col-count">${cards.length}</span></div>
-      ${cards.map(b=>'<div class="kb-card" draggable="true" ondragstart="dragCard(event,\''+b.id+'\')" onclick="viewDetail(\''+b.id+'\')">'+'<div class="kb-card-name">'+(b.name||b.userEmail||'&mdash;')+'</div><div class="kb-card-svc">'+(b.service||'&mdash;').split(' ').slice(0,3).join(' ')+'</div><div class="kb-card-date">&#128197; '+(b.eventDate||'Date TBD')+'</div></div>').join('')}
-    </div>`;
+  var board = document.getElementById('kanbanBoard');
+  if (!board) return;
+  board.innerHTML = PIPELINE_STAGES.map(function(stage, si) {
+    var cards = allBookings.filter(function(b) { return (b.pipeline || 'New Enquiry') === stage; });
+    var cardHtml = cards.map(function(b) {
+      return '<div class="kb-card" draggable="true" ondragstart="dragCard(event,\'' + b.id + '\')" onclick="viewDetail(\'' + b.id + '\')">' +
+        '<div class="kb-card-name">' + (b.name || b.userEmail || '—') + '</div>' +
+        '<div class="kb-card-svc">' + (b.service || '—').split(' ').slice(0, 3).join(' ') + '</div>' +
+        '<div class="kb-card-date">&#128197; ' + (b.eventDate || 'Date TBD') + '</div></div>';
+    }).join('');
+    return '<div class="kb-col" ondragover="event.preventDefault();this.classList.add(\'kb-drag-over\')" ondragleave="this.classList.remove(\'kb-drag-over\')" ondrop="dropOnStage(event,\'' + stage + '\',this)">' +
+      '<div class="kb-col-hdr" style="color:' + STAGE_COLORS[si] + '">' + stage + '<span class="kb-col-count">' + cards.length + '</span></div>' +
+      cardHtml + '</div>';
   }).join('');
 }
-let draggedCardId=null;
-window.dragCard=(e,id)=>{draggedCardId=id;e.dataTransfer.effectAllowed='move';};
-window.dropOnStage=async(e,stage,col)=>{
+
+window.dragCard = function(e, id) { draggedCardId = id; e.dataTransfer.effectAllowed = 'move'; };
+window.dropOnStage = function(e, stage, col) {
   e.preventDefault(); col.classList.remove('kb-drag-over');
-  if(!draggedCardId) return;
-  await updateDoc(doc(db,'bookings',draggedCardId),{pipeline:stage,updatedAt:serverTimestamp()});
-  const idx=allBookings.findIndex(b=>b.id===draggedCardId);
-  if(idx>-1) allBookings[idx].pipeline=stage;
-  // Auto update status for Confirmed/Completed stages
-  if(stage==='Confirmed'){ allBookings[idx].status='confirmed'; await updateDoc(doc(db,'bookings',draggedCardId),{status:'confirmed',pipeline:'Confirmed'}); sendBookingNotification(draggedCardId,'confirmed'); }
-  else if(stage==='Declined'){ allBookings[idx].status='declined'; await updateDoc(doc(db,'bookings',draggedCardId),{status:'declined',pipeline:'Declined'}); sendBookingNotification(draggedCardId,'declined'); }
-  else if(stage==='Completed'){ allBookings[idx].status='completed'; await updateDoc(doc(db,'bookings',draggedCardId),{status:'completed',pipeline:'Completed'}); }
-  renderKanban(); applyBkFilters(); updateBadges(); renderDashboard();
-  showToast('Moved to '+stage+' ✓');
-  draggedCardId=null;
+  if (!draggedCardId) return;
+  var idx  = allBookings.findIndex(function(b) { return b.id === draggedCardId; });
+  var upd  = { pipeline: stage, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+  if (stage === 'Confirmed') { upd.status = 'confirmed'; }
+  else if (stage === 'Declined') { upd.status = 'declined'; }
+  else if (stage === 'Completed') { upd.status = 'completed'; }
+  db.collection('bookings').doc(draggedCardId).update(upd).then(function() {
+    if (idx > -1) Object.assign(allBookings[idx], upd);
+    renderKanban(); applyBkFilters(); updateBadges(); renderDashboard();
+    showToast('Moved to ' + stage + ' \u2713');
+    if (stage === 'Confirmed' || stage === 'Declined') sendBookingNotification(draggedCardId, upd.status);
+    draggedCardId = null;
+  });
 };
 
-// ── BOOKINGS TABLE ──
-function renderRows(tbodyId,data,short=false){
-  const tbody=document.getElementById(tbodyId);
-  if(!data.length){tbody.innerHTML=`<tr><td colspan="${short?6:8}" class="empty-rows">No bookings found.</td></tr>`;return;}
-  tbody.innerHTML=data.map(b=>{
-    const sCls=b.status==='confirmed'?'bdg-confirmed':b.status==='declined'?'bdg-declined':b.status==='completed'?'bdg-completed':b.status==='modified'?'bdg-modified':'bdg-pending';
-    const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):' — ';
-    const extra=short?'':`<td style="font-size:.75rem">${b.eventType||'—'}</td>`;
-    const priceCol=short?'':`<td style="color:var(--gold);font-size:.75rem">${b.finalPrice||'—'}</td>`;
-    return`<tr>
-      <td><div class="cell-primary">${b.name||b.userEmail||'—'}</div><div class="cell-sub">${b.email||''}</div></td>
-      <td style="font-size:.75rem">${b.service||'—'}</td>
-      ${extra}<td style="white-space:nowrap;font-size:.75rem">${dt}</td>
-      <td style="white-space:nowrap;font-size:.75rem">${b.budget||'—'}</td>
-      ${priceCol}
-      <td><span class="bdg ${sCls}">${b.pipeline||b.status==='pending'?'New Enquiry':(b.status||'New Enquiry')}</span></td>
-      <td><div class="act-btns">
-        <button class="act-btn act-view" onclick="viewDetail('${b.id}')">View</button>
-        ${b.status!=='confirmed'?'<button class="act-btn act-ok" onclick="updateStatus(\''+b.id+'\',\'confirmed\')">&#10003;</button>':''}
-        ${b.status!=='declined'?'<button class="act-btn act-no" onclick="updateStatus(\''+b.id+'\',\'declined\')">&#10005;</button>':''}
-      </div></td>
-    </tr>`;
+window.openKanbanMove = function(id) {
+  var b = allBookings.find(function(b) { return b.id === id; });
+  if (!b) return;
+  var labels  = PIPELINE_STAGES.map(function(s, i) { return i + ': ' + s; }).join('\n');
+  var current = b.pipeline || 'New Enquiry';
+  var choice  = prompt('Move to stage:\n' + labels + '\n\nCurrent: ' + current + '\nEnter number:');
+  if (choice === null || choice.trim() === '') return;
+  var stage = PIPELINE_STAGES[parseInt(choice)];
+  if (stage) { draggedCardId = id; window.dropOnStage({ preventDefault: function(){} }, stage, { classList: { remove: function(){} } }); }
+};
+
+// ════════════════════════════════════════════════════
+//  BOOKINGS TABLE
+// ════════════════════════════════════════════════════
+function renderRows(tbodyId, data, short) {
+  var tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="' + (short ? 6 : 8) + '" class="empty-rows">No bookings found.</td></tr>'; return; }
+  tbody.innerHTML = data.map(function(b) {
+    var sCls = b.status === 'confirmed' ? 'bdg-confirmed' : b.status === 'declined' ? 'bdg-declined' : b.status === 'completed' ? 'bdg-completed' : b.status === 'modified' ? 'bdg-modified' : 'bdg-pending';
+    var sLbl = b.pipeline || (b.status === 'pending' ? 'New Enquiry' : b.status || 'New Enquiry');
+    var dt   = b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '—';
+    var extra    = short ? '' : '<td style="font-size:.75rem">' + (b.eventType || '—') + '</td>';
+    var priceCol = short ? '' : '<td style="color:var(--gold);font-size:.75rem">' + (b.finalPrice || '—') + '</td>';
+    var confirmBtn = b.status !== 'confirmed' && b.status !== 'completed' ? '<button class="act-btn act-ok" onclick="updateStatus(\'' + b.id + '\',\'confirmed\')">&#10003;</button>' : '';
+    var declineBtn = b.status !== 'declined'  ? '<button class="act-btn act-no" onclick="updateStatus(\'' + b.id + '\',\'declined\')">&#10005;</button>' : '';
+    return '<tr><td><div class="cell-primary">' + (b.name || b.userEmail || '—') + '</div><div class="cell-sub">' + (b.email || '') + '</div></td>' +
+      '<td style="font-size:.75rem">' + (b.service || '—') + '</td>' +
+      extra + '<td style="white-space:nowrap;font-size:.75rem">' + dt + '</td>' +
+      '<td style="white-space:nowrap;font-size:.75rem">' + (b.budget || '—') + '</td>' +
+      priceCol +
+      '<td><span class="bdg ' + sCls + '">' + sLbl + '</span></td>' +
+      '<td><div class="act-btns"><button class="act-btn act-view" onclick="viewDetail(\'' + b.id + '\')">View</button>' +
+      confirmBtn + declineBtn + '</div></td></tr>';
   }).join('');
 }
 
-function applyBkFilters(){
-  let data=[...allBookings];
-  if(bkFilterStatus!=='all'){
-    if(bkFilterStatus==='pending'){
-      // pending = New Enquiry stage
-      data=data.filter(b=>b.status==='pending'||b.status==='New Enquiry'||(!b.status&&!b.pipeline)||(b.pipeline==='New Enquiry'&&b.status!=='confirmed'&&b.status!=='declined'&&b.status!=='completed'));
+function applyBkFilters() {
+  var data = allBookings.slice();
+  if (bkFilterStatus !== 'all') {
+    if (bkFilterStatus === 'pending') {
+      data = data.filter(function(b) { return b.status === 'pending' || b.status === 'New Enquiry' || (!b.status && !b.pipeline) || (b.pipeline === 'New Enquiry' && b.status !== 'confirmed' && b.status !== 'declined' && b.status !== 'completed'); });
     } else {
-      data=data.filter(b=>b.status===bkFilterStatus);
+      data = data.filter(function(b) { return b.status === bkFilterStatus; });
     }
   }
-  if(bkFilterEventType) data=data.filter(b=>b.eventType===bkFilterEventType);
-  if(bkFilterService) data=data.filter(b=>b.service===bkFilterService);
-  const search=(document.getElementById('globalSearch')?.value||'').toLowerCase();
-  if(search) data=data.filter(b=>(b.name||b.email||b.service||b.eventType||'').toLowerCase().includes(search));
-  // Sort
-  if(bkFilterSort==='date-asc') data.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
-  else if(bkFilterSort==='event-asc') data.sort((a,b)=>(a.eventDate||'').localeCompare(b.eventDate||''));
-  else if(bkFilterSort==='event-desc') data.sort((a,b)=>(b.eventDate||'').localeCompare(a.eventDate||''));
-  else data.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-  renderRows('allTbl',data,false);
-  document.getElementById('bkSubtitle').textContent=data.length+' booking'+(data.length!==1?'s':'');
+  if (bkFilterEventType) data = data.filter(function(b) { return b.eventType === bkFilterEventType; });
+  if (bkFilterService)   data = data.filter(function(b) { return b.service   === bkFilterService;   });
+  var search = ((document.getElementById('globalSearch') || {}).value || '').toLowerCase();
+  if (search) data = data.filter(function(b) { return (b.name || b.email || b.service || b.eventType || '').toLowerCase().includes(search); });
+  if (bkFilterSort === 'date-asc')    data.sort(function(a, b) { return (a.createdAt && a.createdAt.seconds || 0) - (b.createdAt && b.createdAt.seconds || 0); });
+  else if (bkFilterSort === 'event-asc')  data.sort(function(a, b) { return (a.eventDate || '') > (b.eventDate || '') ? 1 : -1; });
+  else if (bkFilterSort === 'event-desc') data.sort(function(a, b) { return (a.eventDate || '') < (b.eventDate || '') ? 1 : -1; });
+  else data.sort(function(a, b) { return (b.createdAt && b.createdAt.seconds || 0) - (a.createdAt && a.createdAt.seconds || 0); });
+  renderRows('allTbl', data, false);
+  var sub = document.getElementById('bkSubtitle');
+  if (sub) sub.textContent = data.length + ' booking' + (data.length !== 1 ? 's' : '');
 }
-window.setBkFilter=(type,val,el)=>{
-  if(type==='status'){
-    bkFilterStatus=val;
-    document.querySelectorAll('#statusFilterTabs .ftab').forEach(t=>t.classList.remove('active'));
-    if(el) el.classList.add('active');
+window.filterBookings = applyBkFilters;
+
+window.setBkFilter = function(type, val, el) {
+  if (type === 'status') {
+    bkFilterStatus = val;
+    document.querySelectorAll('#statusFilterTabs .ftab').forEach(function(t) { t.classList.remove('active'); });
+    if (el) el.classList.add('active');
   }
   applyBkFilters();
 };
-window.filterBookings=applyBkFilters;
-// Hook dropdowns
-document.getElementById('fEventType').addEventListener('change',e=>{bkFilterEventType=e.target.value;applyBkFilters();});
-document.getElementById('fService').addEventListener('change',e=>{bkFilterService=e.target.value;applyBkFilters();});
-document.getElementById('fSort').addEventListener('change',e=>{bkFilterSort=e.target.value;applyBkFilters();});
 
-// ── STATUS UPDATE ──
-window.updateStatus=async(id,status)=>{
-  try{
-    await updateDoc(doc(db,'bookings',id),{status,updatedAt:serverTimestamp()});
-    const idx=allBookings.findIndex(b=>b.id===id);
-    if(idx>-1) allBookings[idx].status=status;
+// Hook filter dropdowns once DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  var fe = document.getElementById('fEventType');
+  var fs = document.getElementById('fService');
+  var fso = document.getElementById('fSort');
+  if (fe)  fe.addEventListener('change',  function(e) { bkFilterEventType = e.target.value; applyBkFilters(); });
+  if (fs)  fs.addEventListener('change',  function(e) { bkFilterService   = e.target.value; applyBkFilters(); });
+  if (fso) fso.addEventListener('change', function(e) { bkFilterSort      = e.target.value; applyBkFilters(); });
+});
+
+// ════════════════════════════════════════════════════
+//  STATUS UPDATE
+// ════════════════════════════════════════════════════
+window.updateStatus = function(id, status) {
+  db.collection('bookings').doc(id).update({ status: status, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(function() {
+    var idx = allBookings.findIndex(function(b) { return b.id === id; });
+    if (idx > -1) allBookings[idx].status = status;
     applyBkFilters(); renderDashboard(); updateBadges();
-    showToast(status==='confirmed'?'✅ Booking confirmed!':'✕ Booking declined.');
-    if(curDetailId===id) viewDetail(id);
-    sendBookingNotification(id,status);
-  }catch(e){showToast('Error updating status.');}
+    showToast(status === 'confirmed' ? '✅ Booking confirmed!' : '✕ Booking declined.');
+    if (curDetailId === id) viewDetail(id);
+    sendBookingNotification(id, status);
+  }).catch(function(e) { showToast('Error: ' + e.message); });
 };
 
-// ── EMAIL NOTIFICATION ──
-async function sendBookingNotification(bookingId,status){
-  const bk=allBookings.find(b=>b.id===bookingId);
-  if(!bk||!bk.email) return;
-  // Save customer notification to Firestore
-  if(bk.userId&&bk.userId!=='guest'){
-    const msg=status==='confirmed'?
-      `🎉 Your booking for ${bk.service} on ${bk.eventDate||'TBD'} has been confirmed! We will contact you shortly.`:
-      `Your booking for ${bk.service} has been declined. Please contact us for more info.`;
-    await addDoc(collection(db,'notifications'),{userId:bk.userId,message:msg,bookingId,read:false,createdAt:serverTimestamp()});
+function sendBookingNotification(bookingId, status) {
+  var bk = allBookings.find(function(b) { return b.id === bookingId; });
+  if (!bk) return;
+  if (bk.userId && bk.userId !== 'guest') {
+    var msg = status === 'confirmed'
+      ? 'Your booking for ' + (bk.service || 'your event') + ' on ' + (bk.eventDate || 'TBD') + ' has been confirmed!'
+      : 'Your booking for ' + (bk.service || 'your event') + ' has been declined. Please contact us for more info.';
+    db.collection('notifications').add({ userId: bk.userId, message: msg, bookingId: bookingId, read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
   }
-  // Optional EmailJS notification
-  if(EMAILJS_SERVICE_ID==='YOUR_EMAILJS_SERVICE_ID') return;
-  try{
-    if(typeof emailjs!=='undefined'){
-      emailjs.init(EMAILJS_PUBLIC_KEY);
-      await emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
-        to_email:bk.email,
-        to_name:bk.name||'Customer',
-        service:bk.service,
-        event_date:bk.eventDate||'TBD',
-        status:status==='confirmed'?'Confirmed ✓':'Declined',
-        message:status==='confirmed'?'Great news! Your booking has been confirmed.':'We regret to inform you that we cannot accommodate your booking at this time.'
-      });
-    }
-  }catch(e){console.log('EmailJS:',e.message);}
+  if (EMAILJS_SERVICE_ID === 'YOUR_EMAILJS_SERVICE_ID') return;
+  if (typeof emailjs !== 'undefined' && bk.email) {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: bk.email, to_name: bk.name || 'Customer', service: bk.service || '',
+      event_date: bk.eventDate || 'TBD',
+      status: status === 'confirmed' ? 'Confirmed' : 'Declined',
+      message: status === 'confirmed' ? 'Your booking has been confirmed!' : 'We cannot accommodate your booking at this time.'
+    });
+  }
 }
 
-// ── DETAIL VIEW ──
-window.viewDetail=id=>{
-  const b=allBookings.find(b=>b.id===id);if(!b)return;
-  curDetailId=id;
-  const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):'—';
-  const sub=b.createdAt?new Date(b.createdAt.seconds*1000).toLocaleString('en-IN'):'—';
-  const mod=b.modifiedAt?new Date(b.modifiedAt.seconds*1000).toLocaleString('en-IN'):null;
-  const modRow=mod?'<div class="dp-row"><span class="dp-key">Modified</span><span class="dp-val" style="color:var(--purple)">'+mod+'</span></div>':'';
-  const msgSec=b.message?'<div class="dp-sec"><div class="dp-sec-ttl">Client's Vision</div><div style="font-size:.78rem;line-height:1.7;color:var(--t2)">'+b.message+'</div></div>':'';
-  const staffOpts=allStaff.map(s=>'<option value="'+s.name+'" '+(b.assignedStaff===s.name?'selected':'')+'>'+(s.name)+' ('+(s.role)+')</option>').join('');
-  const staffDone=b.assignedStaff?'<div style="font-size:.75rem;color:var(--green);">&#10003; Assigned to: <strong>'+b.assignedStaff+'</strong></div>':'';
-  document.getElementById('dpBody').innerHTML=
-    '<div class="dp-sec"><div class="dp-sec-ttl">Client Information</div>'+
-    '<div class="dp-row"><span class="dp-key">Name</span><span class="dp-val">'+(b.name||'&mdash;')+'</span></div>'+
-    '<div class="dp-row"><span class="dp-key">Email</span><span class="dp-val">'+(b.email||'&mdash;')+'</span></div>'+
-    '<div class="dp-row"><span class="dp-key">Phone</span><span class="dp-val">'+(b.phone||'&mdash;')+'</span></div>'+
-    '<div class="dp-row"><span class="dp-key">Type</span><span class="dp-val">'+(b.isGuest?'Guest':'Registered')+'</span></div></div>'+
-    '<div class="dp-sec"><div class="dp-sec-ttl">Event Details</div>'+
-    '<div class="dp-row"><span class="dp-key">Service</span><span class="dp-val">'+(b.service||'&mdash;')+'</span></div>'+
-    '<div class="dp-row"><span class="dp-key">Event Type</span><span class="dp-val">'+(b.eventType||'&mdash;')+'</span></div>'+
-    '<div class="dp-row"><span class="dp-key">Event Date</span><span class="dp-val">'+dt+'</span></div>'+
-    '<div class="dp-row"><span class="dp-key">Budget</span><span class="dp-val" style="color:var(--gold)">'+(b.budget||'&mdash;')+'</span></div>'+
-    '<div class="dp-row"><span class="dp-key">Venue</span><span class="dp-val">'+(b.venue||'&mdash;')+'</span></div>'+
-    '<div class="dp-row"><span class="dp-key">Submitted</span><span class="dp-val">'+sub+'</span></div>'+modRow+
-    '<div class="dp-row"><span class="dp-key">Pipeline</span><span class="dp-val">'+(b.pipeline||'New Enquiry')+'</span></div></div>'+
-    msgSec+
-    '<div class="dp-sec"><div class="dp-sec-ttl">Assign Staff Member</div>'+
-    '<select id="staffAssignSelect" class="lf-input" style="margin-bottom:8px;" onchange="assignStaffToBooking(''+id+'',this.value)">'+
-    '<option value="">-- Select Staff Member --</option>'+staffOpts+'</select>'+staffDone+'</div>'+
-    '<div class="dp-sec"><div class="dp-sec-ttl">Status &amp; Actions</div>'+
-    '<span class="bdg bdg-'+(b.status||'pending')+'" style="font-size:.75rem;padding:5px 13px;display:inline-block;margin-bottom:12px">'+(b.pipeline||b.status||'New Enquiry')+'</span>'+
-    '<div class="dp-actions">'+
-    '<button class="dp-btn dp-ok" onclick="updateStatus(''+id+'','confirmed')">Confirm</button>'+
-    '<button class="dp-btn dp-no" onclick="updateStatus(''+id+'','declined')">Decline</button>'+
-    '<button class="dp-btn dp-mod" onclick="openKanbanMove(''+id+'')">Move Stage</button>'+
-    '</div></div>'+
-    '<div class="dp-sec"><div class="dp-sec-ttl">Final Price (after discussion)</div>'+
-    '<div style="font-size:.75rem;color:var(--t3);margin-bottom:6px;">Enter the agreed final price to show on customer's booking.</div>'+
-    '<div class="price-input-wrap"><input type="text" id="finalPriceInput" placeholder="e.g. Rs.2,50,000" value="'+(b.finalPrice||'')+'" />'+
-    '<button class="price-save-btn" onclick="saveFinalPrice(''+id+'')">Save Price</button></div>'+
-    '<div id="priceSaveMsg" style="font-size:.72rem;margin-top:6px;color:var(--green);"></div></div>'+
-    '<div class="dp-sec"><div class="dp-sec-ttl">Admin Notes</div>'+
-    '<textarea class="note-ta" id="noteTA" placeholder="Internal notes...">'+(b.adminNote||'')+'</textarea>'+
-    '<button class="note-save" onclick="saveNote(''+id+'')">Save Note</button></div>';
+// ════════════════════════════════════════════════════
+//  BOOKING DETAIL VIEW
+// ════════════════════════════════════════════════════
+window.viewDetail = function(id) {
+  var b = allBookings.find(function(b) { return b.id === id; });
+  if (!b) return;
+  curDetailId = id;
+  var dt  = b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' }) : '—';
+  var sub = b.createdAt ? new Date(b.createdAt.seconds * 1000).toLocaleString('en-IN') : '—';
+  var mod = b.modifiedAt ? new Date(b.modifiedAt.seconds * 1000).toLocaleString('en-IN') : null;
+
+  var modRow    = mod ? '<div class="dp-row"><span class="dp-key">Modified</span><span class="dp-val" style="color:var(--purple)">' + mod + '</span></div>' : '';
+  var msgSec    = b.message ? '<div class="dp-sec"><div class="dp-sec-ttl">Client\'s Vision</div><div style="font-size:.78rem;line-height:1.7;color:var(--t2)">' + b.message + '</div></div>' : '';
+  var staffOpts = allStaff.map(function(s) {
+    return '<option value="' + s.name + '"' + (b.assignedStaff === s.name ? ' selected' : '') + '>' + s.name + ' (' + s.role + ')</option>';
+  }).join('');
+  var staffDone = b.assignedStaff ? '<div style="font-size:.75rem;color:var(--green);">&#10003; Assigned: <strong>' + b.assignedStaff + '</strong></div>' : '';
+
+  document.getElementById('dpBody').innerHTML =
+    '<div class="dp-sec"><div class="dp-sec-ttl">Client Information</div>' +
+    '<div class="dp-row"><span class="dp-key">Name</span><span class="dp-val">' + (b.name || '—') + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Email</span><span class="dp-val">' + (b.email || '—') + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Phone</span><span class="dp-val">' + (b.phone || '—') + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Type</span><span class="dp-val">' + (b.isGuest ? 'Guest' : 'Registered') + '</span></div></div>' +
+    '<div class="dp-sec"><div class="dp-sec-ttl">Event Details</div>' +
+    '<div class="dp-row"><span class="dp-key">Service</span><span class="dp-val">' + (b.service || '—') + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Event Type</span><span class="dp-val">' + (b.eventType || '—') + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Event Date</span><span class="dp-val">' + dt + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Budget</span><span class="dp-val" style="color:var(--gold)">' + (b.budget || '—') + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Venue</span><span class="dp-val">' + (b.venue || '—') + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Submitted</span><span class="dp-val">' + sub + '</span></div>' + modRow +
+    '<div class="dp-row"><span class="dp-key">Pipeline</span><span class="dp-val">' + (b.pipeline || 'New Enquiry') + '</span></div></div>' +
+    msgSec +
+    '<div class="dp-sec"><div class="dp-sec-ttl">Assign Staff Member</div>' +
+    '<select id="staffAssignSelect" class="lf-input" style="margin-bottom:8px;" onchange="assignStaffToBooking(\'' + id + '\',this.value)">' +
+    '<option value="">— Select Staff Member —</option>' + staffOpts + '</select>' + staffDone + '</div>' +
+    '<div class="dp-sec"><div class="dp-sec-ttl">Status &amp; Actions</div>' +
+    '<span class="bdg bdg-' + (b.status || 'pending') + '" style="font-size:.75rem;padding:5px 13px;display:inline-block;margin-bottom:12px">' + (b.pipeline || b.status || 'New Enquiry') + '</span>' +
+    '<div class="dp-actions">' +
+    '<button class="dp-btn dp-ok" onclick="updateStatus(\'' + id + '\',\'confirmed\')">&#10003; Confirm</button>' +
+    '<button class="dp-btn dp-no" onclick="updateStatus(\'' + id + '\',\'declined\')">&#10005; Decline</button>' +
+    '<button class="dp-btn dp-mod" onclick="openKanbanMove(\'' + id + '\')">&#128203; Move Stage</button>' +
+    '</div></div>' +
+    '<div class="dp-sec"><div class="dp-sec-ttl">Final Price (after discussion)</div>' +
+    '<div style="font-size:.75rem;color:var(--t3);margin-bottom:6px;">Enter the agreed final price to show on customer\'s booking.</div>' +
+    '<div class="price-input-wrap">' +
+    '<input type="text" id="finalPriceInput" placeholder="e.g. &#8377;2,50,000" value="' + (b.finalPrice || '') + '" />' +
+    '<button class="price-save-btn" onclick="saveFinalPrice(\'' + id + '\')">Save Price</button></div>' +
+    '<div id="priceSaveMsg" style="font-size:.72rem;margin-top:6px;color:var(--green);"></div></div>' +
+    '<div class="dp-sec"><div class="dp-sec-ttl">Admin Notes</div>' +
+    '<textarea class="note-ta" id="noteTA" placeholder="Internal notes...">' + (b.adminNote || '') + '</textarea>' +
+    '<button class="note-save" onclick="saveNote(\'' + id + '\')">Save Note</button></div>';
+
   document.getElementById('detailOv').classList.add('open');
 };
 
-window.saveFinalPrice=async(id)=>{
-  const price=document.getElementById('finalPriceInput').value.trim();
-  const msg=document.getElementById('priceSaveMsg');
-  await updateDoc(doc(db,'bookings',id),{finalPrice:price,updatedAt:serverTimestamp()});
-  const idx=allBookings.findIndex(b=>b.id===id);
-  if(idx>-1) allBookings[idx].finalPrice=price;
-  msg.textContent='✓ Final price saved and visible to customer.';
-  showToast('Final price saved ✓');
-  applyBkFilters();
-};
-window.openKanbanMove=async(id)=>{
-  const b=allBookings.find(b=>b.id===id);
-  if(!b) return;
-  const current=b.pipeline||'New Enquiry';
-  const labels=PIPELINE_STAGES.map((s,i)=>i+': '+s).join('\n');
-  const choice=prompt('Move to stage:\n'+labels+'\n\nCurrent: '+current+'\nEnter number:');
-  if(choice===null||choice.trim()==='') return;
-  const stage=PIPELINE_STAGES[parseInt(choice)];
-  if(stage){
-    draggedCardId=id;
-    await window.dropOnStage({preventDefault:()=>{}},stage,{classList:{remove:()=>{}}});
-  }
-};
-window.assignStaffToBooking=async(id,staffName)=>{
-  if(!staffName) return;
-  try{
-    await updateDoc(doc(db,'bookings',id),{assignedStaff:staffName,updatedAt:serverTimestamp()});
-    const idx=allBookings.findIndex(b=>b.id===id);
-    if(idx>-1) allBookings[idx].assignedStaff=staffName;
-    showToast('Staff assigned: '+staffName+' ✓');
-    applyBkFilters();
-  }catch(e){showToast('Error assigning staff.');}
+window.saveFinalPrice = function(id) {
+  var price = (document.getElementById('finalPriceInput').value || '').trim();
+  var msg   = document.getElementById('priceSaveMsg');
+  db.collection('bookings').doc(id).update({ finalPrice: price, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(function() {
+    var idx = allBookings.findIndex(function(b) { return b.id === id; });
+    if (idx > -1) allBookings[idx].finalPrice = price;
+    if (msg) msg.textContent = '✓ Final price saved and visible to customer.';
+    showToast('Final price saved ✓'); applyBkFilters();
+  });
 };
 
-window.saveNote=async id=>{
-  const note=document.getElementById('noteTA').value;
-  await updateDoc(doc(db,'bookings',id),{adminNote:note});
-  const idx=allBookings.findIndex(b=>b.id===id);
-  if(idx>-1) allBookings[idx].adminNote=note;
-  showToast('Note saved ✓');
+window.assignStaffToBooking = function(id, staffName) {
+  if (!staffName) return;
+  db.collection('bookings').doc(id).update({ assignedStaff: staffName, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(function() {
+    var idx = allBookings.findIndex(function(b) { return b.id === id; });
+    if (idx > -1) allBookings[idx].assignedStaff = staffName;
+    showToast('Staff assigned: ' + staffName + ' ✓'); applyBkFilters();
+  });
 };
-window.closeDetail=e=>{if(e.target===document.getElementById('detailOv'))closeDetailPanel();};
-window.closeDetailPanel=()=>{document.getElementById('detailOv').classList.remove('open');curDetailId=null;};
 
-// ── CHARTS ──
-function renderSvcChart(id){
-  const counts={};
-  allBookings.forEach(b=>{if(b.service)counts[b.service]=(counts[b.service]||0)+1;});
-  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  const max=sorted[0]?.[1]||1;
-  const el=document.getElementById(id);
-  if(!sorted.length){el.innerHTML='<div style="color:var(--t3);font-size:.8rem;text-align:center;padding:20px">No bookings yet</div>';return;}
-  el.innerHTML=sorted.map(([nm,cnt])=>`
-    <div class="mbc-row"><div class="mbc-label" title="${nm}">${nm.split(' ').slice(0,2).join(' ')}</div>
-    <div class="mbc-track"><div class="mbc-fill" style="width:${Math.round(cnt/max*100)}%"></div></div>
-    <div class="mbc-val">${cnt}</div></div>`).join('');
-}
-function renderStatusChart(id){
-  const tot=allBookings.length||1;
-  const p=allBookings.filter(b=>b.status==='pending').length;
-  const c=allBookings.filter(b=>b.status==='confirmed').length;
-  const d=allBookings.filter(b=>b.status==='declined').length;
-  document.getElementById(id).innerHTML=`
-    <div class="donut-row"><div class="donut-dot" style="background:var(--yellow)"></div><div class="donut-lbl">⏳ Pending</div><div class="donut-val">${p} <span style="color:var(--t3)">(${Math.round(p/tot*100)}%)</span></div></div>
-    <div class="donut-row"><div class="donut-dot" style="background:var(--green)"></div><div class="donut-lbl">✅ Confirmed</div><div class="donut-val">${c} <span style="color:var(--t3)">(${Math.round(c/tot*100)}%)</span></div></div>
-    <div class="donut-row"><div class="donut-dot" style="background:var(--red)"></div><div class="donut-lbl">✕ Declined</div><div class="donut-val">${d} <span style="color:var(--t3)">(${Math.round(d/tot*100)}%)</span></div></div>
-    <div class="donut-row" style="margin-top:4px;border-top:1px solid var(--bdr2);padding-top:8px;"><div class="donut-dot" style="background:var(--t3)"></div><div class="donut-lbl">Total</div><div class="donut-val">${allBookings.length}</div></div>`;
-}
+window.saveNote = function(id) {
+  var note = document.getElementById('noteTA').value;
+  db.collection('bookings').doc(id).update({ adminNote: note }).then(function() {
+    var idx = allBookings.findIndex(function(b) { return b.id === id; });
+    if (idx > -1) allBookings[idx].adminNote = note;
+    showToast('Note saved ✓');
+  });
+};
 
-// ── USERS ──
-const uvColors=['#C9A84C','#60A5FA','#22C55E','#EC4899','#F59E0B','#A78BFA'];
-function renderUsers(filter=''){
-  const ul=document.getElementById('userList');
-  let users=allUsers;
-  if(filter) users=users.filter(u=>(u.firstName+' '+u.lastName+u.email).toLowerCase().includes(filter.toLowerCase()));
-  document.getElementById('userSubtitle').textContent=users.length+' registered customer'+(users.length!==1?'s':'');
-  if(!users.length){ul.innerHTML='<div class="empty-rows">No customers found.</div>';return;}
-  ul.innerHTML=users.map((u,i)=>{
-    const nm=`${u.firstName||''} ${u.lastName||''}`.trim()||u.email||'Unknown';
-    const bc=allBookings.filter(b=>b.userId===u.uid).length;
-    const clr=uvColors[i%uvColors.length];
-    return`<div class="user-item">
-      <div class="u-av-sm" style="background:${clr}22;color:${clr}">${(nm[0]||'?').toUpperCase()}</div>
-      <div style="flex:1"><div style="font-size:.83rem;font-weight:600;color:var(--t1)">${nm}</div><div style="font-size:.72rem;color:var(--t3)">${u.email||'—'} · ${u.phone||'No phone'}</div></div>
-      <span class="bdg bdg-new">${bc} booking${bc!==1?'s':''}</span>
-    </div>`;
+window.closeDetail = function(e) { if (e.target === document.getElementById('detailOv')) closeDetailPanel(); };
+window.closeDetailPanel = function() { document.getElementById('detailOv').classList.remove('open'); curDetailId = null; };
+
+// ════════════════════════════════════════════════════
+//  CHARTS
+// ════════════════════════════════════════════════════
+function renderSvcChart(id) {
+  var counts = {};
+  allBookings.forEach(function(b) { if (b.service) counts[b.service] = (counts[b.service] || 0) + 1; });
+  var sorted = Object.entries(counts).sort(function(a, b) { return b[1] - a[1]; });
+  var max = sorted.length ? sorted[0][1] : 1;
+  var el  = document.getElementById(id);
+  if (!el) return;
+  if (!sorted.length) { el.innerHTML = '<div style="color:var(--t3);text-align:center;padding:20px;font-size:.8rem">No bookings yet</div>'; return; }
+  el.innerHTML = sorted.map(function(pair) {
+    return '<div class="mbc-row"><div class="mbc-label" title="' + pair[0] + '">' + pair[0].split(' ').slice(0, 2).join(' ') + '</div>' +
+      '<div class="mbc-track"><div class="mbc-fill" style="width:' + Math.round(pair[1] / max * 100) + '%"></div></div>' +
+      '<div class="mbc-val">' + pair[1] + '</div></div>';
   }).join('');
 }
-window.filterUsers=()=>renderUsers(document.getElementById('userSearch').value);
 
-// ── GALLERY UPLOAD (CLOUDINARY) ──
-window.onFileSelect=e=>{
-  const file=e.target.files[0];if(!file)return;
-  selectedFile=file;
-  const reader=new FileReader();
-  reader.onload=ev=>{document.getElementById('uploadPreview').innerHTML=`<img src="${ev.target.result}" alt="preview"/>`;};
+function renderStatusChart(id) {
+  var tot = allBookings.length || 1;
+  var p   = allBookings.filter(function(b) { return b.status === 'pending'; }).length;
+  var c   = allBookings.filter(function(b) { return b.status === 'confirmed'; }).length;
+  var d   = allBookings.filter(function(b) { return b.status === 'declined'; }).length;
+  var el  = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML =
+    '<div class="donut-row"><div class="donut-dot" style="background:var(--yellow)"></div><div class="donut-lbl">New Enquiry / Pending</div><div class="donut-val">' + p + ' <span style="color:var(--t3)">(' + Math.round(p / tot * 100) + '%)</span></div></div>' +
+    '<div class="donut-row"><div class="donut-dot" style="background:var(--green)"></div><div class="donut-lbl">Confirmed</div><div class="donut-val">' + c + ' <span style="color:var(--t3)">(' + Math.round(c / tot * 100) + '%)</span></div></div>' +
+    '<div class="donut-row"><div class="donut-dot" style="background:var(--red)"></div><div class="donut-lbl">Declined</div><div class="donut-val">' + d + ' <span style="color:var(--t3)">(' + Math.round(d / tot * 100) + '%)</span></div></div>' +
+    '<div class="donut-row" style="margin-top:4px;border-top:1px solid var(--bdr2);padding-top:8px;"><div class="donut-dot" style="background:var(--t3)"></div><div class="donut-lbl">Total</div><div class="donut-val">' + allBookings.length + '</div></div>';
+}
+
+// ════════════════════════════════════════════════════
+//  USERS
+// ════════════════════════════════════════════════════
+var UV_COLORS = ['#C9A84C','#60A5FA','#22C55E','#EC4899','#F59E0B','#A78BFA'];
+function renderUsers(filter) {
+  var ul    = document.getElementById('userList');
+  var sub   = document.getElementById('userSubtitle');
+  var users = allUsers.slice();
+  if (filter) users = users.filter(function(u) { return (u.firstName + ' ' + u.lastName + u.email).toLowerCase().includes(filter.toLowerCase()); });
+  if (sub) sub.textContent = users.length + ' registered customer' + (users.length !== 1 ? 's' : '');
+  if (!ul) return;
+  if (!users.length) { ul.innerHTML = '<div class="empty-rows">No customers found.</div>'; return; }
+  ul.innerHTML = users.map(function(u, i) {
+    var nm  = ((u.firstName || '') + ' ' + (u.lastName || '')).trim() || u.email || 'Unknown';
+    var bc  = allBookings.filter(function(b) { return b.userId === u.uid; }).length;
+    var clr = UV_COLORS[i % UV_COLORS.length];
+    return '<div class="user-item">' +
+      '<div class="u-av-sm" style="background:' + clr + '22;color:' + clr + '">' + (nm[0] || '?').toUpperCase() + '</div>' +
+      '<div style="flex:1"><div style="font-size:.83rem;font-weight:600;color:var(--t1)">' + nm + '</div>' +
+      '<div style="font-size:.72rem;color:var(--t3)">' + (u.email || '—') + ' · ' + (u.phone || 'No phone') + '</div></div>' +
+      '<span class="bdg bdg-new">' + bc + ' booking' + (bc !== 1 ? 's' : '') + '</span></div>';
+  }).join('');
+}
+window.filterUsers = function() { renderUsers(document.getElementById('userSearch').value); };
+
+// ════════════════════════════════════════════════════
+//  GALLERY UPLOAD (CLOUDINARY)
+// ════════════════════════════════════════════════════
+window.onFileSelect = function(e) {
+  var file = e.target.files[0]; if (!file) return;
+  selectedFile = file;
+  var reader = new FileReader();
+  reader.onload = function(ev) { document.getElementById('uploadPreview').innerHTML = '<img src="' + ev.target.result + '" alt="preview"/>'; };
   reader.readAsDataURL(file);
-  document.getElementById('uploadBtn').disabled=false;
+  document.getElementById('uploadBtn').disabled = false;
 };
-window.onDragOver=e=>{e.preventDefault();document.getElementById('dropZone').classList.add('drag');};
-window.onDragLeave=e=>{document.getElementById('dropZone').classList.remove('drag');};
-window.onDrop=e=>{
-  e.preventDefault();document.getElementById('dropZone').classList.remove('drag');
-  const file=e.dataTransfer.files[0];if(!file||!file.type.startsWith('image/'))return;
-  selectedFile=file;
-  const reader=new FileReader();
-  reader.onload=ev=>{document.getElementById('uploadPreview').innerHTML=`<img src="${ev.target.result}" alt="preview"/>`;};
+window.onDragOver  = function(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('drag'); };
+window.onDragLeave = function(e) { document.getElementById('dropZone').classList.remove('drag'); };
+window.onDrop = function(e) {
+  e.preventDefault(); document.getElementById('dropZone').classList.remove('drag');
+  var file = e.dataTransfer.files[0]; if (!file || !file.type.startsWith('image/')) return;
+  selectedFile = file;
+  var reader = new FileReader();
+  reader.onload = function(ev) { document.getElementById('uploadPreview').innerHTML = '<img src="' + ev.target.result + '" alt="preview"/>'; };
   reader.readAsDataURL(file);
-  document.getElementById('uploadBtn').disabled=false;
+  document.getElementById('uploadBtn').disabled = false;
 };
-window.uploadPhoto=async()=>{
-  if(!selectedFile){showToast('Please select an image first.');return;}
-  const svc=document.getElementById('uploadService').value;
-  const eventCat=document.getElementById('uploadEventCat').value;
-  if(!svc){showToast('Please select a service category.');return;}
-  if(!eventCat){showToast('Please select an event category.');return;}
-  if(selectedFile.size>5*1024*1024){showToast('File too large. Max 5MB.');return;}
-  if(CLOUDINARY_CLOUD==='YOUR_CLOUD_NAME'){
-    document.getElementById('uploadMsg').innerHTML='<span class="msg-err">⚠️ Set your CLOUDINARY_CLOUD name in the code first! (search for YOUR_CLOUD_NAME)</span>';
+
+window.uploadPhoto = function() {
+  if (!selectedFile)           { showToast('Please select an image first.'); return; }
+  var svc      = document.getElementById('uploadService').value;
+  var eventCat = document.getElementById('uploadEventCat').value;
+  if (!svc)      { showToast('Please select a service category.'); return; }
+  if (!eventCat) { showToast('Please select an event category.');  return; }
+  if (selectedFile.size > 5 * 1024 * 1024) { showToast('File too large. Max 5MB.'); return; }
+  if (CLOUDINARY_CLOUD === 'YOUR_CLOUD_NAME') {
+    document.getElementById('uploadMsg').innerHTML = '<span class="msg-err">Set CLOUDINARY_CLOUD in the code to your Cloudinary cloud name.</span>';
     return;
   }
-  const caption=document.getElementById('uploadCaption').value.trim();
-  const btn=document.getElementById('uploadBtn');
-  const msg=document.getElementById('uploadMsg');
-  const prog=document.getElementById('uploadProgress');
-  const bar=document.getElementById('uploadProgressBar');
-  btn.disabled=true; btn.textContent='Uploading…';
-  prog.style.display='block'; bar.style.width='5%';
-  msg.innerHTML='<span style="color:var(--gold)">⬆️ Uploading to Cloudinary…</span>';
-  try{
-    const formData=new FormData();
-    formData.append('file',selectedFile);
-    formData.append('upload_preset',CLOUDINARY_PRESET);
-    formData.append('folder','ab-events/gallery');
-    bar.style.width='35%';
-    const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,{method:'POST',body:formData});
-    bar.style.width='70%';
-    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||'HTTP '+res.status);}
-    const data=await res.json();
-    bar.style.width='85%';
-    await addDoc(collection(db,'gallery'),{url:data.secure_url,service:svc,eventCategory:eventCat,caption:caption||eventCat,cloudinaryId:data.public_id,uploadedAt:serverTimestamp()});
-    bar.style.width='100%';
-    setTimeout(()=>{prog.style.display='none';bar.style.width='0%';},500);
-    msg.innerHTML='<span class="msg-ok">✓ Photo uploaded and live on customer site!</span>';
-    btn.textContent='Upload Photo →';btn.disabled=true;selectedFile=null;
-    document.getElementById('uploadPreview').innerHTML='No image selected';
-    document.getElementById('uploadCaption').value='';
-    document.getElementById('uploadService').value='';
-    document.getElementById('uploadEventCat').value='';
-    document.getElementById('photoFileInput').value='';
-    showToast('📸 Photo uploaded!');
-    await loadGallery();
-  }catch(err){
-    prog.style.display='none';bar.style.width='0%';
-    msg.innerHTML='<span class="msg-err">Upload failed: '+err.message+'</span>';
-    btn.disabled=false;btn.textContent='Upload Photo →';
-  }
+  var caption = (document.getElementById('uploadCaption').value || '').trim();
+  var btn  = document.getElementById('uploadBtn');
+  var msg  = document.getElementById('uploadMsg');
+  var prog = document.getElementById('uploadProgress');
+  var bar  = document.getElementById('uploadProgressBar');
+  btn.disabled = true; btn.textContent = 'Uploading...';
+  prog.style.display = 'block'; bar.style.width = '5%';
+  msg.innerHTML = '<span style="color:var(--gold)">Uploading to Cloudinary...</span>';
+
+  var formData = new FormData();
+  formData.append('file', selectedFile);
+  formData.append('upload_preset', CLOUDINARY_PRESET);
+  formData.append('folder', 'ab-events/gallery');
+  bar.style.width = '35%';
+
+  fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', { method: 'POST', body: formData })
+    .then(function(res) {
+      bar.style.width = '70%';
+      if (!res.ok) return res.json().then(function(err) { throw new Error(err.error ? err.error.message : 'HTTP ' + res.status); });
+      return res.json();
+    })
+    .then(function(data) {
+      bar.style.width = '85%';
+      return db.collection('gallery').add({
+        url: data.secure_url, service: svc, eventCategory: eventCat,
+        caption: caption || eventCat, cloudinaryId: data.public_id,
+        uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    })
+    .then(function() {
+      bar.style.width = '100%';
+      setTimeout(function() { prog.style.display = 'none'; bar.style.width = '0%'; }, 500);
+      msg.innerHTML = '<span class="msg-ok">✓ Photo uploaded and live on customer site!</span>';
+      btn.textContent = 'Upload Photo'; btn.disabled = true; selectedFile = null;
+      document.getElementById('uploadPreview').innerHTML = 'No image selected';
+      document.getElementById('uploadCaption').value     = '';
+      document.getElementById('uploadService').value     = '';
+      document.getElementById('uploadEventCat').value    = '';
+      document.getElementById('photoFileInput').value    = '';
+      showToast('Photo uploaded!'); loadGallery();
+    })
+    .catch(function(err) {
+      prog.style.display = 'none'; bar.style.width = '0%';
+      msg.innerHTML = '<span class="msg-err">Upload failed: ' + err.message + '</span>';
+      btn.disabled = false; btn.textContent = 'Upload Photo';
+    });
 };
 
-// ── GALLERY RENDER ──
-let _galSvcFilter='',_galCatFilter='';
-function renderAdminGallery(){
-  const grid=document.getElementById('adminGalleryGrid');
-  let photos=[...allGallery];
-  if(_galSvcFilter) photos=photos.filter(p=>p.service===_galSvcFilter);
-  if(_galCatFilter) photos=photos.filter(p=>p.eventCategory===_galCatFilter);
-  const sub=document.getElementById('gallerySubtitle');
-  if(sub) sub.textContent=photos.length+' photo'+(photos.length!==1?'s':'')+' uploaded';
-  if(!photos.length){grid.innerHTML='<div class="gga-empty">No photos match this filter.</div>';return;}
-  grid.innerHTML=photos.map(p=>`
-    <div class="gga-item">
-      <img src="${p.url}" alt="${p.caption||''}" loading="lazy"/>
-      <div class="gga-overlay">
-        <div class="gga-svc">${(p.service||'').split(' ').slice(0,2).join(' ')}</div>
-        <div style="font-size:.6rem;color:rgba(201,168,76,.7)">${p.eventCategory||''}</div>
-        ${p.caption?'<div style="font-size:.6rem;color:rgba(255,255,255,.5);text-align:center">'+p.caption+'</div>':''}
-        <button class="gga-del" onclick="deletePhoto('${p.id}','${(p.storagePath||'').replace(/'/g,"\'")}')">🗑 Delete</button>
-      </div>
-    </div>`).join('');
+function renderAdminGallery() {
+  var grid = document.getElementById('adminGalleryGrid');
+  if (!grid) return;
+  var photos = allGallery.slice();
+  if (galSvcFilter) photos = photos.filter(function(p) { return p.service      === galSvcFilter; });
+  if (galCatFilter) photos = photos.filter(function(p) { return p.eventCategory === galCatFilter; });
+  var sub = document.getElementById('gallerySubtitle');
+  if (sub) sub.textContent = photos.length + ' photo' + (photos.length !== 1 ? 's' : '') + ' uploaded';
+  if (!photos.length) { grid.innerHTML = '<div class="gga-empty">No photos match this filter.</div>'; return; }
+  grid.innerHTML = photos.map(function(p) {
+    var cap = p.caption ? '<div style="font-size:.6rem;color:rgba(255,255,255,.5);text-align:center">' + p.caption + '</div>' : '';
+    return '<div class="gga-item"><img src="' + p.url + '" alt="' + (p.caption || '') + '" loading="lazy"/>' +
+      '<div class="gga-overlay">' +
+      '<div class="gga-svc">' + (p.service || '').split(' ').slice(0, 2).join(' ') + '</div>' +
+      '<div style="font-size:.62rem;color:rgba(201,168,76,.7)">' + (p.eventCategory || '') + '</div>' + cap +
+      '<button class="gga-del" onclick="deletePhoto(\'' + p.id + '\',\'' + (p.storagePath || '').replace(/'/g, "\\'") + '\')">Delete</button>' +
+      '</div></div>';
+  }).join('');
 }
-window.setGalSvcFilter=(f,el)=>{_galSvcFilter=f;document.querySelectorAll('#galleryServiceTabs .ftab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');renderAdminGallery();};
-window.setGalCatFilter=(f,el)=>{_galCatFilter=f;document.querySelectorAll('#galleryCatTabs .ftab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');renderAdminGallery();};
-window.setGalleryFilter=window.setGalSvcFilter;
-window.deletePhoto=async(id,path)=>{
-  if(!confirm('Delete this photo?')) return;
-  try{
-    await deleteDoc(doc(db,'gallery',id));
-    allGallery=allGallery.filter(p=>p.id!==id);
+
+window.setGalSvcFilter = function(f, el) {
+  galSvcFilter = f;
+  document.querySelectorAll('#galleryServiceTabs .ftab').forEach(function(t) { t.classList.remove('active'); });
+  if (el) el.classList.add('active'); renderAdminGallery();
+};
+window.setGalCatFilter = function(f, el) {
+  galCatFilter = f;
+  document.querySelectorAll('#galleryCatTabs .ftab').forEach(function(t) { t.classList.remove('active'); });
+  if (el) el.classList.add('active'); renderAdminGallery();
+};
+window.setGalleryFilter = window.setGalSvcFilter;
+
+window.deletePhoto = function(id, path) {
+  if (!confirm('Delete this photo?')) return;
+  db.collection('gallery').doc(id).delete().then(function() {
+    allGallery = allGallery.filter(function(p) { return p.id !== id; });
     renderAdminGallery();
-    document.getElementById('galBadge').textContent=allGallery.length;
+    var gb = document.getElementById('galBadge'); if (gb) gb.textContent = allGallery.length;
     showToast('Photo deleted.');
-  }catch(e){showToast('Error deleting photo.');}
+  }).catch(function(e) { showToast('Error: ' + e.message); });
 };
 
-// ── SERVICES PANEL ──
-function renderServicesPanel(){
-  const svcs=['Luxury Decor & Styling','Professional Photography','Live Music & Entertainment','Premium Lighting Design','Gourmet Catering','Complete Event Management'];
-  svcs.forEach((s,i)=>{const el=document.getElementById('svcStat'+i);if(el)el.textContent=allBookings.filter(b=>b.service===s).length;});
+// ════════════════════════════════════════════════════
+//  SERVICES PANEL
+// ════════════════════════════════════════════════════
+function renderServicesPanel() {
+  var svcs = ['Luxury Decor & Styling','Professional Photography','Live Music & Entertainment','Premium Lighting Design','Gourmet Catering','Complete Event Management'];
+  svcs.forEach(function(s, i) {
+    var el = document.getElementById('svcStat' + i); if (el) el.textContent = allBookings.filter(function(b) { return b.service === s; }).length;
+  });
   renderSvcChart('svcChartFull');
 }
 
-// ── HELPERS ──
-function updateBadges(){
-  const p=allBookings.filter(b=>b.status==='pending').length;
-  document.getElementById('pendingBadge').textContent=p;
+// ════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════
+function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+function updateBadges() {
+  var p = allBookings.filter(function(b) { return b.status === 'pending'; }).length;
+  setText('pendingBadge', p);
 }
-function fe(c){const m={'auth/user-not-found':'No account found with that email.','auth/wrong-password':'Incorrect password. Please try again.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'This email is already registered.','auth/weak-password':'Password must be at least 6 characters.','auth/too-many-requests':'Too many failed attempts. Please wait a few minutes.','auth/invalid-email':'Please enter a valid email address.','auth/unauthorized-domain':'This domain is not authorized. Add it in Firebase Auth settings.','auth/network-request-failed':'Network error. Check your connection.','auth/operation-not-allowed':'Email/password login is not enabled. Enable it in Firebase Authentication.'};return m[c]||('Error: '+c);}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
-window.fe=fe;
-window.saveSettings=async()=>{
-  const name=document.getElementById('setName').value.trim();
-  const pwd=document.getElementById('setPwd').value;
-  try{
-    if(name&&auth.currentUser) await updateProfile(auth.currentUser,{displayName:name});
-    document.getElementById('sbName').textContent=name||auth.currentUser?.email.split('@')[0];
-    document.getElementById('settingsMsg').innerHTML='<span style="color:var(--green)">Settings saved ✓</span>';
-    showToast('Settings saved ✓');
-  }catch(e){document.getElementById('settingsMsg').innerHTML='<span style="color:var(--red)">'+e.message+'</span>';}
-};
-window.showToast=showToast;
 
+function fe(code) {
+  var msgs = {
+    'auth/user-not-found':       'No account found with that email.',
+    'auth/wrong-password':       'Incorrect password.',
+    'auth/invalid-credential':   'Invalid email or password.',
+    'auth/email-already-in-use': 'This email is already registered.',
+    'auth/weak-password':        'Password must be at least 6 characters.',
+    'auth/too-many-requests':    'Too many failed attempts — please wait.',
+    'auth/invalid-email':        'Please enter a valid email address.',
+    'auth/unauthorized-domain':  'This domain is not authorized in Firebase.',
+    'auth/network-request-failed': 'Network error — check your connection.',
+    'auth/operation-not-allowed':  'Email/password sign-in is not enabled in Firebase.'
+  };
+  return msgs[code] || 'Something went wrong.';
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
+
+window.saveSettings = function() {
+  var name = (document.getElementById('setName').value || '').trim();
+  var user = auth.currentUser;
+  if (name && user) {
+    user.updateProfile({ displayName: name }).then(function() {
+      setText('sbName', name);
+      document.getElementById('settingsMsg').innerHTML = '<span style="color:var(--green)">Settings saved</span>';
+      showToast('Settings saved');
+    });
+  }
+};
+
+window.showToast = showToast;
 </script>
 
 <script>
