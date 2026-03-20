@@ -3,7 +3,16 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>AB Events & Decors — Dream Events, Crafted Perfectly</title>
+<title>AB Events &amp; Decors — Dream Events, Crafted Perfectly</title>
+<meta name="theme-color" content="#C9A84C"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#C9A84C"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="AB Events"/>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 :root{--gold:#C9A84C;--gold2:#E2C97E;--gd:#8B6914;--black:#080808;--dark:#111;--dark2:#181818;--dark3:#222;--cream:#F5F0E8;--white:#FDFCFA;--muted:#888;--fd:'Cormorant Garamond',serif;--fb:'Outfit',sans-serif;--ease:cubic-bezier(.4,0,.2,1);--tr:0.35s var(--ease);--r:4px;}
@@ -12,9 +21,11 @@ html{scroll-behavior:smooth;}
 body{background:var(--black);color:var(--cream);font-family:var(--fb);font-weight:300;overflow-x:hidden;line-height:1.6;}
 img{display:block;width:100%;height:100%;object-fit:cover;}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:var(--dark);}::-webkit-scrollbar-thumb{background:var(--gd);}
+.hidden{display:none!important;}
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:900;height:66px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(8,8,8,.94);backdrop-filter:blur(20px);border-bottom:1px solid rgba(201,168,76,.1);}
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:900;height:66px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(8,8,8,.94);backdrop-filter:blur(20px);border-bottom:1px solid rgba(201,168,76,.1);transition:var(--tr);}
+nav.maintenance-on{border-bottom:2px solid var(--gold);}
 .nav-logo{font-family:var(--fd);font-size:1.4rem;font-weight:600;color:var(--gold);text-decoration:none;white-space:nowrap;flex-shrink:0;}
 .nav-logo span{font-style:italic;font-weight:300;color:var(--cream);}
 .nav-mid{display:flex;gap:28px;}
@@ -38,14 +49,40 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:66px;padding:0 40px;d
 .mob-nav-btns .btn{flex:1;justify-content:center;}
 .u-wrap{position:relative;}
 .u-av{width:34px;height:34px;border-radius:50%;background:var(--gold);color:var(--black);font-weight:600;font-size:.85rem;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;font-family:var(--fb);}
-.u-drop{position:absolute;top:calc(100% + 10px);right:0;background:var(--dark2);border:1px solid rgba(201,168,76,.15);min-width:165px;display:none;flex-direction:column;overflow:hidden;border-radius:var(--r);z-index:999;}
+.u-drop{position:absolute;top:calc(100% + 10px);right:0;background:var(--dark2);border:1px solid rgba(201,168,76,.15);min-width:180px;display:none;flex-direction:column;overflow:hidden;border-radius:var(--r);z-index:999;}
 .u-drop.open{display:flex;}
 .u-drop a,.u-drop button{padding:11px 16px;font-size:.8rem;color:var(--cream);text-decoration:none;background:none;border:none;cursor:pointer;text-align:left;font-family:var(--fb);transition:var(--tr);border-bottom:1px solid rgba(255,255,255,.04);}
 .u-drop a:hover,.u-drop button:hover{background:rgba(201,168,76,.1);color:var(--gold);}
-.hidden{display:none!important;}
+/* Notification bell */
+.notif-wrap{position:relative;cursor:pointer;}
+.notif-icon{font-size:1.1rem;color:var(--cream);opacity:.7;transition:var(--tr);}
+.notif-icon:hover{opacity:1;color:var(--gold);}
+.notif-badge{position:absolute;top:-4px;right:-4px;background:var(--gold);color:#000;font-size:.55rem;font-weight:700;padding:1px 4px;border-radius:100px;min-width:14px;text-align:center;display:none;}
+.notif-badge.show{display:block;}
+.notif-drop{position:absolute;top:calc(100%+12px);right:0;background:var(--dark2);border:1px solid rgba(201,168,76,.15);width:300px;max-height:380px;overflow-y:auto;border-radius:var(--r);z-index:999;display:none;flex-direction:column;}
+.notif-drop.open{display:flex;}
+.notif-hdr{padding:12px 16px;border-bottom:1px solid rgba(201,168,76,.1);font-size:.78rem;font-weight:600;color:var(--gold);display:flex;justify-content:space-between;align-items:center;}
+.notif-item{padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.76rem;color:var(--cream);cursor:pointer;transition:var(--tr);}
+.notif-item:hover{background:rgba(201,168,76,.06);}
+.notif-item.unread{border-left:3px solid var(--gold);}
+.notif-time{font-size:.65rem;color:var(--muted);margin-top:2px;}
+.notif-empty{padding:24px;text-align:center;color:var(--muted);font-size:.78rem;}
 
-/* HERO */
-#hero{position:relative;min-height:100svh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+/* ── MAINTENANCE BANNER ── */
+#maintenanceBanner{display:none;background:linear-gradient(90deg,#8B6914,var(--gold),#8B6914);color:#000;text-align:center;padding:10px 20px;font-size:.8rem;font-weight:600;letter-spacing:.06em;position:fixed;top:0;left:0;right:0;z-index:1000;}
+#maintenanceBanner.show{display:block;}
+body.has-banner{padding-top:40px;}
+body.has-banner nav{top:40px;}
+
+/* ── WHATSAPP FLOATING BUTTON ── */
+.wa-fab{position:fixed;bottom:28px;right:28px;z-index:800;width:58px;height:58px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.45);cursor:pointer;transition:var(--tr);text-decoration:none;}
+.wa-fab:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(37,211,102,.55);}
+.wa-fab svg{width:30px;height:30px;fill:#fff;}
+.wa-tooltip{position:absolute;right:68px;background:var(--dark2);color:var(--cream);font-size:.72rem;padding:6px 12px;border-radius:var(--r);white-space:nowrap;opacity:0;pointer-events:none;transition:var(--tr);border:1px solid rgba(201,168,76,.15);}
+.wa-fab:hover .wa-tooltip{opacity:1;}
+
+/* ── HERO ── */
+#hero{position:relative;min-height:100svh;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-top:66px;}
 .h-slides{position:absolute;inset:0;}
 .h-slide{position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease;}
 .h-slide.active{opacity:1;}
@@ -63,7 +100,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;height:66px;padding:0 40px;d
 .h-dot.active{background:var(--gold);width:20px;border-radius:3px;}
 @keyframes fu{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:none;}}
 
-/* LAYOUT */
+/* ── LAYOUT ── */
 section{padding:88px 0;}
 .con{width:100%;max-width:1220px;margin:0 auto;padding:0 40px;}
 .s-lbl{font-size:.68rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
@@ -71,7 +108,7 @@ section{padding:88px 0;}
 .s-ttl em{font-style:italic;color:var(--gold);}
 .divider{width:48px;height:1px;background:linear-gradient(to right,var(--gold),transparent);margin:18px 0;}
 
-/* SERVICES */
+/* ── SERVICES ── */
 #services{background:var(--dark);}
 .svc-hdr{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:48px;gap:18px;flex-wrap:wrap;}
 .svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
@@ -91,66 +128,59 @@ section{padding:88px 0;}
 .svc-card:hover .svc-arr{opacity:1;transform:none;}
 .svc-gl-btn{position:absolute;top:14px;left:14px;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:5px 11px;cursor:pointer;transition:var(--tr);font-family:var(--fb);border-radius:2px;}
 .svc-gl-btn:hover{background:rgba(201,168,76,.15);}
+/* Catering coming soon badge */
+.svc-soon{position:absolute;inset:0;background:rgba(0,0,0,.65);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+.soon-badge{background:var(--gold);color:#000;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 16px;border-radius:100px;}
+.soon-msg{font-size:.75rem;color:rgba(255,255,255,.7);text-align:center;padding:0 20px;}
 
-/* SERVICE GALLERY OVERLAY */
-.gl-ov{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:2000;display:none;flex-direction:column;}
-.gl-ov.open{display:flex;}
-.gl-hdr{padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(201,168,76,.1);flex-shrink:0;gap:14px;flex-wrap:wrap;}
-.gl-ttl{font-family:var(--fd);font-size:1.25rem;color:var(--cream);}
-.gl-count{font-size:.75rem;color:var(--muted);margin-left:6px;}
-.gl-x{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;transition:var(--tr);padding:5px 10px;border:1px solid rgba(201,168,76,.2);border-radius:var(--r);color:var(--gold);}
-.gl-x:hover{background:rgba(201,168,76,.1);}
-.gl-grid{flex:1;overflow-y:auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;align-content:start;}
-.gl-item{aspect-ratio:4/3;overflow:hidden;cursor:pointer;background:var(--dark3);position:relative;border-radius:2px;}
-.gl-item img{width:100%;height:100%;object-fit:cover;transition:transform .4s var(--ease);}
-.gl-item:hover img{transform:scale(1.06);}
-.gl-item-lbl{position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(to top,rgba(0,0,0,.8),transparent);font-size:.65rem;color:var(--gold);letter-spacing:.08em;opacity:0;transition:var(--tr);}
-.gl-item:hover .gl-item-lbl{opacity:1;}
-.gl-zoom-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:.65rem;padding:4px 9px;cursor:pointer;border-radius:2px;opacity:0;transition:var(--tr);font-family:var(--fb);}
-.gl-item:hover .gl-zoom-btn{opacity:1;}
-.gl-empty{grid-column:1/-1;text-align:center;padding:56px;color:var(--muted);font-size:.86rem;}
-.gl-loading{grid-column:1/-1;text-align:center;padding:40px;color:var(--gold);font-size:.82rem;animation:pulse 1.5s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-
-/* PHOTO VIEWER */
-.gl-viewer{position:fixed;inset:0;background:rgba(0,0,0,.98);z-index:3000;display:none;flex-direction:column;align-items:center;justify-content:center;}
-.gl-viewer.open{display:flex;}
-.gl-v-img-wrap{position:relative;}
-.gl-v-img-wrap img{max-width:92vw;max-height:80vh;object-fit:contain;border-radius:2px;display:block;box-shadow:0 24px 80px rgba(0,0,0,.8);}
-.gl-v-info{text-align:center;margin-top:14px;}
-.gl-v-caption{font-size:.82rem;color:var(--muted);}
-.gl-v-counter{font-size:.72rem;color:var(--gold);margin-top:4px;}
-.gl-vc{position:absolute;top:16px;right:20px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.12);color:var(--cream);font-size:1.8rem;cursor:pointer;padding:4px 14px;border-radius:var(--r);transition:var(--tr);line-height:1.2;}
-.gl-vc:hover{color:var(--gold);border-color:rgba(201,168,76,.4);}
-.gl-nb{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);border:1px solid rgba(201,168,76,.2);color:var(--cream);font-size:1.6rem;cursor:pointer;padding:14px 20px;transition:var(--tr);border-radius:var(--r);}
-.gl-nb:hover{background:rgba(201,168,76,.15);color:var(--gold);}
-.gl-prev{left:14px;}.gl-next{right:14px;}
-
-/* PHOTO STRIP */
+/* ── GALLERY ── */
 #gallery-section{background:var(--black);padding:80px 0;}
-.photo-strip{display:grid;grid-template-columns:2fr 1.2fr 1fr 1.4fr;grid-template-rows:260px 200px;gap:3px;margin-top:0;}
-.ps-item{overflow:hidden;position:relative;background:var(--dark3);cursor:pointer;}
-.ps-item:nth-child(1){grid-row:1/3;}
-.ps-item img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease);}
-.ps-item:hover img{transform:scale(1.05);}
-.ps-lbl{position:absolute;bottom:0;left:0;right:0;padding:12px 16px;background:linear-gradient(to top,rgba(0,0,0,.8),transparent);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);opacity:0;transition:var(--tr);}
-.ps-item:hover .ps-lbl{opacity:1;}
-/* Category filter tabs */
 .cat-filter-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px;}
 .cat-btn{background:transparent;border:1px solid rgba(201,168,76,.2);color:var(--muted);padding:8px 18px;border-radius:100px;font-size:.72rem;cursor:pointer;font-family:var(--fb);transition:var(--tr);white-space:nowrap;}
 .cat-btn:hover,.cat-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.07);}
-/* Dynamic gallery grid */
-.dyn-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:3px;margin-bottom:6px;}
+.dyn-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:3px;margin-top:0;}
 .dyn-item{aspect-ratio:4/3;overflow:hidden;position:relative;background:var(--dark3);cursor:pointer;}
 .dyn-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease);}
 .dyn-item:hover img{transform:scale(1.05);}
 .dyn-lbl{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);display:flex;justify-content:space-between;align-items:flex-end;opacity:0;transition:var(--tr);}
 .dyn-item:hover .dyn-lbl{opacity:1;}
-.dyn-caption{font-size:.7rem;color:var(--cream);letter-spacing:.06em;}
+.dyn-caption{font-size:.7rem;color:var(--cream);}
 .dyn-cat{font-size:.62rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;}
-.gallery-loading-msg{grid-column:1/-1;text-align:center;padding:48px;color:var(--muted);font-size:.85rem;}
+.gal-empty-msg{text-align:center;padding:48px;color:var(--muted);font-size:.85rem;}
 
-/* PROCESS */
+/* ── SERVICE GALLERY OVERLAY ── */
+.gl-ov{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:2000;display:none;flex-direction:column;}
+.gl-ov.open{display:flex;}
+.gl-hdr{padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(201,168,76,.1);flex-shrink:0;gap:14px;flex-wrap:wrap;}
+.gl-ttl{font-family:var(--fd);font-size:1.25rem;color:var(--cream);}
+.gl-count{font-size:.75rem;color:var(--muted);margin-left:6px;}
+.gl-x{background:none;border:1px solid rgba(201,168,76,.2);color:var(--gold);font-size:1.1rem;cursor:pointer;padding:6px 14px;border-radius:var(--r);transition:var(--tr);}
+.gl-x:hover{background:rgba(201,168,76,.1);}
+.gl-grid{flex:1;overflow-y:auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;align-content:start;}
+.gl-item{aspect-ratio:4/3;overflow:hidden;cursor:pointer;background:var(--dark3);position:relative;border-radius:2px;}
+.gl-item img{width:100%;height:100%;object-fit:cover;transition:transform .4s var(--ease);}
+.gl-item:hover img{transform:scale(1.06);}
+.gl-item-lbl{position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(to top,rgba(0,0,0,.8),transparent);font-size:.65rem;color:var(--gold);opacity:0;transition:var(--tr);}
+.gl-item:hover .gl-item-lbl{opacity:1;}
+.gl-zoom-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:.65rem;padding:4px 9px;cursor:pointer;border-radius:2px;opacity:0;transition:var(--tr);font-family:var(--fb);}
+.gl-item:hover .gl-zoom-btn{opacity:1;}
+.gl-empty{grid-column:1/-1;text-align:center;padding:56px;color:var(--muted);font-size:.86rem;}
+
+/* ── PHOTO VIEWER ── */
+.gl-viewer{position:fixed;inset:0;background:rgba(0,0,0,.98);z-index:3000;display:none;flex-direction:column;align-items:center;justify-content:center;}
+.gl-viewer.open{display:flex;}
+.gl-v-img-wrap{position:relative;}
+.gl-v-img-wrap img{max-width:92vw;max-height:80vh;object-fit:contain;display:block;box-shadow:0 24px 80px rgba(0,0,0,.8);}
+.gl-v-info{text-align:center;margin-top:14px;}
+.gl-v-caption{font-size:.82rem;color:var(--muted);}
+.gl-v-counter{font-size:.72rem;color:var(--gold);margin-top:4px;}
+.gl-vc{position:absolute;top:16px;right:20px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.12);color:var(--cream);font-size:1.8rem;cursor:pointer;padding:4px 14px;border-radius:var(--r);transition:var(--tr);line-height:1.2;}
+.gl-vc:hover{color:var(--gold);}
+.gl-nb{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);border:1px solid rgba(201,168,76,.2);color:var(--cream);font-size:1.6rem;cursor:pointer;padding:14px 20px;transition:var(--tr);border-radius:var(--r);}
+.gl-nb:hover{background:rgba(201,168,76,.15);color:var(--gold);}
+.gl-prev{left:14px;}.gl-next{right:14px;}
+
+/* ── PROCESS ── */
 #process{background:var(--black);}
 .proc{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:56px;position:relative;}
 .proc::before{content:'';position:absolute;top:25px;left:12.5%;right:12.5%;height:1px;background:linear-gradient(to right,transparent,var(--gold),var(--gold),transparent);}
@@ -159,7 +189,7 @@ section{padding:88px 0;}
 .proc-t{font-family:var(--fd);font-size:1.08rem;color:var(--cream);margin-bottom:7px;}
 .proc-d{font-size:.76rem;color:var(--muted);line-height:1.7;}
 
-/* BOOKING */
+/* ── BOOKING ── */
 #booking{background:var(--dark);}
 .bk-wrap{display:grid;grid-template-columns:1fr 1.18fr;gap:68px;align-items:start;}
 .bk-info p{color:var(--muted);font-size:.87rem;line-height:1.85;margin-top:16px;}
@@ -180,21 +210,56 @@ section{padding:88px 0;}
 .b-fi{padding-left:26px!important;}
 .b-slider{width:100%;margin-top:10px;accent-color:var(--gold);cursor:pointer;}
 .b-display{font-family:var(--fd);font-size:1.1rem;color:var(--gold);margin-top:6px;text-align:right;}
-/* login / guest prompt */
 .bk-prompt{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.18);padding:16px 18px;border-radius:var(--r);margin-bottom:18px;}
 .bk-prompt p{font-size:.82rem;color:var(--muted);margin-bottom:12px;}
 .bk-prompt-btns{display:flex;gap:8px;flex-wrap:wrap;}
 .bk-prompt-btns .btn{font-size:.72rem;padding:7px 14px;}
-.guest-banner{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);padding:10px 14px;border-radius:var(--r);margin-bottom:18px;font-size:.78rem;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:10px;display:none;}
+.guest-banner{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);padding:10px 14px;border-radius:var(--r);margin-bottom:18px;font-size:.78rem;color:var(--muted);display:none;align-items:center;justify-content:space-between;gap:10px;}
 .guest-banner a{color:var(--gold);}
 .sub-btn{width:100%;background:var(--gold);color:var(--black);padding:14px;font-family:var(--fd);font-size:1rem;font-weight:600;letter-spacing:.06em;cursor:pointer;border:none;transition:var(--tr);border-radius:var(--r);margin-top:4px;}
 .sub-btn:hover{background:var(--gold2);}
 .sub-btn:disabled{opacity:.55;cursor:not-allowed;}
 #bkSt{margin-top:12px;font-size:.8rem;min-height:18px;}
 .s-ok{color:#4CAF50;}.s-err{color:#ef5350;}
+/* Map picker */
+.map-wrap{border:1px solid rgba(201,168,76,.15);border-radius:var(--r);overflow:hidden;margin-top:6px;}
+.map-wrap iframe{width:100%;height:200px;border:none;display:block;}
+.map-note{font-size:.7rem;color:var(--muted);margin-top:5px;}
+/* location input with pin button */
+.loc-row{display:flex;gap:8px;}
+.loc-row .fi{flex:1;}
+.loc-pin-btn{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--gold);padding:0 12px;border-radius:var(--r);cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:var(--tr);}
+.loc-pin-btn:hover{background:rgba(201,168,76,.2);}
+/* duplicate booking warning */
+.dup-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:#F59E0B;padding:10px 14px;border-radius:var(--r);font-size:.78rem;margin-bottom:14px;display:none;}
 
-/* TESTIMONIALS */
-#testimonials{background:var(--black);}
+/* ── REVIEWS ── */
+#reviews{background:var(--black);}
+.rev-summary{display:flex;align-items:center;gap:28px;margin-bottom:48px;flex-wrap:wrap;}
+.rev-avg-num{font-family:var(--fd);font-size:4rem;font-weight:300;color:var(--gold);line-height:1;}
+.rev-avg-stars{display:flex;gap:3px;margin:4px 0;}
+.rev-avg-stars span{color:var(--gold);font-size:1.2rem;}
+.rev-avg-count{font-size:.78rem;color:var(--muted);}
+.rev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.rev-card{background:var(--dark2);padding:28px;border:1px solid rgba(201,168,76,.07);border-radius:var(--r);}
+.rev-stars{display:flex;gap:2px;margin-bottom:10px;}
+.rev-stars span{color:var(--gold);font-size:.9rem;}
+.rev-stars span.empty{color:var(--dark3);}
+.rev-txt{font-size:.82rem;color:var(--cream);line-height:1.8;font-style:italic;margin-bottom:14px;}
+.rev-auth{display:flex;align-items:center;gap:10px;}
+.rev-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gd),var(--gold));display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:.9rem;color:var(--black);}
+.rev-nm{font-size:.8rem;font-weight:500;}
+.rev-ev{font-size:.7rem;color:var(--muted);}
+.rev-empty{text-align:center;padding:48px;color:var(--muted);font-size:.86rem;}
+/* Review submission */
+.rev-submit-card{background:var(--dark2);padding:32px;border:1px solid rgba(201,168,76,.1);border-radius:var(--r);margin-top:36px;}
+.rev-submit-card h3{font-family:var(--fd);font-size:1.5rem;color:var(--cream);margin-bottom:6px;}
+.star-picker{display:flex;gap:6px;margin:12px 0 18px;}
+.star-picker span{font-size:1.8rem;cursor:pointer;color:var(--dark3);transition:var(--tr);}
+.star-picker span.sel{color:var(--gold);}
+
+/* ── TESTIMONIALS (hardcoded) ── */
+#testimonials{background:var(--dark);}
 .t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px;}
 .t-card{background:var(--dark2);padding:34px;border:1px solid rgba(201,168,76,.07);position:relative;border-radius:var(--r);}
 .t-card::before{content:'"';font-family:var(--fd);font-size:4.5rem;color:var(--gold);opacity:.1;position:absolute;top:-6px;left:18px;line-height:1;}
@@ -205,37 +270,44 @@ section{padding:88px 0;}
 .t-nm{font-size:.82rem;font-weight:500;color:var(--cream);}
 .t-ev{font-size:.72rem;color:var(--muted);}
 
-/* MY BOOKINGS */
+/* ── MY BOOKINGS ── */
 #myBookings{background:var(--dark);}
 .bk-list{display:flex;flex-direction:column;gap:12px;margin-top:26px;}
-.bk-item{background:var(--dark2);border:1px solid rgba(201,168,76,.08);padding:20px 26px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;border-radius:var(--r);}
+.bk-item{background:var(--dark2);border:1px solid rgba(201,168,76,.08);padding:20px 26px;display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap;border-radius:var(--r);}
 .bk-ico{font-size:1.7rem;flex-shrink:0;}
 .bk-det{flex:1;min-width:0;}
 .bk-svc{font-family:var(--fd);font-size:1rem;color:var(--cream);}
 .bk-meta{font-size:.74rem;color:var(--muted);margin-top:3px;}
+.bk-price{font-size:.78rem;color:var(--gold);margin-top:4px;font-weight:500;}
 .bk-stat{font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border:1px solid;border-radius:100px;flex-shrink:0;}
 .bk-pending{color:#FFC107;border-color:rgba(255,193,7,.3);background:rgba(255,193,7,.06);}
 .bk-confirmed{color:#4CAF50;border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.06);}
 .bk-declined{color:#ef5350;border-color:rgba(239,83,80,.3);background:rgba(239,83,80,.06);}
+.bk-modify-btn{background:none;border:1px solid rgba(201,168,76,.25);color:var(--gold);font-size:.7rem;padding:5px 12px;border-radius:var(--r);cursor:pointer;font-family:var(--fb);transition:var(--tr);margin-top:8px;}
+.bk-modify-btn:hover{background:rgba(201,168,76,.08);}
 .empty-st{text-align:center;padding:48px;color:var(--muted);}
 
-/* FOOTER */
-footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:54px 0 26px;}
-.ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:42px;margin-bottom:40px;}
-.ft-brand{font-family:var(--fd);font-size:1.45rem;color:var(--gold);margin-bottom:11px;}
-.ft-about{font-size:.78rem;color:var(--muted);line-height:1.8;}
-.ft-h{font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
-.ft-links{display:flex;flex-direction:column;gap:8px;}
-.ft-links a{font-size:.78rem;color:var(--muted);text-decoration:none;transition:var(--tr);}
-.ft-links a:hover{color:var(--gold);}
-.ft-btm{border-top:1px solid rgba(255,255,255,.05);padding-top:22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-.ft-copy{font-size:.73rem;color:var(--muted);}
+/* ── PROFILE MODAL ── */
+.profile-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.profile-modal.open{display:flex;}
+.profile-box{background:var(--dark2);border:1px solid rgba(201,168,76,.15);width:92%;max-width:480px;padding:36px;border-radius:var(--r);position:relative;animation:mIn .3s var(--ease);}
+@keyframes mIn{from{opacity:0;transform:translateY(-16px) scale(.97);}to{opacity:1;transform:none;}}
+.profile-box h3{font-family:var(--fd);font-size:1.5rem;color:var(--cream);margin-bottom:20px;}
+.prof-av-wrap{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+.prof-av-lg{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--gd),var(--gold));display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:1.4rem;color:var(--black);}
+.prof-email{font-size:.78rem;color:var(--muted);}
 
-/* AUTH MODAL */
+/* ── MODIFY BOOKING MODAL ── */
+.modify-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1700;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.modify-modal.open{display:flex;}
+.modify-box{background:var(--dark2);border:1px solid rgba(201,168,76,.15);width:92%;max-width:560px;max-height:90vh;overflow-y:auto;padding:36px;border-radius:var(--r);position:relative;}
+.modify-box h3{font-family:var(--fd);font-size:1.5rem;color:var(--cream);margin-bottom:6px;}
+.modify-box p{font-size:.78rem;color:var(--muted);margin-bottom:20px;}
+
+/* ── AUTH MODAL ── */
 .m-ov{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:20px;}
 .m-ov.open{display:flex;}
 .m-box{background:var(--dark2);border:1px solid rgba(201,168,76,.18);width:92%;max-width:460px;padding:40px;position:relative;border-radius:var(--r);animation:mIn .3s var(--ease);max-height:92vh;overflow-y:auto;}
-@keyframes mIn{from{opacity:0;transform:translateY(-16px) scale(.97);}to{opacity:1;transform:none;}}
 .m-x{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;transition:var(--tr);}
 .m-x:hover{color:var(--gold);}
 .m-ttl{font-family:var(--fd);font-size:1.85rem;color:var(--cream);margin-bottom:4px;}
@@ -247,7 +319,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 .a-panel.active{display:block;}
 #authSt,#authSt2,#authSt3{font-size:.78rem;margin-top:10px;min-height:16px;}
 .a-err{color:#ef5350;}.a-ok{color:#4CAF50;}
-.back-link{font-size:.75rem;color:var(--gold);cursor:pointer;background:none;border:none;font-family:var(--fb);margin-bottom:14px;display:inline-flex;align-items:center;gap:4px;transition:var(--tr);padding:0;opacity:.8;}
+.back-link{font-size:.75rem;color:var(--gold);cursor:pointer;background:none;border:none;font-family:var(--fb);display:inline-flex;align-items:center;gap:4px;transition:var(--tr);padding:0;opacity:.8;}
 .back-link:hover{opacity:1;}
 .or-divider{text-align:center;margin:18px 0 14px;font-size:.72rem;color:var(--muted);position:relative;}
 .or-divider::before,.or-divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:rgba(255,255,255,.07);}
@@ -255,54 +327,40 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 .guest-btn{width:100%;background:transparent;border:1px solid rgba(201,168,76,.2);color:var(--gold);padding:10px;border-radius:var(--r);font-size:.78rem;cursor:pointer;font-family:var(--fb);transition:var(--tr);}
 .guest-btn:hover{background:rgba(201,168,76,.07);}
 
-/* TOAST */
-.toast{position:fixed;bottom:26px;right:26px;background:var(--dark2);border-left:3px solid var(--gold);border:1px solid rgba(201,168,76,.15);padding:13px 20px;z-index:9999;font-size:.82rem;transform:translateX(130%);transition:var(--tr);min-width:240px;box-shadow:0 8px 32px rgba(0,0,0,.5);border-radius:var(--r);}
-.toast.show{transform:none;}
+/* ── FOOTER ── */
+footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:54px 0 26px;}
+.ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:42px;margin-bottom:40px;}
+.ft-brand{font-family:var(--fd);font-size:1.45rem;color:var(--gold);margin-bottom:11px;}
+.ft-about{font-size:.78rem;color:var(--muted);line-height:1.8;}
+.ft-h{font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
+.ft-links{display:flex;flex-direction:column;gap:8px;}
+.ft-links a{font-size:.78rem;color:var(--muted);text-decoration:none;transition:var(--tr);}
+.ft-links a:hover{color:var(--gold);}
+.ft-btm{border-top:1px solid rgba(255,255,255,.05);padding-top:22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.ft-copy{font-size:.73rem;color:var(--muted);}
 
-/* RESPONSIVE */
-@media(max-width:1024px){
-  .svc-grid{grid-template-columns:1fr 1fr;}
-  .bk-wrap{grid-template-columns:1fr;gap:40px;}
-  .t-grid{grid-template-columns:1fr 1fr;}
-  .ft-grid{grid-template-columns:1fr 1fr;}
-  .photo-strip{grid-template-columns:1fr 1fr;grid-template-rows:220px 180px;}
-  .dyn-gallery-grid{grid-template-columns:1fr 1fr;}
-  .ps-item:nth-child(1){grid-row:auto;}
-}
-@media(max-width:768px){
-  nav{padding:0 18px;height:60px;}
-  .mob-nav{top:60px;}
-  .nav-mid,.nav-right .btn{display:none;}
-  .hamburger{display:flex;}
-  section{padding:64px 0;}
-  .con{padding:0 20px;}
-  .svc-grid{grid-template-columns:1fr;}
-  .photo-strip{grid-template-columns:1fr 1fr;grid-template-rows:180px 180px;}
-  .dyn-gallery-grid{grid-template-columns:1fr 1fr;}
-  .proc{grid-template-columns:1fr 1fr;gap:32px;}
-  .proc::before{display:none;}
-  .t-grid{grid-template-columns:1fr;}
-  .ft-grid{grid-template-columns:1fr 1fr;}
-  .bk-form-box{padding:22px 18px;}
-  .fr{grid-template-columns:1fr;}
-  .gl-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
-}
-@media(max-width:520px){
-  .photo-strip{grid-template-columns:1fr;}
-  .ft-grid{grid-template-columns:1fr;}
-  .proc{grid-template-columns:1fr;}
-  .gl-nb{padding:10px 14px;font-size:1.2rem;}
-}
+/* ── TOAST ── */
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--dark2);border-left:3px solid var(--gold);border:1px solid rgba(201,168,76,.15);padding:13px 20px;z-index:9999;font-size:.82rem;transition:var(--tr);min-width:240px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.5);border-radius:var(--r);text-align:center;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){.svc-grid{grid-template-columns:1fr 1fr;}.bk-wrap{grid-template-columns:1fr;gap:40px;}.t-grid{grid-template-columns:1fr 1fr;}.ft-grid{grid-template-columns:1fr 1fr;}.rev-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){nav{padding:0 18px;height:60px;}.mob-nav{top:60px;}.nav-mid,.nav-right .btn{display:none;}.hamburger{display:flex;}section{padding:64px 0;}.con{padding:0 20px;}.svc-grid{grid-template-columns:1fr;}.proc{grid-template-columns:1fr 1fr;gap:32px;}.proc::before{display:none;}.t-grid,.rev-grid{grid-template-columns:1fr;}.ft-grid{grid-template-columns:1fr 1fr;}.bk-form-box{padding:22px 18px;}.fr{grid-template-columns:1fr;}.dyn-gallery-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:520px){.dyn-gallery-grid{grid-template-columns:1fr;}.ft-grid{grid-template-columns:1fr;}.proc{grid-template-columns:1fr;}.bk-wrap{gap:28px;}.wa-fab{bottom:16px;right:16px;width:50px;height:50px;}}
 </style>
 </head>
 <body>
 
-<nav>
-  <a href="#" class="nav-logo">AB <span>Events & Decors</span></a>
+<!-- MAINTENANCE BANNER -->
+<div id="maintenanceBanner">🔧 We are performing scheduled maintenance. The site will be back shortly. Thank you for your patience.</div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="#" class="nav-logo">AB <span>Events &amp; Decors</span></a>
   <div class="nav-mid">
     <a href="#services">Services</a>
     <a href="#gallery-section">Gallery</a>
-    <a href="#process">Process</a>
+    <a href="#reviews">Reviews</a>
     <a href="#booking">Book Now</a>
   </div>
   <div class="nav-right">
@@ -310,11 +368,21 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
       <button class="btn btn-ghost" onclick="openAuth('login')">Sign In</button>
       <button class="btn btn-gold" onclick="openAuth('register')">Get Started</button>
     </div>
-    <div id="userNav" class="hidden">
+    <div id="userNav" class="hidden" style="display:flex;align-items:center;gap:10px;">
+      <!-- Notification Bell -->
+      <div class="notif-wrap" onclick="toggleNotifDrop()">
+        <div class="notif-icon">🔔</div>
+        <div class="notif-badge" id="custNotifBadge"></div>
+        <div class="notif-drop" id="custNotifDrop">
+          <div class="notif-hdr"><span>Notifications</span><button onclick="markAllRead(event)" style="background:none;border:none;color:var(--gold);font-size:.68rem;cursor:pointer;">Mark all read</button></div>
+          <div id="custNotifList"><div class="notif-empty">No notifications yet</div></div>
+        </div>
+      </div>
       <div class="u-wrap">
         <button class="u-av" id="uAvBtn" onclick="toggleDrop()">?</button>
         <div class="u-drop" id="uDrop">
           <a href="#myBookings" onclick="closeDrop()">My Bookings</a>
+          <button onclick="openProfile()">Profile Settings</button>
           <button onclick="doSignOut()">Sign Out</button>
         </div>
       </div>
@@ -326,7 +394,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 <div class="mob-nav" id="mobNav">
   <a href="#services" onclick="closeMob()">Services</a>
   <a href="#gallery-section" onclick="closeMob()">Gallery</a>
-  <a href="#process" onclick="closeMob()">Process</a>
+  <a href="#reviews" onclick="closeMob()">Reviews</a>
   <a href="#booking" onclick="closeMob()">Book Now</a>
   <div class="mob-nav-btns" id="mobGuest">
     <button class="btn btn-ghost" onclick="openAuth('login');closeMob()">Sign In</button>
@@ -334,6 +402,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
   </div>
   <div id="mobUser" class="hidden mob-nav-btns">
     <a href="#myBookings" class="btn btn-ghost" style="justify-content:center;" onclick="closeMob()">My Bookings</a>
+    <button class="btn btn-ghost" style="justify-content:center;" onclick="openProfile();closeMob()">Profile</button>
     <button class="btn btn-gold" style="justify-content:center;" onclick="doSignOut();closeMob()">Sign Out</button>
   </div>
 </div>
@@ -344,7 +413,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
   <div class="h-content">
     <div class="h-tag">✦ Hyderabad's Premier Event Studio</div>
     <h1 class="h-h1">Where Every<br>Moment Becomes<br><em>Extraordinary</em></h1>
-    <p class="h-p">Bespoke decor, world-class catering, immersive lighting & photography — all under one roof for your perfect celebration.</p>
+    <p class="h-p">Bespoke decor, world-class catering, immersive lighting &amp; photography — all under one roof for your perfect celebration.</p>
     <div class="h-acts">
       <a href="#booking" class="btn btn-gold">Book Your Event</a>
       <a href="#services" class="btn btn-ghost">Explore Services</a>
@@ -357,55 +426,43 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 <section id="services">
   <div class="con">
     <div class="svc-hdr">
-      <div>
-        <div class="s-lbl">What We Do</div>
-        <h2 class="s-ttl">Curated <em>Services</em><br>For Every Occasion</h2>
-      </div>
+      <div><div class="s-lbl">What We Do</div><h2 class="s-ttl">Curated <em>Services</em><br>For Every Occasion</h2></div>
       <a href="#booking" class="btn btn-ghost">Request a Quote →</a>
     </div>
     <div class="svc-grid" id="svcGrid"></div>
   </div>
 </section>
 
-<!-- GALLERY — Category Based -->
+<!-- GALLERY -->
 <section id="gallery-section">
   <div class="con">
     <div class="s-lbl">Our Portfolio</div>
     <h2 class="s-ttl">Moments We've <em>Crafted</em></h2>
     <div class="divider"></div>
-    <!-- Category filter tabs -->
-    <div class="cat-filter-wrap" id="catFilterWrap">
+    <div class="cat-filter-wrap">
       <button class="cat-btn active" onclick="filterGallery('all',this)">🎊 All</button>
       <button class="cat-btn" onclick="filterGallery('Wedding',this)">💍 Wedding</button>
       <button class="cat-btn" onclick="filterGallery('Engagement',this)">💝 Engagement</button>
       <button class="cat-btn" onclick="filterGallery('Baby Shower',this)">👶 Baby Shower</button>
       <button class="cat-btn" onclick="filterGallery('Birthday',this)">🎂 Birthday</button>
       <button class="cat-btn" onclick="filterGallery('Anniversary',this)">🌹 Anniversary</button>
-      <button class="cat-btn" onclick="filterGallery('Corporate',this)">🏢 Corporate</button>
       <button class="cat-btn" onclick="filterGallery('Housewarming',this)">🏠 Housewarming</button>
+      <button class="cat-btn" onclick="filterGallery('Corporate',this)">🏢 Corporate</button>
     </div>
   </div>
-  <!-- Dynamic gallery grid from Firestore + static fallback -->
   <div class="con" style="margin-top:28px;">
-    <div class="dyn-gallery-grid" id="dynGalleryGrid">
-      <!-- populated by JS -->
-    </div>
-    <!-- Static photo strip fallback shown when no Firestore photos -->
-    <div class="photo-strip" id="photoStrip" style="margin-top:0;"></div>
+    <div class="dyn-gallery-grid" id="dynGalleryGrid"></div>
   </div>
 </section>
 
 <!-- PROCESS -->
 <section id="process">
   <div class="con">
-    <div style="text-align:center;">
-      <div class="s-lbl">How It Works</div>
-      <h2 class="s-ttl">Simple Steps to Your <em>Dream Event</em></h2>
-    </div>
+    <div style="text-align:center;"><div class="s-lbl">How It Works</div><h2 class="s-ttl">Simple Steps to Your <em>Dream Event</em></h2></div>
     <div class="proc">
       <div class="proc-step"><div class="proc-n">01</div><div class="proc-t">Enquire</div><div class="proc-d">Fill out our booking form with your event details and vision.</div></div>
       <div class="proc-step"><div class="proc-n">02</div><div class="proc-t">Consult</div><div class="proc-d">Our specialist calls within 24 hours to craft your perfect plan.</div></div>
-      <div class="proc-step"><div class="proc-n">03</div><div class="proc-t">Design</div><div class="proc-d">We create mood boards, timelines & a bespoke customised proposal.</div></div>
+      <div class="proc-step"><div class="proc-n">03</div><div class="proc-t">Design</div><div class="proc-d">We create mood boards, timelines &amp; a bespoke customised proposal.</div></div>
       <div class="proc-step"><div class="proc-n">04</div><div class="proc-t">Celebrate</div><div class="proc-d">We execute flawlessly while you enjoy every magical moment.</div></div>
     </div>
   </div>
@@ -419,7 +476,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
         <div class="s-lbl">Get In Touch</div>
         <h2 class="s-ttl">Let's Create<br>Something <em>Beautiful</em></h2>
         <div class="divider"></div>
-        <p>Ready to turn your vision into reality? Sign in, create an account, or simply continue as a guest. Our event specialists will reach out within 24 hours.</p>
+        <p>Ready to turn your vision into reality? Sign in, create an account, or continue as a guest. Our event specialists will reach out within 24 hours.</p>
         <div class="bk-contacts">
           <div class="c-item"><div class="c-icon">📍</div><span>Jubilee Hills, Hyderabad, Telangana</span></div>
           <div class="c-item"><div class="c-icon">📞</div><span>+91 98765 43210</span></div>
@@ -428,7 +485,6 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
         </div>
       </div>
       <div class="bk-form-box">
-        <!-- Auth prompt (shown when logged out and not guest) -->
         <div class="bk-prompt" id="bkPrompt">
           <p>Sign in to track your bookings, or continue as a guest.</p>
           <div class="bk-prompt-btns">
@@ -437,12 +493,11 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
             <button class="btn btn-gold" onclick="setGuestMode(true)">👤 Guest Booking</button>
           </div>
         </div>
-        <!-- Guest banner (shown in guest mode) -->
         <div class="guest-banner" id="guestBanner">
-          <span>👤 Booking as guest — <a href="#" onclick="openAuth('register');return false;">Create account</a> to track your bookings.</span>
+          <span>👤 Booking as guest — <a href="#" onclick="openAuth('register');return false;">Create account</a> to track bookings.</span>
           <button onclick="setGuestMode(false)" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>
         </div>
-        <!-- Booking form (hidden until logged in or guest) -->
+        <div class="dup-warn" id="dupWarn">⚠️ You already have a pending or confirmed booking for this service. Please modify your existing booking or contact us.</div>
         <form id="bkForm" onsubmit="submitBooking(event)" style="display:none;">
           <div class="fr">
             <div class="fg"><label class="fl">Full Name *</label><input class="fi" id="bkName" placeholder="Your name" required/></div>
@@ -452,13 +507,12 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
           <div class="fr">
             <div class="fg">
               <label class="fl">Service Required *</label>
-              <select class="fs" id="bkService" required>
+              <select class="fs" id="bkService" required onchange="checkDuplicate()">
                 <option value="">Select a service</option>
                 <option>Luxury Decor &amp; Styling</option>
                 <option>Professional Photography</option>
                 <option>Live Music &amp; Entertainment</option>
                 <option>Premium Lighting Design</option>
-                <option>Gourmet Catering</option>
                 <option>Complete Event Management</option>
                 <option>Multiple Services</option>
               </select>
@@ -469,7 +523,8 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
                 <option value="">Select type</option>
                 <option>Wedding</option><option>Reception</option><option>Engagement</option>
                 <option>Birthday Party</option><option>Corporate Event</option>
-                <option>Anniversary</option><option>Baby Shower</option><option>Other</option>
+                <option>Anniversary</option><option>Baby Shower</option>
+                <option>Housewarming</option><option>Other</option>
               </select>
             </div>
           </div>
@@ -486,15 +541,19 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
               <option value="custom">✏️ Enter Custom Budget</option>
             </select>
             <div class="budget-custom-wrap" id="budgetCustom">
-              <div class="b-prefix-wrap">
-                <span class="b-prefix">₹</span>
-                <input class="fi b-fi" type="number" id="bkCustomAmt" placeholder="e.g. 75000" min="1000" step="500" oninput="syncSlider(this.value)"/>
-              </div>
+              <div class="b-prefix-wrap"><span class="b-prefix">₹</span><input class="fi b-fi" type="number" id="bkCustomAmt" placeholder="e.g. 75000" min="1000" step="500" oninput="syncSlider(this.value)"/></div>
               <input type="range" class="b-slider" id="bkSlider" min="10000" max="2000000" step="5000" value="100000" oninput="syncAmount(this.value)"/>
               <div class="b-display" id="bkBudgetDisplay">₹1,00,000</div>
             </div>
           </div>
-          <div class="fg"><label class="fl">Venue / Location (if known)</label><input class="fi" id="bkVenue" placeholder="Venue name or area"/></div>
+          <div class="fg">
+            <label class="fl">Venue / Location *</label>
+            <div class="loc-row">
+              <input class="fi" id="bkVenue" placeholder="Venue name or area" required/>
+              <button type="button" class="loc-pin-btn" onclick="detectLocation()" title="Use my current location">📍</button>
+            </div>
+            <div class="map-note">Tap 📍 to auto-detect location, or type your venue address</div>
+          </div>
           <div class="fg"><label class="fl">Tell Us Your Vision</label><textarea class="fta" id="bkMsg" placeholder="Describe your dream event — theme, colours, special requirements…"></textarea></div>
           <button type="submit" class="sub-btn" id="subBtn">Send Booking Request →</button>
           <div id="bkSt"></div>
@@ -504,15 +563,33 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
   </div>
 </section>
 
-<!-- TESTIMONIALS -->
-<section id="testimonials">
+<!-- REVIEWS -->
+<section id="reviews">
   <div class="con">
     <div class="s-lbl">Client Stories</div>
-    <h2 class="s-ttl">Words From Our <em>Happy Families</em></h2>
-    <div class="t-grid">
-      <div class="t-card"><div class="stars">★★★★★</div><p class="t-txt">AB Events transformed our wedding into an absolute fairytale. Every detail was perfect — from the floral mandap to the candlelit reception. Truly unforgettable.</p><div class="t-auth"><div class="t-av">P</div><div><div class="t-nm">Priya &amp; Rahul Sharma</div><div class="t-ev">Wedding · Taj Falaknuma</div></div></div></div>
-      <div class="t-card"><div class="stars">★★★★★</div><p class="t-txt">Our daughter's first birthday was beyond magical. The decor, the cake setup, the photography — everything handled with such care and professionalism. Absolutely recommend!</p><div class="t-auth"><div class="t-av">A</div><div><div class="t-nm">Anita Reddy</div><div class="t-ev">Birthday · Gachibowli</div></div></div></div>
-      <div class="t-card"><div class="stars">★★★★★</div><p class="t-txt">For our corporate gala, AB Events delivered an experience that left 400 guests speechless. The lighting design alone was world-class. An outstanding team through and through.</p><div class="t-auth"><div class="t-av">V</div><div><div class="t-nm">Vikram Nair</div><div class="t-ev">Corporate Gala · HICC</div></div></div></div>
+    <h2 class="s-ttl">Reviews &amp; <em>Ratings</em></h2>
+    <div class="divider"></div>
+    <div class="rev-summary">
+      <div><div class="rev-avg-num" id="revAvgNum">—</div><div class="rev-avg-stars" id="revAvgStars"></div><div class="rev-avg-count" id="revAvgCount">Loading reviews…</div></div>
+    </div>
+    <div class="rev-grid" id="revGrid"><div class="rev-empty">Loading reviews…</div></div>
+    <!-- Submit Review (visible when logged in and has confirmed booking) -->
+    <div class="rev-submit-card hidden" id="revSubmitCard">
+      <h3>Share Your Experience</h3>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">Your review helps other families choose the right event partner.</p>
+      <label class="fl">Your Rating *</label>
+      <div class="star-picker" id="starPicker">
+        <span onclick="setRating(1)" data-v="1">★</span>
+        <span onclick="setRating(2)" data-v="2">★</span>
+        <span onclick="setRating(3)" data-v="3">★</span>
+        <span onclick="setRating(4)" data-v="4">★</span>
+        <span onclick="setRating(5)" data-v="5">★</span>
+      </div>
+      <div class="fg"><label class="fl">Your Review *</label><textarea class="fta" id="revText" placeholder="Tell us about your experience with AB Events…" style="min-height:80px;"></textarea></div>
+      <div class="fg"><label class="fl">Your Name (shown publicly)</label><input class="fi" id="revName" placeholder="e.g. Priya &amp; Rahul"/></div>
+      <div class="fg"><label class="fl">Event Type</label><input class="fi" id="revEvent" placeholder="e.g. Wedding · Taj Falaknuma"/></div>
+      <button class="sub-btn" onclick="submitReview()" style="margin-top:4px;">Submit Review →</button>
+      <div id="revSt" style="margin-top:10px;font-size:.78rem;"></div>
     </div>
   </div>
 </section>
@@ -532,24 +609,18 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
   <div class="con">
     <div class="ft-grid">
       <div><div class="ft-brand">AB Events &amp; Decors</div><p class="ft-about">Hyderabad's most trusted event studio since 2012. Every celebration deserves to be extraordinary — crafted with passion and delivered with perfection.</p></div>
-      <div><div class="ft-h">Services</div><div class="ft-links"><a href="#services">Decor &amp; Styling</a><a href="#services">Photography</a><a href="#services">Music &amp; DJ</a><a href="#services">Lighting</a><a href="#services">Catering</a></div></div>
-      <div><div class="ft-h">Company</div><div class="ft-links"><a href="#process">Our Process</a><a href="#testimonials">Reviews</a><a href="#booking">Contact</a></div></div>
+      <div><div class="ft-h">Services</div><div class="ft-links"><a href="#services">Decor &amp; Styling</a><a href="#services">Photography</a><a href="#services">Music &amp; DJ</a><a href="#services">Lighting</a></div></div>
+      <div><div class="ft-h">Company</div><div class="ft-links"><a href="#process">Our Process</a><a href="#reviews">Reviews</a><a href="#booking">Contact</a></div></div>
       <div><div class="ft-h">Connect</div><div class="ft-links"><a href="#">Instagram</a><a href="#">Facebook</a><a href="#">Pinterest</a><a href="#">YouTube</a><a href="ab-events-admin.html" style="color:var(--gold)">Admin Portal ↗</a></div></div>
     </div>
-    <div class="ft-btm">
-      <div class="ft-copy">© 2025 AB Events &amp; Decors. All rights reserved.</div>
-      <div class="ft-copy">Privacy · Terms</div>
-    </div>
+    <div class="ft-btm"><div class="ft-copy">© 2025 AB Events &amp; Decors. All rights reserved.</div><div class="ft-copy">Privacy · Terms</div></div>
   </div>
 </footer>
 
 <!-- SERVICE GALLERY OVERLAY -->
 <div class="gl-ov" id="glOv">
   <div class="gl-hdr">
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <div class="gl-ttl" id="glTtl">Gallery</div>
-      <span class="gl-count" id="glCount"></span>
-    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><div class="gl-ttl" id="glTtl">Gallery</div><span class="gl-count" id="glCount"></span></div>
     <button class="gl-x" onclick="closeGl()">✕ Close</button>
   </div>
   <div class="gl-grid" id="glGrid"></div>
@@ -559,13 +630,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 <div class="gl-viewer" id="glViewer">
   <button class="gl-vc" onclick="closeViewer()">×</button>
   <button class="gl-nb gl-prev" onclick="viewNav(-1)">‹</button>
-  <div>
-    <div class="gl-v-img-wrap"><img id="glVImg" src="" alt=""/></div>
-    <div class="gl-v-info">
-      <div class="gl-v-caption" id="glVCap"></div>
-      <div class="gl-v-counter" id="glVCtr"></div>
-    </div>
-  </div>
+  <div><div class="gl-v-img-wrap"><img id="glVImg" src="" alt=""/></div><div class="gl-v-info"><div class="gl-v-caption" id="glVCap"></div><div class="gl-v-counter" id="glVCtr"></div></div></div>
   <button class="gl-nb gl-next" onclick="viewNav(1)">›</button>
 </div>
 
@@ -579,7 +644,6 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
       <button class="m-tab active" id="loginTab" onclick="switchTab('login')">Sign In</button>
       <button class="m-tab" id="regTab" onclick="switchTab('register')">Register</button>
     </div>
-    <!-- LOGIN -->
     <div class="a-panel active" id="loginPanel">
       <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="lEmail" placeholder="you@example.com"/></div>
       <div class="fg"><label class="fl">Password</label><input class="fi" type="password" id="lPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
@@ -589,12 +653,8 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
       <div class="or-divider">or</div>
       <button class="guest-btn" onclick="doGuestFromModal()">👤 Continue as Guest</button>
     </div>
-    <!-- REGISTER -->
     <div class="a-panel" id="regPanel">
-      <div class="fr">
-        <div class="fg"><label class="fl">First Name</label><input class="fi" id="rFirst" placeholder="First"/></div>
-        <div class="fg"><label class="fl">Last Name</label><input class="fi" id="rLast" placeholder="Last"/></div>
-      </div>
+      <div class="fr"><div class="fg"><label class="fl">First Name</label><input class="fi" id="rFirst" placeholder="First"/></div><div class="fg"><label class="fl">Last Name</label><input class="fi" id="rLast" placeholder="Last"/></div></div>
       <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="rEmail" placeholder="you@example.com"/></div>
       <div class="fg"><label class="fl">Phone</label><input class="fi" id="rPhone" placeholder="+91 XXXXX XXXXX"/></div>
       <div class="fg"><label class="fl">Password</label><input class="fi" type="password" id="rPwd" placeholder="Min. 6 characters"/></div>
@@ -603,23 +663,58 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
       <div class="or-divider">or</div>
       <button class="guest-btn" onclick="doGuestFromModal()">👤 Continue as Guest</button>
     </div>
-    <!-- FORGOT PASSWORD -->
     <div class="a-panel" id="forgotPanel">
       <button class="back-link" onclick="switchTab('login')">← Back to Sign In</button>
-      <div class="fg"><label class="fl">Email Address</label><input class="fi" type="email" id="fpEmail" placeholder="you@example.com"/></div>
+      <div class="fg" style="margin-top:10px;"><label class="fl">Email Address</label><input class="fi" type="email" id="fpEmail" placeholder="you@example.com"/></div>
       <button class="sub-btn" onclick="doForgotPwd()" style="padding:12px;font-size:.9rem;">Send Reset Link →</button>
       <div id="authSt3"></div>
     </div>
   </div>
 </div>
 
+<!-- PROFILE MODAL -->
+<div class="profile-modal" id="profileModal">
+  <div class="profile-box">
+    <button class="m-x" onclick="closeProfile()">×</button>
+    <h3>Profile Settings</h3>
+    <div class="prof-av-wrap"><div class="prof-av-lg" id="profAvLg">?</div><div><div id="profNameDisp" style="font-size:.9rem;color:var(--cream);font-weight:500;"></div><div class="prof-email" id="profEmailDisp"></div></div></div>
+    <div class="fg"><label class="fl">Full Name</label><input class="fi" id="profName" placeholder="Your full name"/></div>
+    <div class="fg"><label class="fl">Phone Number</label><input class="fi" id="profPhone" placeholder="+91 XXXXX XXXXX"/></div>
+    <div class="fg"><label class="fl">Email (cannot change)</label><input class="fi" id="profEmail" disabled style="opacity:.45;"/></div>
+    <button class="sub-btn" onclick="saveProfile()" style="margin-top:4px;">Save Changes →</button>
+    <div id="profSt" style="margin-top:10px;font-size:.78rem;min-height:16px;"></div>
+  </div>
+</div>
+
+<!-- MODIFY BOOKING MODAL -->
+<div class="modify-modal" id="modifyModal">
+  <div class="modify-box">
+    <button class="m-x" onclick="closeModify()">×</button>
+    <h3>Modify Booking</h3>
+    <p>Update your booking details. Changes will be reviewed by our team.</p>
+    <input type="hidden" id="modifyBkId"/>
+    <div class="fr"><div class="fg"><label class="fl">Full Name</label><input class="fi" id="modName"/></div><div class="fg"><label class="fl">Phone</label><input class="fi" id="modPhone"/></div></div>
+    <div class="fg"><label class="fl">Event Date</label><input class="fi" type="date" id="modDate"/></div>
+    <div class="fg"><label class="fl">Venue / Location</label><input class="fi" id="modVenue"/></div>
+    <div class="fg"><label class="fl">Updated Vision / Message</label><textarea class="fta" id="modMsg" style="min-height:80px;"></textarea></div>
+    <button class="sub-btn" onclick="saveModify()">Update Booking →</button>
+    <div id="modSt" style="margin-top:10px;font-size:.78rem;min-height:16px;"></div>
+  </div>
+</div>
+
+<!-- WHATSAPP FAB -->
+<a class="wa-fab" id="waFab" href="#" target="_blank" rel="noopener" title="Chat on WhatsApp">
+  <div class="wa-tooltip">Chat with us on WhatsApp</div>
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.558 4.112 1.528 5.834L0 24l6.335-1.65A11.937 11.937 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.374l-.36-.214-3.727.977.993-3.63-.234-.373A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+</a>
+
 <div class="toast" id="toast"></div>
 
 <!-- ══ FIREBASE ══ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, getDoc, doc, updateDoc, orderBy, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDo8u-SZMHPXBLdJV4oq5rNiPz6p33KSF4",
@@ -634,72 +729,92 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 window._db = db; window._auth = auth;
 
-// AUTH STATE
-onAuthStateChanged(auth, user => {
+let currentUser = null;
+let myBookings = [];
+
+// ── AUTH STATE ──
+onAuthStateChanged(auth, async user => {
+  currentUser = user;
   if (user) {
     document.getElementById('guestNav').classList.add('hidden');
     document.getElementById('userNav').classList.remove('hidden');
+    document.getElementById('userNav').style.display='flex';
     document.getElementById('mobGuest').classList.add('hidden');
     document.getElementById('mobUser').classList.remove('hidden');
     document.getElementById('myBookings').classList.remove('hidden');
-    document.getElementById('uAvBtn').textContent = (user.displayName||user.email||'?')[0].toUpperCase();
+    const initial = (user.displayName || user.email || '?')[0].toUpperCase();
+    document.getElementById('uAvBtn').textContent = initial;
+    document.getElementById('profAvLg').textContent = initial;
+    document.getElementById('profEmailDisp').textContent = user.email;
+    document.getElementById('profEmail').value = user.email;
+    document.getElementById('profNameDisp').textContent = user.displayName || 'No name set';
+    document.getElementById('profName').value = user.displayName || '';
+    // Load phone from users collection
+    try {
+      const snap = await getDocs(query(collection(db,'users'),where('uid','==',user.uid)));
+      if(!snap.empty){ const d=snap.docs[0].data(); document.getElementById('profPhone').value=d.phone||''; }
+    } catch(e){}
     showForm(true, false);
-    loadMyBookings(user.uid);
-    if(window.loadFirestoreGallery) window.loadFirestoreGallery();
-    if(window.loadCustomerGallery) window.loadCustomerGallery();
+    await loadMyBookings(user.uid);
+    loadCustomerNotifications(user.uid);
+    loadFirestoreGallery();
+    checkMaintenanceMode();
+    loadReviews();
+    // Check for confirmed booking to show review form
+    const hasConfirmed = myBookings.some(b=>b.status==='confirmed');
+    if(hasConfirmed) document.getElementById('revSubmitCard').classList.remove('hidden');
   } else {
+    currentUser = null; myBookings = [];
     document.getElementById('guestNav').classList.remove('hidden');
     document.getElementById('userNav').classList.add('hidden');
     document.getElementById('mobGuest').classList.remove('hidden');
     document.getElementById('mobUser').classList.add('hidden');
     document.getElementById('myBookings').classList.add('hidden');
-    if (!window._guestMode) showForm(false, false);
+    if(!window._guestMode) showForm(false, false);
+    loadFirestoreGallery();
+    checkMaintenanceMode();
+    loadReviews();
   }
 });
 
-// SIGN IN
+// ── SIGN IN ──
 window.doLogin = async () => {
   const st = document.getElementById('authSt');
-  st.innerHTML = '<span style="color:var(--gold)">Signing in…</span>';
+  st.innerHTML='<span style="color:var(--gold)">Signing in…</span>';
   try {
     await signInWithEmailAndPassword(auth, document.getElementById('lEmail').value.trim(), document.getElementById('lPwd').value);
     closeAuth(); showToast('Welcome back! 🎉');
-  } catch(e) { st.innerHTML = `<span class="a-err">${fe(e.code)}</span>`; }
+  } catch(e){ st.innerHTML=`<span class="a-err">${fe(e.code)}</span>`; }
 };
 
-// REGISTER
+// ── REGISTER ──
 window.doRegister = async () => {
   const st = document.getElementById('authSt2');
-  st.innerHTML = '<span style="color:var(--gold)">Creating account…</span>';
+  st.innerHTML='<span style="color:var(--gold)">Creating account…</span>';
   try {
     const c = await createUserWithEmailAndPassword(auth, document.getElementById('rEmail').value.trim(), document.getElementById('rPwd').value);
-    await addDoc(collection(db,'users'), {
-      uid: c.user.uid,
-      firstName: document.getElementById('rFirst').value.trim(),
-      lastName: document.getElementById('rLast').value.trim(),
-      email: c.user.email,
-      phone: document.getElementById('rPhone').value.trim(),
-      role: 'customer',
-      createdAt: serverTimestamp()
-    });
+    const fname = document.getElementById('rFirst').value.trim();
+    const lname = document.getElementById('rLast').value.trim();
+    await updateProfile(c.user, {displayName: fname+' '+lname});
+    await addDoc(collection(db,'users'),{uid:c.user.uid,firstName:fname,lastName:lname,email:c.user.email,phone:document.getElementById('rPhone').value.trim(),role:'customer',createdAt:serverTimestamp()});
     closeAuth(); showToast('Account created! Welcome 🌟');
-  } catch(e) { st.innerHTML = `<span class="a-err">${fe(e.code)}</span>`; }
+  } catch(e){ st.innerHTML=`<span class="a-err">${fe(e.code)}</span>`; }
 };
 
-// FORGOT PASSWORD
+// ── FORGOT PASSWORD ──
 window.doForgotPwd = async () => {
   const st = document.getElementById('authSt3');
   const email = document.getElementById('fpEmail').value.trim();
-  if (!email) { st.innerHTML = '<span class="a-err">Please enter your email.</span>'; return; }
-  st.innerHTML = '<span style="color:var(--gold)">Sending reset link…</span>';
+  if(!email){ st.innerHTML='<span class="a-err">Please enter your email.</span>'; return; }
+  st.innerHTML='<span style="color:var(--gold)">Sending reset link…</span>';
   try {
     await sendPasswordResetEmail(auth, email);
-    st.innerHTML = '<span class="a-ok">✓ Reset link sent! Check your inbox (and spam folder).</span>';
+    st.innerHTML='<span class="a-ok">✓ Reset link sent! Check your inbox.</span>';
     showToast('Password reset email sent 📧');
-  } catch(e) { st.innerHTML = `<span class="a-err">${fe(e.code)}</span>`; }
+  } catch(e){ st.innerHTML=`<span class="a-err">${fe(e.code)}</span>`; }
 };
 
-// SIGN OUT
+// ── SIGN OUT ──
 window.doSignOut = async () => {
   await signOut(auth);
   window._guestMode = false;
@@ -707,115 +822,319 @@ window.doSignOut = async () => {
   showToast('Signed out.');
 };
 
-// SUBMIT BOOKING
+// ── PROFILE SAVE ──
+window.saveProfile = async () => {
+  const st = document.getElementById('profSt');
+  const name = document.getElementById('profName').value.trim();
+  const phone = document.getElementById('profPhone').value.trim();
+  if(!name){ st.innerHTML='<span class="a-err">Name is required.</span>'; return; }
+  st.innerHTML='<span style="color:var(--gold)">Saving…</span>';
+  try {
+    await updateProfile(auth.currentUser, {displayName: name});
+    // Update in users collection
+    const snap = await getDocs(query(collection(db,'users'),where('uid','==',currentUser.uid)));
+    if(!snap.empty){ await updateDoc(doc(db,'users',snap.docs[0].id),{firstName:name.split(' ')[0],lastName:name.split(' ').slice(1).join(' ')||'',phone}); }
+    document.getElementById('profNameDisp').textContent = name;
+    document.getElementById('uAvBtn').textContent = name[0].toUpperCase();
+    document.getElementById('profAvLg').textContent = name[0].toUpperCase();
+    st.innerHTML='<span class="a-ok">✓ Profile updated!</span>';
+    showToast('Profile saved ✓');
+  } catch(e){ st.innerHTML=`<span class="a-err">${e.message}</span>`; }
+};
+
+// ── MAINTENANCE MODE CHECK ──
+async function checkMaintenanceMode(){
+  try {
+    const snap = await getDocs(collection(db,'settings'));
+    if(!snap.empty){
+      const s = snap.docs[0].data();
+      const banner = document.getElementById('maintenanceBanner');
+      const body = document.body;
+      if(s.maintenance){
+        banner.textContent = s.maintenanceMsg || '🔧 We are performing scheduled maintenance. Back shortly!';
+        banner.classList.add('show');
+        body.classList.add('has-banner');
+      } else {
+        banner.classList.remove('show');
+        body.classList.remove('has-banner');
+      }
+    }
+  } catch(e){}
+}
+
+// ── CHECK DUPLICATE BOOKING ──
+window.checkDuplicate = async () => {
+  if(!currentUser) return;
+  const svc = document.getElementById('bkService').value;
+  if(!svc) return;
+  const warn = document.getElementById('dupWarn');
+  const sub = document.getElementById('subBtn');
+  const existing = myBookings.filter(b=>b.service===svc && (b.status==='pending'||b.status==='confirmed'));
+  if(existing.length > 0){
+    warn.style.display='block';
+    sub.disabled=true;
+  } else {
+    warn.style.display='none';
+    sub.disabled=false;
+  }
+};
+
+// ── SUBMIT BOOKING ──
 window.submitBooking = async (ev) => {
   ev.preventDefault();
   const user = auth.currentUser;
   const btn = document.getElementById('subBtn');
   const st = document.getElementById('bkSt');
-  btn.disabled = true; btn.textContent = 'Sending…';
-  const bSel = document.getElementById('bkBudget').value;
-  const finalBudget = bSel === 'custom'
-    ? '₹' + Number(document.getElementById('bkCustomAmt').value||0).toLocaleString('en-IN')
-    : bSel;
+  // Final duplicate check
+  const svc = document.getElementById('bkService').value;
+  if(user){
+    const existing = myBookings.filter(b=>b.service===svc&&(b.status==='pending'||b.status==='confirmed'));
+    if(existing.length>0){ st.innerHTML='<span class="s-err">You already have an active booking for this service.</span>'; return; }
+  }
+  btn.disabled=true; btn.textContent='Sending…';
+  const bSel=document.getElementById('bkBudget').value;
+  const finalBudget=bSel==='custom'?'₹'+Number(document.getElementById('bkCustomAmt').value||0).toLocaleString('en-IN'):bSel;
   try {
-    await addDoc(collection(db,'bookings'), {
-      userId: user ? user.uid : 'guest',
-      userEmail: user ? user.email : document.getElementById('bkEmail').value,
-      name: document.getElementById('bkName').value,
-      phone: document.getElementById('bkPhone').value,
-      email: document.getElementById('bkEmail').value,
-      service: document.getElementById('bkService').value,
-      eventType: document.getElementById('bkEventType').value,
-      eventDate: document.getElementById('bkDate').value,
-      budget: finalBudget,
-      venue: document.getElementById('bkVenue').value,
-      message: document.getElementById('bkMsg').value,
-      isGuest: !user,
-      status: 'pending',
-      createdAt: serverTimestamp()
+    await addDoc(collection(db,'bookings'),{
+      userId:user?user.uid:'guest',
+      userEmail:user?user.email:document.getElementById('bkEmail').value,
+      name:document.getElementById('bkName').value,
+      phone:document.getElementById('bkPhone').value,
+      email:document.getElementById('bkEmail').value,
+      service:svc,
+      eventType:document.getElementById('bkEventType').value,
+      eventDate:document.getElementById('bkDate').value,
+      budget:finalBudget,
+      venue:document.getElementById('bkVenue').value,
+      message:document.getElementById('bkMsg').value,
+      isGuest:!user,
+      status:'pending',
+      pipeline:'New Enquiry',
+      createdAt:serverTimestamp()
     });
-    st.innerHTML = '<span class="s-ok">✓ Booking request sent! We\'ll contact you within 24 hours.</span>';
+    st.innerHTML='<span class="s-ok">✓ Booking request sent! We\'ll contact you within 24 hours.</span>';
     document.getElementById('bkForm').reset();
-    document.getElementById('budgetCustom').style.display = 'none';
-    if (user) loadMyBookings(user.uid);
+    document.getElementById('budgetCustom').style.display='none';
+    document.getElementById('dupWarn').style.display='none';
+    if(user) await loadMyBookings(user.uid);
     showToast('Booking submitted! 🎊');
-  } catch(err) { st.innerHTML = `<span class="s-err">Error: ${err.message}</span>`; }
-  btn.disabled = false; btn.textContent = 'Send Booking Request →';
+    // WhatsApp confirmation
+    const waMsgEnc = encodeURIComponent(`Hi AB Events! My booking for *${svc}* on ${document.getElementById('bkDate').value||'TBD'} has been submitted. Please confirm at your earliest.`);
+    document.getElementById('waFab').href=`https://wa.me/919876543210?text=${waMsgEnc}`;
+  } catch(err){ st.innerHTML=`<span class="s-err">Error: ${err.message}</span>`; }
+  btn.disabled=false; btn.textContent='Send Booking Request →';
 };
 
-// LOAD MY BOOKINGS
+// ── LOAD MY BOOKINGS ──
 async function loadMyBookings(uid) {
   const list = document.getElementById('bkList');
-  list.innerHTML = '<div class="empty-st">Loading…</div>';
+  list.innerHTML='<div class="empty-st">Loading…</div>';
   try {
-    const snap = await getDocs(query(collection(db,'bookings'), where('userId','==',uid)));
-    if (snap.empty) { list.innerHTML = '<div class="empty-st">No bookings yet. <a href="#booking" style="color:var(--gold)">Make your first request →</a></div>'; return; }
-    const icons = {'Luxury Decor & Styling':'🌸','Professional Photography':'📷','Live Music & Entertainment':'🎵','Premium Lighting Design':'✨','Gourmet Catering':'🍽️','Complete Event Management':'🎊','Multiple Services':'🎉'};
-    const sorted = snap.docs.sort((a,b) => (b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0));
-    list.innerHTML = sorted.map(d => {
-      const b = d.data();
-      const sc = b.status==='confirmed'?'bk-confirmed':b.status==='declined'?'bk-declined':'bk-pending';
-      const sl = b.status==='confirmed'?'✓ Confirmed':b.status==='declined'?'✕ Declined':'⏳ Pending';
-      const dt = b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : 'Date TBD';
-      return `<div class="bk-item"><div class="bk-ico">${icons[b.service]||'🎊'}</div><div class="bk-det"><div class="bk-svc">${b.service}</div><div class="bk-meta">${b.eventType||'Event'} · ${dt} · ${b.budget}</div></div><div class="bk-stat ${sc}">${sl}</div></div>`;
+    const q = query(collection(db,'bookings'),where('userId','==',uid),orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    myBookings = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(snap.empty){ list.innerHTML='<div class="empty-st">No bookings yet. <a href="#booking" style="color:var(--gold)">Make your first request →</a></div>'; return; }
+    const icons={'Luxury Decor & Styling':'🌸','Professional Photography':'📷','Live Music & Entertainment':'🎵','Premium Lighting Design':'✨','Gourmet Catering':'🍽️','Complete Event Management':'🎊','Multiple Services':'🎉'};
+    list.innerHTML = myBookings.map(b=>{
+      const sc=b.status==='confirmed'?'bk-confirmed':b.status==='declined'?'bk-declined':'bk-pending';
+      const sl=b.status==='confirmed'?'✓ Confirmed':b.status==='declined'?'✕ Declined':'⏳ Pending';
+      const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):'Date TBD';
+      const canModify = b.status==='pending';
+      const priceHtml = b.finalPrice?`<div class="bk-price">💰 Final Price: ${b.finalPrice}</div>`:'';
+      return `<div class="bk-item">
+        <div class="bk-ico">${icons[b.service]||'🎊'}</div>
+        <div class="bk-det">
+          <div class="bk-svc">${b.service}</div>
+          <div class="bk-meta">${b.eventType||'Event'} · ${dt} · ${b.budget}</div>
+          <div class="bk-meta">📍 ${b.venue||'Venue TBD'}</div>
+          ${priceHtml}
+          ${canModify?`<button class="bk-modify-btn" onclick="openModify('${b.id}')">✏️ Modify Booking</button>`:''}
+        </div>
+        <div class="bk-stat ${sc}">${sl}</div>
+      </div>`;
     }).join('');
-  } catch(err) { list.innerHTML = '<div class="empty-st">Could not load bookings.</div>'; }
+    // Check for confirmed booking for review
+    const hasConfirmed = myBookings.some(b=>b.status==='confirmed');
+    if(hasConfirmed) document.getElementById('revSubmitCard').classList.remove('hidden');
+  } catch(err){ list.innerHTML='<div class="empty-st">Could not load bookings.</div>'; }
 }
 window._loadMyBookings = loadMyBookings;
 
-// LOAD SERVICE GALLERY (Firestore photos + static fallback)
-window.loadSvcGallery = async (name) => {
-  document.getElementById('glTtl').textContent = name;
-  document.getElementById('glCount').textContent = '';
-  document.getElementById('glGrid').innerHTML = '<div class="gl-loading">Loading photos…</div>';
-  openGl();
-  try {
-    const snap = await getDocs(query(collection(db,'gallery'), where('service','==',name)));
-    const fbImgs = snap.docs.map(d => ({url:d.data().url, caption:d.data().caption||name}));
-    const staticImgs = (window._svcPhotos[name]||[]).map(u => ({url:u, caption:name}));
-    // Admin-uploaded photos shown FIRST, then static fallbacks
-    const all = [...fbImgs, ...staticImgs];
-    window._glImgs = all;
-    document.getElementById('glCount').textContent = `${all.length} photo${all.length!==1?'s':''}`;
-    if (!all.length) { document.getElementById('glGrid').innerHTML = '<div class="gl-empty">No photos yet for this service.</div>'; return; }
-    document.getElementById('glGrid').innerHTML = all.map((img,i) => `
-      <div class="gl-item" onclick="openViewer(${i})">
-        <img src="${img.url}" alt="${img.caption}" loading="lazy"/>
-        <div class="gl-item-lbl">${img.caption}</div>
-        <button class="gl-zoom-btn" onclick="event.stopPropagation();openViewer(${i})">🔍 Enlarge</button>
-      </div>`).join('');
-  } catch(err) { document.getElementById('glGrid').innerHTML = '<div class="gl-empty">Could not load photos.</div>'; }
+// ── MODIFY BOOKING ──
+window.openModify = async (id) => {
+  const bk = myBookings.find(b=>b.id===id);
+  if(!bk) return;
+  document.getElementById('modifyBkId').value=id;
+  document.getElementById('modName').value=bk.name||'';
+  document.getElementById('modPhone').value=bk.phone||'';
+  document.getElementById('modDate').value=bk.eventDate||'';
+  document.getElementById('modVenue').value=bk.venue||'';
+  document.getElementById('modMsg').value=bk.message||'';
+  document.getElementById('modSt').innerHTML='';
+  document.getElementById('modifyModal').classList.add('open');
+  document.body.style.overflow='hidden';
+};
+window.closeModify=()=>{document.getElementById('modifyModal').classList.remove('open');document.body.style.overflow='';};
+window.saveModify = async () => {
+  const id=document.getElementById('modifyBkId').value;
+  const st=document.getElementById('modSt');
+  st.innerHTML='<span style="color:var(--gold)">Saving…</span>';
+  try{
+    await updateDoc(doc(db,'bookings',id),{
+      name:document.getElementById('modName').value,
+      phone:document.getElementById('modPhone').value,
+      eventDate:document.getElementById('modDate').value,
+      venue:document.getElementById('modVenue').value,
+      message:document.getElementById('modMsg').value,
+      modifiedAt:serverTimestamp(),
+      status:'pending'
+    });
+    st.innerHTML='<span class="a-ok">✓ Booking updated! Our team will review and confirm.</span>';
+    showToast('Booking updated ✓');
+    if(currentUser) await loadMyBookings(currentUser.uid);
+    setTimeout(()=>closeModify(),2000);
+  }catch(e){st.innerHTML=`<span class="a-err">${e.message}</span>`;}
 };
 
-function fe(c) {
-  const m = {'auth/user-not-found':'No account with that email.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'Email already registered.','auth/weak-password':'Password needs 6+ characters.','auth/invalid-email':'Invalid email address.','auth/too-many-requests':'Too many attempts. Try later.','auth/missing-password':'Please enter your password.'};
-  return m[c]||'Something went wrong. Try again.';
+// ── FIRESTORE GALLERY LOAD ──
+async function loadFirestoreGallery(){
+  try{
+    const snap = await getDocs(collection(db,'gallery'));
+    window._firestoreGallery = snap.docs.map(d=>{const data=d.data();return{url:data.url,caption:data.caption||'',eventCategory:data.eventCategory||'General',service:data.service||''};});
+    renderDynGallery();
+  }catch(e){renderDynGallery();}
 }
+window.loadFirestoreGallery=loadFirestoreGallery;
+
+// ── GALLERY SERVICE ──
+window.loadSvcGallery = async (name) => {
+  document.getElementById('glTtl').textContent=name;
+  document.getElementById('glCount').textContent='';
+  document.getElementById('glGrid').innerHTML='<div class="gl-empty">Loading photos…</div>';
+  openGl();
+  try{
+    const snap=await getDocs(query(collection(db,'gallery'),where('service','==',name)));
+    const fbImgs=snap.docs.map(d=>({url:d.data().url,caption:d.data().caption||name}));
+    const staticImgs=(window._svcPhotos[name]||[]).map(u=>({url:u,caption:name}));
+    const all=[...fbImgs,...staticImgs];
+    window._glImgs=all;
+    document.getElementById('glCount').textContent=`${all.length} photo${all.length!==1?'s':''}`;
+    if(!all.length){document.getElementById('glGrid').innerHTML='<div class="gl-empty">No photos yet for this service.</div>';return;}
+    document.getElementById('glGrid').innerHTML=all.map((img,i)=>`<div class="gl-item" onclick="openViewer(${i})"><img src="${img.url}" alt="${img.caption}" loading="lazy"/><div class="gl-item-lbl">${img.caption}</div><button class="gl-zoom-btn" onclick="event.stopPropagation();openViewer(${i})">🔍</button></div>`).join('');
+  }catch(err){document.getElementById('glGrid').innerHTML='<div class="gl-empty">Could not load photos.</div>';}
+};
+
+// ── REVIEWS ──
+async function loadReviews(){
+  try{
+    const snap=await getDocs(query(collection(db,'reviews'),where('approved','==',true),orderBy('createdAt','desc')));
+    const revs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Stars avg
+    if(revs.length){
+      const avg=(revs.reduce((a,r)=>a+r.rating,0)/revs.length).toFixed(1);
+      document.getElementById('revAvgNum').textContent=avg;
+      document.getElementById('revAvgCount').textContent=`Based on ${revs.length} verified review${revs.length!==1?'s':''}`;
+      const starsHtml=Array.from({length:5},(_,i)=>`<span>${i<Math.round(avg)?'★':'☆'}</span>`).join('');
+      document.getElementById('revAvgStars').innerHTML=starsHtml;
+      document.getElementById('revGrid').innerHTML=revs.slice(0,6).map(r=>{
+        const stars=Array.from({length:5},(_,i)=>`<span class="${i<r.rating?'':'empty'}">★</span>`).join('');
+        return `<div class="rev-card"><div class="rev-stars">${stars}</div><p class="rev-txt">${r.text}</p><div class="rev-auth"><div class="rev-av">${(r.name||'A')[0].toUpperCase()}</div><div><div class="rev-nm">${r.name||'Anonymous'}</div><div class="rev-ev">${r.event||''}</div></div></div></div>`;
+      }).join('');
+    } else {
+      document.getElementById('revAvgNum').textContent='—';
+      document.getElementById('revAvgCount').textContent='No reviews yet — be the first!';
+      document.getElementById('revGrid').innerHTML='<div class="rev-empty">No reviews yet. Be the first to share your experience!</div>';
+    }
+  }catch(e){
+    // Fallback static reviews
+    document.getElementById('revAvgNum').textContent='5.0';
+    document.getElementById('revAvgCount').textContent='Based on verified reviews';
+    document.getElementById('revGrid').innerHTML=`<div class="rev-card"><div class="rev-stars">★★★★★</div><p class="rev-txt">AB Events transformed our wedding into an absolute fairytale. Every detail was perfect — from the floral mandap to the candlelit reception. Truly unforgettable.</p><div class="rev-auth"><div class="rev-av">P</div><div><div class="rev-nm">Priya &amp; Rahul Sharma</div><div class="rev-ev">Wedding · Taj Falaknuma</div></div></div></div>
+    <div class="rev-card"><div class="rev-stars">★★★★★</div><p class="rev-txt">Our daughter's first birthday was beyond magical. The decor, the photography — everything handled with such care and professionalism.</p><div class="rev-auth"><div class="rev-av">A</div><div><div class="rev-nm">Anita Reddy</div><div class="rev-ev">Birthday · Gachibowli</div></div></div></div>
+    <div class="rev-card"><div class="rev-stars">★★★★★</div><p class="rev-txt">For our corporate gala, AB Events delivered an experience that left 400 guests speechless. An outstanding team through and through.</p><div class="rev-auth"><div class="rev-av">V</div><div><div class="rev-nm">Vikram Nair</div><div class="rev-ev">Corporate Gala · HICC</div></div></div></div>`;
+  }
+}
+
+let selectedRating=0;
+window.setRating=(n)=>{
+  selectedRating=n;
+  document.querySelectorAll('#starPicker span').forEach((s,i)=>s.classList.toggle('sel',i<n));
+};
+window.submitReview=async()=>{
+  const st=document.getElementById('revSt');
+  if(!selectedRating){st.innerHTML='<span class="a-err">Please select a star rating.</span>';return;}
+  const text=document.getElementById('revText').value.trim();
+  if(!text){st.innerHTML='<span class="a-err">Please write a review.</span>';return;}
+  st.innerHTML='<span style="color:var(--gold)">Submitting…</span>';
+  try{
+    await addDoc(collection(db,'reviews'),{
+      rating:selectedRating,
+      text,
+      name:document.getElementById('revName').value.trim()||'Anonymous',
+      event:document.getElementById('revEvent').value.trim(),
+      userId:currentUser?currentUser.uid:'',
+      approved:false,
+      createdAt:serverTimestamp()
+    });
+    st.innerHTML='<span class="a-ok">✓ Thank you! Your review will appear after admin approval.</span>';
+    showToast('Review submitted! Thank you 🌟');
+    document.getElementById('revText').value='';
+    document.getElementById('revName').value='';
+    document.getElementById('revEvent').value='';
+    selectedRating=0;
+    document.querySelectorAll('#starPicker span').forEach(s=>s.classList.remove('sel'));
+  }catch(e){st.innerHTML=`<span class="a-err">${e.message}</span>`;}
+};
+
+// ── CUSTOMER NOTIFICATIONS ──
+function loadCustomerNotifications(uid){
+  const q=query(collection(db,'notifications'),where('userId','==',uid),orderBy('createdAt','desc'));
+  onSnapshot(q,snap=>{
+    const notifs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const unread=notifs.filter(n=>!n.read).length;
+    const badge=document.getElementById('custNotifBadge');
+    if(unread>0){badge.textContent=unread;badge.classList.add('show');}else{badge.classList.remove('show');}
+    const list=document.getElementById('custNotifList');
+    if(!notifs.length){list.innerHTML='<div class="notif-empty">No notifications yet</div>';return;}
+    list.innerHTML=notifs.slice(0,10).map(n=>`<div class="notif-item ${n.read?'':'unread'}" onclick="readNotif('${n.id}')"><div>${n.message||''}</div><div class="notif-time">${n.createdAt?.toDate?n.createdAt.toDate().toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</div></div>`).join('');
+  });
+}
+window.readNotif=async(id)=>{
+  try{await updateDoc(doc(db,'notifications',id),{read:true});}catch(e){}
+};
+window.markAllRead=async(e)=>{
+  e.stopPropagation();
+  if(!currentUser)return;
+  const snap=await getDocs(query(collection(db,'notifications'),where('userId','==',currentUser.uid),where('read','==',false)));
+  snap.docs.forEach(d=>updateDoc(doc(db,'notifications',d.id),{read:true}));
+};
+
+function fe(c){const m={'auth/user-not-found':'No account with that email.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'Email already registered.','auth/weak-password':'Password needs 6+ characters.','auth/invalid-email':'Invalid email address.','auth/too-many-requests':'Too many attempts. Try later.','auth/missing-password':'Please enter your password.'};return m[c]||'Something went wrong. Try again.';}
 </script>
 
 <!-- ══ UI JS ══ -->
 <script>
-// SERVICE DATA — Service-specific photos (no god images)
-const SVCS = [
+// ── SERVICE DATA ──
+const SVCS=[
   {name:'Luxury Decor & Styling',icon:'🌸',desc:'Transformative lotus floral arrangements, kalyana mandapam setups, table settings and draperies that turn any venue into a masterpiece.',tags:['Floral','Drapery','Mandapam','Centerpieces'],
-   photos:['https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80','https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80','https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80','https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=800&q=80','https://images.unsplash.com/photo-1561489413-985b06da5bee?w=800&q=80','https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&q=80']},
+   photos:['https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80','https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80','https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80','https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=800&q=80','https://images.unsplash.com/photo-1561489413-985b06da5bee?w=800&q=80']},
   {name:'Professional Photography',icon:'📷',desc:'Cinematic photography and videography capturing every raw emotion, candid moment, and curated detail.',tags:['Photo','Videography','Drone','Album'],
-   photos:['https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80','https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80','https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800&q=80','https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800&q=80','https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&q=80']},
+   photos:['https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80','https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80','https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800&q=80','https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800&q=80']},
   {name:'Live Music & Entertainment',icon:'🎵',desc:'From classical ensembles and folk performances to high-energy DJs — the perfect sound for your celebration.',tags:['DJ','Live Band','Classical','Shehnai'],
-   photos:['https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80','https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80','https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80','https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80','https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80']},
+   photos:['https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80','https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80','https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80','https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80']},
   {name:'Premium Lighting Design',icon:'✨',desc:'Fairy lights, LED installations, diya arrangements, and intelligent wash systems that set the perfect mood.',tags:['Fairy Lights','LED','Diya Decor','Uplighting'],
-   photos:['https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&q=80','https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80','https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80','https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80','https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=800&q=80']},
-  {name:'Gourmet Catering',icon:'🍽️',desc:'Multi-cuisine Indian menus by award-winning chefs. Lavish buffets, live chaat stations & elegant plated dinners.',tags:['Buffet','Plated','Live Stations','Mithai'],
-   photos:['https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80','https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80','https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80','https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&q=80','https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80']},
+   photos:['https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&q=80','https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80','https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80','https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80']},
+  {name:'Gourmet Catering',icon:'🍽️',desc:'Multi-cuisine Indian menus by award-winning chefs. Lavish buffets, live chaat stations & elegant plated dinners.',tags:['Coming Soon'],
+   comingSoon:true,
+   photos:['https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80','https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80']},
   {name:'Complete Event Management',icon:'🎊',desc:'Full-spectrum orchestration from concept to cleanup. Weddings, galas, birthdays, anniversaries and corporate events.',tags:['Wedding','Corporate','Birthday','Anniversary'],
-   photos:['https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80','https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80','https://images.unsplash.com/photo-1520854221256-17452cc3a785?w=800&q=80','https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80','https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80']}
+   photos:['https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80','https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80','https://images.unsplash.com/photo-1520854221256-17452cc3a785?w=800&q=80']}
 ];
-window._svcPhotos = {};
-SVCS.forEach(s => { window._svcPhotos[s.name] = s.photos; });
+window._svcPhotos={};
+SVCS.forEach(s=>{window._svcPhotos[s.name]=s.photos;});
 
-// HERO — Kalyana Mandapam & Indian Wedding Decor (no god images)
-const heroPhotos = [
+// ── HERO SLIDESHOW ──
+const heroPhotos=[
   'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80',
   'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1600&q=80',
   'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=1600&q=80',
@@ -824,29 +1143,32 @@ const heroPhotos = [
   'https://images.unsplash.com/photo-1555244162-803834f70033?w=1600&q=80',
 ];
 let curSlide=0;
-function initHero() {
-  const sc=document.getElementById('hSlides'), dc=document.getElementById('hDots');
+function initHero(){
+  const sc=document.getElementById('hSlides'),dc=document.getElementById('hDots');
   heroPhotos.forEach((url,i)=>{
-    const s=document.createElement('div'); s.className='h-slide'+(i===0?' active':'');
-    s.innerHTML=`<img src="${url}" alt="" loading="${i===0?'eager':'lazy'}"/>`; sc.appendChild(s);
-    const d=document.createElement('div'); d.className='h-dot'+(i===0?' active':'');
-    d.onclick=()=>goSlide(i); dc.appendChild(d);
+    const s=document.createElement('div');s.className='h-slide'+(i===0?' active':'');
+    s.innerHTML=`<img src="${url}" alt="" loading="${i===0?'eager':'lazy'}"/>`;sc.appendChild(s);
+    const d=document.createElement('div');d.className='h-dot'+(i===0?' active':'');
+    d.onclick=()=>goSlide(i);dc.appendChild(d);
   });
   setInterval(()=>goSlide((curSlide+1)%heroPhotos.length),5500);
 }
-function goSlide(n) {
+function goSlide(n){
   document.querySelectorAll('.h-slide').forEach((s,i)=>s.classList.toggle('active',i===n));
   document.querySelectorAll('.h-dot').forEach((d,i)=>d.classList.toggle('active',i===n));
   curSlide=n;
 }
 
-// SERVICE CARDS
-function initServices() {
-  document.getElementById('svcGrid').innerHTML = SVCS.map(s=>`
-    <div class="svc-card" onclick="quickBook('${s.name.replace(/'/g,"\\'")}')">
+// ── SERVICE CARDS ──
+function initServices(){
+  document.getElementById('svcGrid').innerHTML=SVCS.map(s=>{
+    const safeName=s.name.replace(/'/g,"\\'");
+    const cateringNotice=s.comingSoon?`<div class="svc-soon"><div class="soon-badge">🍽️ Coming Soon</div><div class="soon-msg">Catering services are currently unavailable. We'll be launching soon!</div></div>`:'';
+    return`<div class="svc-card"${!s.comingSoon?` onclick="quickBook('${safeName}')"`:''}> 
       <img class="svc-bg" src="${s.photos[0]}" alt="${s.name}" loading="lazy"/>
       <div class="svc-ov"></div>
-      <button class="svc-gl-btn" onclick="event.stopPropagation();loadSvcGallery('${s.name.replace(/'/g,"\\'")}')">📸 View Gallery</button>
+      ${!s.comingSoon?`<button class="svc-gl-btn" onclick="event.stopPropagation();loadSvcGallery('${safeName}')">📸 View Gallery</button>`:''}
+      ${cateringNotice}
       <span class="svc-arr">↗</span>
       <div class="svc-body">
         <div class="svc-ico">${s.icon}</div>
@@ -854,11 +1176,12 @@ function initServices() {
         <div class="svc-ds">${s.desc}</div>
         <div class="svc-tags">${s.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
-// ── CATEGORY GALLERY — static items (shown until Firestore loads) ──
-const STATIC_GALLERY = [
+// ── CATEGORY GALLERY ──
+const STATIC_GALLERY=[
   {url:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80',caption:'Lotus Flower Mandapam',eventCategory:'Wedding',service:'Luxury Decor & Styling'},
   {url:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80',caption:'Grand Kalyana Mandapam',eventCategory:'Wedding',service:'Luxury Decor & Styling'},
   {url:'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80',caption:'Floral Wedding Stage',eventCategory:'Wedding',service:'Luxury Decor & Styling'},
@@ -875,36 +1198,22 @@ const STATIC_GALLERY = [
   {url:'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',caption:'Birthday Live Music',eventCategory:'Birthday',service:'Live Music & Entertainment'},
   {url:'https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&q=80',caption:'Anniversary Decor',eventCategory:'Anniversary',service:'Luxury Decor & Styling'},
   {url:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80',caption:'Anniversary Dinner',eventCategory:'Anniversary',service:'Gourmet Catering'},
-  {url:'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80',caption:'Corporate Gala',eventCategory:'Corporate',service:'Complete Event Management'},
+  {url:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',caption:'Housewarming Floral Entrance',eventCategory:'Housewarming',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',caption:'Elegant Home Decor',eventCategory:'Housewarming',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&q=80',caption:'Housewarming Celebration',eventCategory:'Housewarming',service:'Complete Event Management'},
+  {url:'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80',caption:'Corporate Gala Setup',eventCategory:'Corporate',service:'Complete Event Management'},
   {url:'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80',caption:'Corporate Catering',eventCategory:'Corporate',service:'Gourmet Catering'},
   {url:'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80',caption:'Corporate Live Stage',eventCategory:'Corporate',service:'Live Music & Entertainment'},
-  // Housewarming
-  {url:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',caption:'Housewarming Floral Entrance',eventCategory:'Housewarming',service:'Luxury Decor & Styling'},
-  {url:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',caption:'Elegant Home Decor Setup',eventCategory:'Housewarming',service:'Luxury Decor & Styling'},
-  {url:'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&q=80',caption:'Housewarming Celebration',eventCategory:'Housewarming',service:'Complete Event Management'},
 ];
-let firestoreGallery=[], activeCatFilter='all';
-
+window._firestoreGallery=[];
+let activeCatFilter='all';
 function renderDynGallery(){
-  const combined=[...firestoreGallery,...STATIC_GALLERY];
+  const combined=[...window._firestoreGallery,...STATIC_GALLERY];
   const filtered=activeCatFilter==='all'?combined:combined.filter(i=>i.eventCategory===activeCatFilter);
   const grid=document.getElementById('dynGalleryGrid');
-  const strip=document.getElementById('photoStrip');
-  if(strip) strip.style.display='none';
   window._glImgs=filtered.map(i=>({url:i.url,caption:(i.caption||'')+(i.eventCategory?' · '+i.eventCategory:'')}));
-  if(!filtered.length){
-    grid.innerHTML='<div class="gal-empty-msg">No photos in this category yet. Check back soon! 📸</div>';
-    return;
-  }
-  grid.innerHTML=filtered.map((item,i)=>
-    `<div class="dyn-item" onclick="openViewer(${i})">
-      <img src="${item.url}" alt="${item.caption||''}" loading="lazy"/>
-      <div class="dyn-lbl">
-        <span class="dyn-caption">${item.caption||''}</span>
-        <span class="dyn-cat">${item.eventCategory||''}</span>
-      </div>
-    </div>`
-  ).join('');
+  if(!filtered.length){grid.innerHTML='<div class="gal-empty-msg">No photos in this category yet. Check back soon! 📸</div>';return;}
+  grid.innerHTML=filtered.map((item,i)=>`<div class="dyn-item" onclick="openViewer(${i})"><img src="${item.url}" alt="${item.caption||''}" loading="lazy"/><div class="dyn-lbl"><span class="dyn-caption">${item.caption||''}</span><span class="dyn-cat">${item.eventCategory||''}</span></div></div>`).join('');
 }
 window.filterGallery=(cat,btn)=>{
   activeCatFilter=cat;
@@ -912,71 +1221,78 @@ window.filterGallery=(cat,btn)=>{
   if(btn)btn.classList.add('active');
   renderDynGallery();
 };
-// Called after Firebase db is ready to load Firestore photos
-window.loadFirestoreGallery=async()=>{
-  try{
-    const db=window._db; if(!db)return;
-    const {collection,getDocs}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-    const snap=await getDocs(collection(db,'gallery'));
-    firestoreGallery=snap.docs.map(d=>{const data=d.data();return{url:data.url,caption:data.caption||'',eventCategory:data.eventCategory||'General',service:data.service||'',id:d.id};});
-    renderDynGallery();
-  }catch(e){console.log('Gallery load:',e.message);}
-};
 
-// Legacy strip (hidden, kept for fallback)
-function initStrip(){
-  const el=document.getElementById('photoStrip');
-  if(el)el.style.display='none';
-}
-window.openStripViewer=(i)=>{openViewer(i);};
-
-// GALLERY
+// ── GALLERY & VIEWER ──
 function openGl(){document.getElementById('glOv').classList.add('open');document.body.style.overflow='hidden';}
 window.closeGl=()=>{document.getElementById('glOv').classList.remove('open');document.body.style.overflow='';}
-
-// PHOTO VIEWER
-window._glImgs=[]; let vIdx=0;
+window._glImgs=[];let vIdx=0;
 window.openViewer=(i)=>{vIdx=i;showViewer();};
 function showViewer(){
-  const img=window._glImgs[vIdx]; if(!img)return;
+  const img=window._glImgs[vIdx];if(!img)return;
   document.getElementById('glVImg').src=img.url;
   document.getElementById('glVCap').textContent=img.caption||'';
   document.getElementById('glVCtr').textContent=`${vIdx+1} / ${window._glImgs.length}`;
   document.getElementById('glViewer').classList.add('open');
   document.body.style.overflow='hidden';
 }
-window.closeViewer=()=>{
-  document.getElementById('glViewer').classList.remove('open');
-  if(!document.getElementById('glOv').classList.contains('open')) document.body.style.overflow='';
-};
+window.closeViewer=()=>{document.getElementById('glViewer').classList.remove('open');if(!document.getElementById('glOv').classList.contains('open'))document.body.style.overflow='';};
 window.viewNav=(d)=>{vIdx=(vIdx+d+window._glImgs.length)%window._glImgs.length;showViewer();};
 
-// BOOKING FORM VISIBILITY
-window._guestMode=false;
-function showForm(show, guest) {
-  document.getElementById('bkPrompt').style.display = show||guest ? 'none' : 'block';
-  document.getElementById('guestBanner').style.display = guest ? 'flex' : 'none';
-  document.getElementById('bkForm').style.display = show||guest ? 'block' : 'none';
-}
-window.setGuestMode=(on)=>{
-  window._guestMode=on;
-  if(on) showForm(false,true);
-  else if(!window._auth?.currentUser) showForm(false,false);
-};
-window.doGuestFromModal=()=>{
-  closeAuth();
-  window._guestMode=true;
-  showForm(false,true);
-  document.getElementById('booking').scrollIntoView({behavior:'smooth'});
-  showToast('Continuing as guest 👤');
+// ── LOCATION DETECT ──
+window.detectLocation=()=>{
+  if(!navigator.geolocation){showToast('Geolocation not supported by your browser.');return;}
+  showToast('Detecting your location… 📍');
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const{latitude:lat,longitude:lng}=pos.coords;
+      // Reverse geocode with Nominatim (free, no API key)
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+        .then(r=>r.json())
+        .then(data=>{
+          const addr=data.display_name||`${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+          document.getElementById('bkVenue').value=addr;
+          showToast('Location detected! ✓');
+        }).catch(()=>{
+          document.getElementById('bkVenue').value=`${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+          showToast('Location set ✓');
+        });
+    },
+    err=>{showToast('Could not get location. Please type your venue.');}
+  );
 };
 
-// BUDGET
+// ── WHATSAPP ──
+function updateWaLink(svc='',date=''){
+  const msg=encodeURIComponent(`Hi AB Events! I'd like to enquire about *${svc||'your services'}*${date?' for '+date:''} . Please share more details.`);
+  document.getElementById('waFab').href=`https://wa.me/919876543210?text=${msg}`;
+}
+
+// ── BOOKING FORM ──
+window._guestMode=false;
+function showForm(show,guest){
+  document.getElementById('bkPrompt').style.display=show||guest?'none':'block';
+  document.getElementById('guestBanner').style.display=guest?'flex':'none';
+  document.getElementById('bkForm').style.display=show||guest?'block':'none';
+}
+window.setGuestMode=(on)=>{window._guestMode=on;if(on)showForm(false,true);else if(!window._auth?.currentUser)showForm(false,false);};
+window.doGuestFromModal=()=>{closeAuth();window._guestMode=true;showForm(false,true);document.getElementById('booking').scrollIntoView({behavior:'smooth'});showToast('Continuing as guest 👤');};
 window.onBudgetChange=(v)=>{document.getElementById('budgetCustom').style.display=v==='custom'?'block':'none';};
 window.syncSlider=(v)=>{const n=Number(v)||0;document.getElementById('bkSlider').value=Math.min(Math.max(n,10000),2000000);document.getElementById('bkBudgetDisplay').textContent='₹'+n.toLocaleString('en-IN');};
 window.syncAmount=(v)=>{document.getElementById('bkCustomAmt').value=v;document.getElementById('bkBudgetDisplay').textContent='₹'+Number(v).toLocaleString('en-IN');};
 
-// NAV
+// ── PROFILE MODAL ──
+window.openProfile=()=>{document.getElementById('profileModal').classList.add('open');document.body.style.overflow='hidden';document.getElementById('profSt').innerHTML='';};
+window.closeProfile=()=>{document.getElementById('profileModal').classList.remove('open');document.body.style.overflow='';};
+
+// ── NOTIFICATION DROPDOWN ──
+let notifOpen=false;
+window.toggleNotifDrop=()=>{
+  notifOpen=!notifOpen;
+  document.getElementById('custNotifDrop').classList.toggle('open',notifOpen);
+};
+document.addEventListener('click',e=>{if(!e.target.closest('.notif-wrap')){notifOpen=false;document.getElementById('custNotifDrop')?.classList.remove('open');}});
+
+// ── NAV ──
 let mobOpen=false;
 window.toggleMob=()=>{mobOpen=!mobOpen;document.getElementById('mobNav').classList.toggle('open',mobOpen);document.getElementById('hamBtn').classList.toggle('open',mobOpen);};
 window.closeMob=()=>{mobOpen=false;document.getElementById('mobNav').classList.remove('open');document.getElementById('hamBtn').classList.remove('open');};
@@ -984,24 +1300,26 @@ window.toggleDrop=()=>document.getElementById('uDrop').classList.toggle('open');
 window.closeDrop=()=>document.getElementById('uDrop').classList.remove('open');
 document.addEventListener('click',e=>{if(!e.target.closest('.u-wrap'))document.getElementById('uDrop').classList.remove('open');});
 
-// AUTH MODAL
+// ── AUTH MODAL ──
 window.openAuth=(tab)=>{document.getElementById('authModal').classList.add('open');switchTab(tab||'login');document.body.style.overflow='hidden';};
 window.closeAuth=()=>{document.getElementById('authModal').classList.remove('open');document.body.style.overflow='';};
 window.switchTab=(t)=>{
-  ['login','register','forgot'].forEach(p=>{
-    document.getElementById(p==='login'?'loginPanel':p==='register'?'regPanel':'forgotPanel').classList.toggle('active',p===t);
-  });
+  ['login','register','forgot'].forEach(p=>{document.getElementById(p==='login'?'loginPanel':p==='register'?'regPanel':'forgotPanel').classList.toggle('active',p===t);});
   const tabs=document.getElementById('mTabs');
   tabs.style.display=t==='forgot'?'none':'flex';
-  if(t!=='forgot'){
-    document.getElementById('loginTab').classList.toggle('active',t==='login');
-    document.getElementById('regTab').classList.toggle('active',t==='register');
-  }
+  if(t!=='forgot'){document.getElementById('loginTab').classList.toggle('active',t==='login');document.getElementById('regTab').classList.toggle('active',t==='register');}
   ['authSt','authSt2','authSt3'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
 };
 document.getElementById('authModal').addEventListener('click',e=>{if(e.target===document.getElementById('authModal'))closeAuth();});
+document.getElementById('profileModal').addEventListener('click',e=>{if(e.target===document.getElementById('profileModal'))closeProfile();});
+document.getElementById('modifyModal').addEventListener('click',e=>{if(e.target===document.getElementById('modifyModal'))closeModify();});
 
-window.quickBook=(svc)=>{document.getElementById('bkService').value=svc;document.getElementById('booking').scrollIntoView({behavior:'smooth'});};
+window.quickBook=(svc)=>{
+  if(svc==='Gourmet Catering'){showToast('🍽️ Catering is coming soon! Please choose another service.');return;}
+  document.getElementById('bkService').value=svc;
+  updateWaLink(svc);
+  document.getElementById('booking').scrollIntoView({behavior:'smooth'});
+};
 window.showToast=(msg)=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);};
 
 document.addEventListener('keydown',e=>{
@@ -1012,6 +1330,13 @@ document.addEventListener('keydown',e=>{
 
 initHero(); initServices(); initStrip(); renderDynGallery();
 setTimeout(()=>{if(window.loadFirestoreGallery) window.loadFirestoreGallery();},1000);
+
+// ── SERVICE WORKER REGISTRATION (PWA) ──
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    console.log('SW registered');
+  }).catch(err=>{console.log('SW registration failed:',err);});
+}
 </script>
 </body>
 </html>

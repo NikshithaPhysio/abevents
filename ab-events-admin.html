@@ -4,73 +4,65 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>AB Events — Admin Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<!-- EmailJS for notifications -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root{
   --bg:#0C0C0E;--s1:#141416;--s2:#1A1A1E;--s3:#222228;--s4:#2A2A32;
-  --bdr:rgba(255,255,255,0.06);--bdr2:rgba(255,255,255,0.04);
-  --gold:#C9A84C;--gold-a:rgba(201,168,76,0.14);--gold-a2:rgba(201,168,76,0.07);
-  --green:#22C55E;--green-a:rgba(34,197,94,0.14);
-  --red:#EF4444;--red-a:rgba(239,68,68,0.12);
-  --yellow:#F59E0B;--yellow-a:rgba(245,158,11,0.14);
-  --blue:#60A5FA;--blue-a:rgba(96,165,250,0.12);
-  --purple:#A78BFA;
+  --bdr:rgba(255,255,255,.06);--bdr2:rgba(255,255,255,.04);
+  --gold:#C9A84C;--gold-a:rgba(201,168,76,.14);--gold-a2:rgba(201,168,76,.07);
+  --green:#22C55E;--green-a:rgba(34,197,94,.14);
+  --red:#EF4444;--red-a:rgba(239,68,68,.12);
+  --yellow:#F59E0B;--yellow-a:rgba(245,158,11,.14);
+  --blue:#60A5FA;--blue-a:rgba(96,165,250,.12);
+  --purple:#A78BFA;--purple-a:rgba(167,139,250,.14);
   --t1:#EAEAF0;--t2:#9999A8;--t3:#55555F;--t4:#3A3A44;
   --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
-  --r:8px;--r2:12px;--ease:cubic-bezier(.4,0,.2,1);--tr:0.25s var(--ease);
+  --r:8px;--r2:12px;--ease:cubic-bezier(.4,0,.2,1);--tr:.25s var(--ease);
   --sidebar-w:248px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;}
-body{background:var(--bg);color:var(--t1);font-family:var(--fb);font-size:14px;font-weight:400;display:flex;}
-
-/* ═══ SCROLLBAR ═══ */
+body{background:var(--bg);color:var(--t1);font-family:var(--fb);font-size:14px;display:flex;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--s4);border-radius:4px;}
 
-/* ═══ LOGIN / AUTH SCREEN ═══ */
+/* AUTH */
 #loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:20px;}
 #loginScreen.gone{display:none;}
 .login-wrap{width:100%;max-width:440px;}
 .login-logo{font-family:var(--fh);font-size:1.2rem;font-weight:700;color:var(--gold);margin-bottom:4px;}
 .login-sub{font-size:.8rem;color:var(--t3);margin-bottom:28px;}
 .login-chip{display:inline-flex;align-items:center;gap:6px;background:var(--gold-a);border:1px solid rgba(201,168,76,.22);padding:5px 12px;border-radius:100px;font-size:.68rem;color:var(--gold);letter-spacing:.08em;margin-bottom:22px;}
-/* Auth tab bar */
 .auth-tabs{display:flex;background:var(--s2);border-radius:var(--r);padding:3px;gap:3px;margin-bottom:22px;}
-.auth-tab{flex:1;padding:9px 6px;text-align:center;font-size:.73rem;font-weight:600;cursor:pointer;border-radius:6px;transition:var(--tr);color:var(--t2);background:transparent;border:none;font-family:var(--fh);letter-spacing:.04em;}
+.auth-tab{flex:1;padding:9px 6px;text-align:center;font-size:.73rem;font-weight:600;cursor:pointer;border-radius:6px;color:var(--t2);background:transparent;border:none;font-family:var(--fh);transition:var(--tr);}
 .auth-tab.active{background:var(--gold);color:#000;}
-/* Auth panels */
-.auth-panel{display:none;}
-.auth-panel.active{display:block;}
-/* Form */
+.auth-panel{display:none;}.auth-panel.active{display:block;}
 .lf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .lf-group{margin-bottom:14px;}
 .lf-label{display:block;font-size:.7rem;font-weight:500;color:var(--t2);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase;}
 .lf-input{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:11px 14px;border-radius:var(--r);font-family:var(--fb);font-size:.875rem;outline:none;transition:var(--tr);}
 .lf-input:focus{border-color:rgba(201,168,76,.4);box-shadow:0 0 0 3px rgba(201,168,76,.08);}
-.lbtn{width:100%;background:var(--gold);color:#000;padding:12px;border-radius:var(--r);font-family:var(--fh);font-weight:700;font-size:.85rem;cursor:pointer;border:none;transition:var(--tr);letter-spacing:.04em;margin-top:4px;}
+.lbtn{width:100%;background:var(--gold);color:#000;padding:12px;border-radius:var(--r);font-family:var(--fh);font-weight:700;font-size:.85rem;cursor:pointer;border:none;transition:var(--tr);margin-top:4px;}
 .lbtn:hover{background:#D4B05C;}
 .l-err{font-size:.75rem;color:var(--red);margin-top:8px;min-height:16px;}
 .l-ok{font-size:.75rem;color:var(--green);margin-top:8px;min-height:16px;}
 .l-hint{font-size:.72rem;color:var(--t4);margin-top:14px;text-align:center;line-height:1.6;}
 .l-hint a{color:var(--gold);}
-.l-forgot-btn{background:none;border:none;color:var(--gold);font-size:.73rem;cursor:pointer;font-family:var(--fb);display:inline-flex;align-items:center;gap:3px;margin-top:10px;opacity:.8;transition:var(--tr);padding:0;}
-.l-forgot-btn:hover{opacity:1;}
-.l-divider{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--t4);font-size:.7rem;}
-.l-divider::before,.l-divider::after{content:'';flex:1;height:1px;background:var(--bdr);}
-/* Password strength */
+.l-forgot-btn{background:none;border:none;color:var(--gold);font-size:.73rem;cursor:pointer;font-family:var(--fb);opacity:.8;margin-top:10px;display:inline-block;}
 .pw-bar{height:3px;border-radius:2px;margin-top:5px;background:var(--s4);transition:all .3s;width:0;}
 .pw-hint{font-size:.68rem;margin-top:3px;min-height:14px;}
 
-/* ═══ LAYOUT ═══ */
+/* LAYOUT */
 #sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);height:100vh;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;transition:var(--tr);flex-shrink:0;}
 #main{flex:1;height:100vh;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
 
-/* ═══ SIDEBAR ═══ */
+/* SIDEBAR */
 .sb-top{padding:20px 18px;border-bottom:1px solid var(--bdr);flex-shrink:0;}
 .sb-logo{font-family:var(--fh);font-weight:800;font-size:1rem;color:var(--gold);}
-.sb-tag{font-size:.65rem;color:var(--t3);margin-top:2px;letter-spacing:.04em;}
+.sb-tag{font-size:.65rem;color:var(--t3);margin-top:2px;}
 .sb-nav{padding:12px 10px;flex:1;overflow-y:auto;}
 .sb-sec{font-size:.62rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);padding:0 8px;margin:14px 0 6px;}
 .nav-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:6px;cursor:pointer;color:var(--t2);font-size:.83rem;font-weight:500;transition:var(--tr);text-decoration:none;border:1px solid transparent;user-select:none;}
@@ -85,193 +77,237 @@ body{background:var(--bg);color:var(--t1);font-family:var(--fb);font-size:14px;f
 .a-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#D4B05C);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;flex-shrink:0;font-family:var(--fh);}
 .a-name{font-size:.82rem;font-weight:600;color:var(--t1);}
 .a-role{font-size:.67rem;color:var(--gold);}
-.sb-out{background:none;border:none;color:var(--t3);font-size:.9rem;cursor:pointer;margin-left:auto;padding:4px;transition:var(--tr);flex-shrink:0;}
+.sb-out{background:none;border:none;color:var(--t3);font-size:.9rem;cursor:pointer;margin-left:auto;padding:4px;transition:var(--tr);}
 .sb-out:hover{color:var(--red);}
 
-/* ═══ TOPBAR ═══ */
+/* TOPBAR */
 .topbar{padding:0 24px;height:60px;background:var(--s1);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .tb-left{display:flex;align-items:center;gap:14px;}
 .tb-menu{background:none;border:none;color:var(--t2);cursor:pointer;font-size:1.1rem;padding:4px;display:none;}
 .tb-title{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--t1);}
-.tb-bread{font-size:.78rem;color:var(--t3);margin-top:1px;}
 .tb-right{display:flex;align-items:center;gap:10px;}
 .search-box{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 12px;transition:var(--tr);}
 .search-box:focus-within{border-color:rgba(201,168,76,.3);}
 .search-box input{background:none;border:none;outline:none;color:var(--t1);font-size:.82rem;font-family:var(--fb);width:160px;}
 .search-box input::placeholder{color:var(--t3);}
-.search-icon{color:var(--t3);font-size:.9rem;}
-.tb-btn{background:var(--s2);border:1px solid var(--bdr);color:var(--t2);padding:7px 14px;border-radius:var(--r);font-size:.75rem;cursor:pointer;transition:var(--tr);font-family:var(--fb);display:flex;align-items:center;gap:6px;}
+.tb-btn{background:var(--s2);border:1px solid var(--bdr);color:var(--t2);padding:7px 14px;border-radius:var(--r);font-size:.75rem;cursor:pointer;transition:var(--tr);font-family:var(--fb);display:flex;align-items:center;gap:6px;text-decoration:none;}
 .tb-btn:hover{border-color:rgba(201,168,76,.3);color:var(--gold);}
-.tb-btn-primary{background:var(--gold);border-color:var(--gold);color:#000;font-weight:600;}
-.tb-btn-primary:hover{background:#D4B05C;color:#000;}
+
+/* NOTIFICATION BELL */
+.notif-wrap{position:relative;}
 .notif-btn{position:relative;width:34px;height:34px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--tr);}
 .notif-btn:hover{border-color:rgba(201,168,76,.3);}
 .notif-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--red);border-radius:50%;border:1.5px solid var(--s1);}
-#content{flex:1;overflow-y:auto;padding:24px;}
+.notif-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r2);box-shadow:0 12px 40px rgba(0,0,0,.5);display:none;flex-direction:column;z-index:500;max-height:400px;overflow:hidden;}
+.notif-dropdown.open{display:flex;}
+.notif-hdr{padding:12px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;}
+.notif-hdr-ttl{font-size:.82rem;font-weight:600;color:var(--t1);}
+.notif-mark-all{font-size:.7rem;color:var(--gold);cursor:pointer;background:none;border:none;}
+.notif-body{flex:1;overflow-y:auto;}
+.notif-item{padding:12px 16px;border-bottom:1px solid var(--bdr2);cursor:pointer;transition:var(--tr);}
+.notif-item:hover{background:var(--s3);}
+.notif-item.unread{border-left:3px solid var(--gold);}
+.notif-msg{font-size:.78rem;color:var(--t1);line-height:1.5;}
+.notif-time{font-size:.68rem;color:var(--t3);margin-top:3px;}
+.notif-empty{padding:24px;text-align:center;font-size:.78rem;color:var(--t3);}
 
-/* ═══ PANELS ═══ */
+/* MAINTENANCE BANNER */
+.maint-banner{background:linear-gradient(135deg,#C9A84C20,#C9A84C10);border-bottom:2px solid var(--gold);padding:10px 24px;font-size:.78rem;color:var(--gold);text-align:center;display:none;flex-shrink:0;font-weight:500;}
+.maint-banner.show{display:block;}
+
+/* CONTENT */
+#content{flex:1;overflow-y:auto;padding:24px;}
 .panel{display:none;animation:pIn .2s var(--ease);}
 .panel.active{display:block;}
 @keyframes pIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
-/* ═══ STATS GRID ═══ */
+/* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-.stat-card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);padding:20px;position:relative;overflow:hidden;transition:var(--tr);}
+.stat-card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);padding:18px 20px;transition:var(--tr);}
 .stat-card:hover{border-color:rgba(201,168,76,.15);}
-.stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.03),transparent);pointer-events:none;}
-.stat-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
-.stat-icon-wrap{width:38px;height:38px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
-.stat-trend{font-size:.68rem;padding:3px 8px;border-radius:100px;font-weight:600;}
+.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.stat-icon-wrap{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.stat-val{font-family:var(--fh);font-size:2rem;font-weight:800;color:var(--t1);line-height:1;}
+.stat-lbl{font-size:.72rem;color:var(--t2);margin-top:4px;}
+.stat-sub{font-size:.66rem;color:var(--t3);margin-top:2px;}
+.stat-trend{font-size:.65rem;padding:3px 8px;border-radius:100px;font-weight:600;}
 .trend-up{background:var(--green-a);color:var(--green);}
-.trend-down{background:var(--red-a);color:var(--red);}
-.trend-neu{background:var(--s3);color:var(--t2);}
-.stat-val{font-family:var(--fh);font-size:1.9rem;font-weight:800;color:var(--t1);line-height:1;margin-bottom:4px;}
-.stat-lbl{font-size:.72rem;color:var(--t2);font-weight:500;}
-.stat-sub{font-size:.68rem;color:var(--t3);margin-top:3px;}
+.trend-neu{background:var(--yellow-a);color:var(--yellow);}
 
-/* ═══ CARDS ═══ */
-.card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden;}
-.card-hdr{padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);margin-bottom:16px;overflow:hidden;}
+.card-hdr{padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .card-ttl{font-family:var(--fh);font-size:.9rem;font-weight:700;color:var(--t1);}
 .card-sub{font-size:.72rem;color:var(--t3);margin-top:2px;}
-.card-body{padding:20px;}
+.card-body{padding:16px 20px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
 
-/* filter tabs */
-.ftabs{display:flex;gap:3px;background:var(--s2);padding:3px;border-radius:var(--r);}
-.ftab{padding:5px 13px;border-radius:5px;font-size:.72rem;font-weight:600;cursor:pointer;transition:var(--tr);color:var(--t2);border:none;background:transparent;font-family:var(--fb);}
-.ftab.active{background:var(--s3);color:var(--t1);}
-
-/* ═══ TABLE ═══ */
-.tbl-wrap{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;min-width:700px;}
-th{padding:11px 16px;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);background:var(--s2);border-bottom:1px solid var(--bdr);white-space:nowrap;}
-td{padding:13px 16px;font-size:.8rem;border-bottom:1px solid var(--bdr2);vertical-align:middle;}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:rgba(255,255,255,.012);}
-.cell-primary{font-weight:500;color:var(--t1);}
-.cell-sub{font-size:.7rem;color:var(--t3);margin-top:2px;}
-
-/* badges */
-.bdg{display:inline-flex;align-items:center;gap:4px;font-size:.67rem;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap;}
-.bdg::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
-.bdg-pending{background:var(--yellow-a);color:var(--yellow);}
-.bdg-confirmed{background:var(--green-a);color:var(--green);}
-.bdg-declined{background:var(--red-a);color:var(--red);}
-.bdg-new{background:var(--blue-a);color:var(--blue);}
-
-/* action buttons */
-.act-btns{display:flex;gap:5px;flex-wrap:wrap;}
-.act-btn{padding:4px 10px;border-radius:5px;font-size:.68rem;font-weight:600;cursor:pointer;border:1px solid;transition:var(--tr);font-family:var(--fb);white-space:nowrap;}
-.act-view{color:var(--t2);border-color:var(--bdr);background:transparent;}
-.act-view:hover{color:var(--gold);border-color:rgba(201,168,76,.3);}
-.act-ok{color:var(--green);border-color:rgba(34,197,94,.25);background:var(--green-a);}
-.act-ok:hover{background:rgba(34,197,94,.22);}
-.act-no{color:var(--red);border-color:rgba(239,68,68,.25);background:var(--red-a);}
-.act-no:hover{background:rgba(239,68,68,.22);}
-.act-del{color:var(--t3);border-color:var(--bdr);background:transparent;}
-.act-del:hover{color:var(--red);border-color:var(--red-a);}
-.empty-rows{text-align:center;padding:48px;color:var(--t3);font-size:.83rem;}
-
-/* ═══ TWO-COL GRID ═══ */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
-.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
-
-/* mini bar chart */
-.mini-bar-chart{display:flex;flex-direction:column;gap:10px;padding:4px 0;}
-.mbc-row{display:flex;align-items:center;gap:10px;}
-.mbc-label{font-size:.73rem;color:var(--t2);min-width:100px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mbc-track{flex:1;background:var(--s3);border-radius:100px;height:7px;overflow:hidden;}
-.mbc-fill{height:7px;border-radius:100px;background:linear-gradient(to right,var(--gold-dark,#8B6914),var(--gold));transition:width .8s var(--ease);}
-.mbc-val{font-size:.72rem;font-weight:700;color:var(--t1);min-width:24px;text-align:right;}
-
-/* donut chart placeholder */
+/* CHARTS */
+.mini-bar-chart{display:flex;flex-direction:column;gap:8px;}
+.mbc-row{display:flex;align-items:center;gap:8px;}
+.mbc-label{font-size:.72rem;color:var(--t2);width:100px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mbc-track{flex:1;height:6px;background:var(--s3);border-radius:3px;overflow:hidden;}
+.mbc-fill{height:100%;background:linear-gradient(90deg,var(--gold),#D4B05C);border-radius:3px;transition:width .8s var(--ease);}
+.mbc-val{font-size:.72rem;color:var(--gold);width:24px;text-align:right;flex-shrink:0;}
 .donut-wrap{display:flex;flex-direction:column;gap:10px;}
 .donut-row{display:flex;align-items:center;gap:10px;}
-.donut-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.donut-lbl{font-size:.75rem;color:var(--t2);flex:1;}
-.donut-val{font-size:.75rem;font-weight:700;color:var(--t1);}
+.donut-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.donut-lbl{font-size:.78rem;color:var(--t2);flex:1;}
+.donut-val{font-size:.82rem;font-weight:600;color:var(--t1);}
 
-/* activity feed */
-.activity-feed{display:flex;flex-direction:column;gap:0;}
-.activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--bdr2);}
-.activity-item:last-child{border-bottom:none;}
-.act-dot-wrap{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;padding-top:2px;}
-.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.act-line{width:1px;height:30px;background:var(--bdr);margin-top:4px;}
-.act-item:last-child .act-line{display:none;}
-.act-text{font-size:.78rem;color:var(--t1);line-height:1.5;flex:1;}
-.act-time{font-size:.68rem;color:var(--t3);margin-top:2px;}
+/* REVENUE CHART */
+.rev-chart-wrap{height:180px;display:flex;align-items:flex-end;gap:6px;padding:0 4px;}
+.rev-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.rev-bar{width:100%;background:linear-gradient(to top,var(--gold),#E2C97E);border-radius:3px 3px 0 0;min-height:4px;transition:height .6s var(--ease);}
+.rev-bar-lbl{font-size:.58rem;color:var(--t3);}
+.rev-bar-val{font-size:.6rem;color:var(--gold);}
 
-/* ═══ DETAIL PANEL (slide-in) ═══ */
-.detail-ov{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:5000;display:none;justify-content:flex-end;backdrop-filter:blur(3px);}
-.detail-ov.open{display:flex;}
-.detail-panel{width:420px;max-width:100vw;height:100vh;background:var(--s1);border-left:1px solid var(--bdr);overflow-y:auto;animation:slideIn .28s var(--ease);}
-@keyframes slideIn{from{transform:translateX(100%);}to{transform:none;}}
-.dp-hdr{padding:18px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--s1);z-index:1;}
-.dp-ttl{font-family:var(--fh);font-size:.95rem;font-weight:700;}
-.dp-x{background:none;border:none;color:var(--t2);font-size:1.2rem;cursor:pointer;padding:4px 8px;transition:var(--tr);border-radius:5px;}
-.dp-x:hover{background:var(--s2);color:var(--t1);}
-.dp-body{padding:20px;}
-.dp-sec{margin-bottom:24px;}
-.dp-sec-ttl{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--bdr2);}
-.dp-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;}
-.dp-key{font-size:.75rem;color:var(--t2);}
-.dp-val{font-size:.78rem;color:var(--t1);font-weight:500;text-align:right;max-width:220px;word-break:break-word;}
-.dp-actions{display:flex;flex-direction:column;gap:8px;}
-.dp-btn{padding:10px;border-radius:var(--r);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid;transition:var(--tr);text-align:center;font-family:var(--fh);letter-spacing:.04em;}
-.dp-ok{background:var(--green-a);border-color:rgba(34,197,94,.3);color:var(--green);}
-.dp-ok:hover{background:rgba(34,197,94,.22);}
-.dp-no{background:var(--red-a);border-color:rgba(239,68,68,.3);color:var(--red);}
-.dp-no:hover{background:rgba(239,68,68,.22);}
-.note-ta{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:10px;border-radius:var(--r);font-family:var(--fb);font-size:.8rem;resize:vertical;min-height:85px;outline:none;transition:var(--tr);}
-.note-ta:focus{border-color:rgba(201,168,76,.35);}
-.note-save{margin-top:7px;background:var(--s3);border:1px solid var(--bdr);color:var(--t2);padding:7px 14px;border-radius:var(--r);font-size:.74rem;cursor:pointer;transition:var(--tr);font-family:var(--fb);}
-.note-save:hover{color:var(--gold);border-color:rgba(201,168,76,.3);}
+/* TABLES */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;text-align:left;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--bdr);white-space:nowrap;}
+tbody td{padding:12px 16px;font-size:.8rem;color:var(--t2);border-bottom:1px solid var(--bdr2);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--s2);}
+.cell-primary{font-size:.83rem;font-weight:600;color:var(--t1);}
+.cell-sub{font-size:.7rem;color:var(--t3);margin-top:1px;}
+.empty-rows{text-align:center;padding:32px;color:var(--t3);}
 
-/* ═══ PHOTO UPLOAD — Gallery Manager ═══ */
-.gallery-manager{display:grid;grid-template-columns:1fr 1.4fr;gap:16px;align-items:start;}
-.upload-zone{border:2px dashed rgba(201,168,76,.25);border-radius:var(--r2);padding:32px 20px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--gold-a2);}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:var(--gold-a);}
-.uz-icon{font-size:2.4rem;margin-bottom:12px;}
+/* BADGES */
+.bdg{font-size:.62rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:100px;border:1px solid;}
+.bdg-pending{color:var(--yellow);border-color:rgba(245,158,11,.3);background:var(--yellow-a);}
+.bdg-confirmed{color:var(--green);border-color:rgba(34,197,94,.3);background:var(--green-a);}
+.bdg-declined{color:var(--red);border-color:rgba(239,68,68,.3);background:var(--red-a);}
+.bdg-new{color:var(--blue);border-color:rgba(96,165,250,.3);background:var(--blue-a);}
+.bdg-modified{color:var(--purple);border-color:rgba(167,139,250,.3);background:var(--purple-a);}
+
+/* FILTERS */
+.ftabs{display:flex;gap:4px;flex-wrap:wrap;}
+.ftab{background:var(--s2);border:1px solid var(--bdr);color:var(--t2);padding:5px 12px;border-radius:100px;font-size:.7rem;cursor:pointer;transition:var(--tr);font-family:var(--fb);}
+.ftab:hover{border-color:rgba(201,168,76,.3);color:var(--gold);}
+.ftab.active{background:var(--gold-a);border-color:rgba(201,168,76,.35);color:var(--gold);font-weight:600;}
+
+/* BOOKING FILTERS ROW */
+.bk-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;padding:12px 16px;background:var(--s2);border-radius:var(--r);}
+.bk-filter-select{background:var(--s3);border:1px solid var(--bdr);color:var(--t1);padding:6px 10px;border-radius:var(--r);font-size:.76rem;font-family:var(--fb);outline:none;}
+.bk-filter-select option{background:var(--s3);}
+
+/* ACTION BUTTONS */
+.act-btns{display:flex;gap:4px;}
+.act-btn{font-size:.65rem;padding:4px 10px;border:1px solid var(--bdr);border-radius:4px;cursor:pointer;font-family:var(--fb);transition:var(--tr);background:transparent;color:var(--t2);}
+.act-btn:hover{border-color:var(--gold);color:var(--gold);}
+.act-ok{color:var(--green);border-color:rgba(34,197,94,.3);}
+.act-ok:hover{background:var(--green-a);}
+.act-no{color:var(--red);border-color:rgba(239,68,68,.3);}
+.act-no:hover{background:var(--red-a);}
+.act-view{color:var(--blue);border-color:rgba(96,165,250,.3);}
+.act-view:hover{background:var(--blue-a);}
+
+/* KANBAN */
+.kanban-wrap{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;overflow-x:auto;min-height:400px;}
+.kb-col{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r2);padding:12px;min-width:180px;}
+.kb-col-hdr{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bdr);}
+.kb-col-count{font-size:.62rem;color:var(--t3);margin-left:6px;}
+.kb-card{background:var(--s3);border:1px solid var(--bdr);border-radius:var(--r);padding:10px;margin-bottom:8px;cursor:grab;transition:var(--tr);}
+.kb-card:active{cursor:grabbing;opacity:.8;}
+.kb-card:hover{border-color:rgba(201,168,76,.25);}
+.kb-card-name{font-size:.78rem;font-weight:600;color:var(--t1);}
+.kb-card-svc{font-size:.67rem;color:var(--gold);margin-top:2px;}
+.kb-card-date{font-size:.63rem;color:var(--t3);margin-top:3px;}
+.kb-drag-over{background:var(--gold-a);border-color:var(--gold);}
+
+/* DETAIL PANEL */
+.detail-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:800;display:none;}
+.detail-ov.open{display:block;}
+.detail-panel{position:fixed;top:0;right:0;bottom:0;width:420px;background:var(--s1);border-left:1px solid var(--bdr);overflow-y:auto;z-index:801;}
+.dp-hdr{padding:18px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--s1);}
+.dp-ttl{font-family:var(--fh);font-size:.92rem;font-weight:700;color:var(--t1);}
+.dp-x{background:none;border:none;color:var(--t2);font-size:1.2rem;cursor:pointer;}
+.dp-body{padding:18px 20px;}
+.dp-sec{margin-bottom:20px;}
+.dp-sec-ttl{font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:10px;}
+.dp-row{display:flex;align-items:flex-start;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr2);gap:10px;}
+.dp-key{font-size:.76rem;color:var(--t3);flex-shrink:0;}
+.dp-val{font-size:.78rem;color:var(--t1);text-align:right;word-break:break-word;}
+.dp-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.dp-btn{padding:8px 16px;border-radius:var(--r);font-size:.78rem;font-family:var(--fb);cursor:pointer;border:none;font-weight:600;transition:var(--tr);}
+.dp-ok{background:var(--green-a);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+.dp-ok:hover{background:var(--green);color:#000;}
+.dp-no{background:var(--red-a);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+.dp-no:hover{background:var(--red);color:#fff;}
+.dp-mod{background:var(--blue-a);color:var(--blue);border:1px solid rgba(96,165,250,.3);}
+.dp-mod:hover{background:var(--blue);color:#000;}
+.note-ta{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:10px;font-family:var(--fb);font-size:.8rem;border-radius:var(--r);outline:none;resize:vertical;min-height:80px;margin-bottom:8px;}
+.note-ta:focus{border-color:rgba(201,168,76,.3);}
+.note-save{background:var(--gold);color:#000;border:none;padding:7px 16px;border-radius:var(--r);font-size:.75rem;font-weight:700;cursor:pointer;font-family:var(--fh);}
+.price-input-wrap{display:flex;gap:8px;margin-top:8px;}
+.price-input-wrap input{flex:1;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:9px 12px;border-radius:var(--r);font-family:var(--fb);font-size:.85rem;outline:none;}
+.price-input-wrap input:focus{border-color:rgba(201,168,76,.4);}
+.price-save-btn{background:var(--gold);color:#000;border:none;padding:9px 14px;border-radius:var(--r);font-weight:700;cursor:pointer;font-size:.78rem;font-family:var(--fh);white-space:nowrap;}
+
+/* USERS */
+.user-item{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--bdr2);transition:var(--tr);}
+.user-item:hover{background:var(--s2);}
+.u-av-sm{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;flex-shrink:0;font-family:var(--fh);}
+
+/* STAFF PANEL */
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:14px;}
+.staff-card{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;display:flex;flex-direction:column;gap:8px;}
+.staff-name{font-size:.88rem;font-weight:600;color:var(--t1);}
+.staff-role{font-size:.7rem;color:var(--gold);letter-spacing:.06em;}
+.staff-contact{font-size:.72rem;color:var(--t3);}
+.staff-del{background:var(--red-a);border:1px solid rgba(239,68,68,.25);color:var(--red);padding:5px 10px;border-radius:var(--r);font-size:.68rem;cursor:pointer;font-family:var(--fb);align-self:flex-start;margin-top:4px;}
+.staff-del:hover{background:var(--red);color:#fff;}
+.add-staff-form{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;margin-bottom:16px;}
+
+/* GALLERY */
+.gallery-manager{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.upload-zone{border:2px dashed rgba(201,168,76,.25);border-radius:var(--r2);padding:32px 20px;text-align:center;cursor:pointer;transition:var(--tr);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:var(--gold-a2);}
+.uz-icon{font-size:2rem;margin-bottom:8px;}
 .uz-title{font-size:.88rem;font-weight:600;color:var(--t1);margin-bottom:4px;}
-.uz-sub{font-size:.75rem;color:var(--t2);margin-bottom:16px;}
+.uz-sub{font-size:.72rem;color:var(--t3);margin-bottom:12px;}
+.uz-btn{background:var(--s3);border:1px solid var(--bdr);color:var(--t2);padding:7px 16px;border-radius:var(--r);font-size:.75rem;cursor:pointer;font-family:var(--fb);}
 .uz-input{display:none;}
-.uz-btn{background:var(--gold);color:#000;padding:9px 22px;border-radius:var(--r);font-size:.78rem;font-weight:700;cursor:pointer;border:none;transition:var(--tr);font-family:var(--fh);}
-.uz-btn:hover{background:#D4B05C;}
-.upload-form{padding:20px;background:var(--s2);border-radius:var(--r2);border:1px solid var(--bdr);}
-.uf-label{display:block;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:5px;}
-.uf-select,.uf-input,.uf-ta{width:100%;background:var(--s3);border:1px solid var(--bdr);color:var(--t1);padding:9px 12px;border-radius:var(--r);font-family:var(--fb);font-size:.82rem;outline:none;transition:var(--tr);margin-bottom:12px;}
-.uf-select:focus,.uf-input:focus,.uf-ta:focus{border-color:rgba(201,168,76,.35);}
-.uf-select option{background:var(--s3);}
-.uf-ta{resize:vertical;min-height:70px;}
-#uploadPreview{width:100%;aspect-ratio:16/9;background:var(--s3);border-radius:var(--r);margin-bottom:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:.8rem;border:1px solid var(--bdr);}
-#uploadPreview img{width:100%;height:100%;object-fit:cover;}
-.upload-progress{height:4px;background:var(--s4);border-radius:100px;overflow:hidden;margin-bottom:12px;display:none;}
-.upload-progress-bar{height:4px;background:linear-gradient(to right,var(--gold),var(--gold2));border-radius:100px;width:0%;transition:width .3s;}
-#uploadBtn{width:100%;background:var(--gold);color:#000;padding:11px;border-radius:var(--r);font-family:var(--fh);font-size:.85rem;font-weight:700;cursor:pointer;border:none;transition:var(--tr);}
-#uploadBtn:hover{background:#D4B05C;}
-#uploadBtn:disabled{opacity:.5;cursor:not-allowed;}
-#uploadMsg{font-size:.75rem;margin-top:8px;min-height:16px;}
-.msg-ok{color:var(--green);}.msg-err{color:var(--red);}
+.upload-form{display:flex;flex-direction:column;gap:8px;}
+.uf-label{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);}
+.uf-select,.uf-input{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:9px 12px;border-radius:var(--r);font-family:var(--fb);font-size:.82rem;outline:none;}
+.uf-select option{background:var(--s2);}
+.uf-select:focus,.uf-input:focus{border-color:rgba(201,168,76,.3);}
+#uploadBtn{background:var(--gold);color:#000;border:none;padding:10px;border-radius:var(--r);font-family:var(--fh);font-weight:700;font-size:.82rem;cursor:pointer;transition:var(--tr);}
+#uploadBtn:disabled{opacity:.45;cursor:not-allowed;}
+#uploadPreview{height:100px;border-radius:var(--r);background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--t3);overflow:hidden;}
+#uploadPreview img{width:100%;height:100%;object-fit:cover;border-radius:var(--r);}
+.upload-progress{display:none;height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:4px;}
+.upload-progress-bar{height:100%;background:linear-gradient(90deg,var(--gold),#E2C97E);width:0;transition:width .3s;}
+.msg-ok{color:var(--green);font-size:.75rem;}
+.msg-err{color:var(--red);font-size:.75rem;}
+.gallery-grid-admin{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;padding:16px 20px;}
+.gga-item{position:relative;aspect-ratio:1;border-radius:var(--r);overflow:hidden;cursor:pointer;}
+.gga-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+.gga-item:hover img{transform:scale(1.05);}
+.gga-overlay{position:absolute;inset:0;background:rgba(0,0,0,.65);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;opacity:0;transition:var(--tr);padding:6px;}
+.gga-item:hover .gga-overlay{opacity:1;}
+.gga-svc{font-size:.62rem;font-weight:600;color:var(--gold);text-align:center;}
+.gga-del{background:var(--red-a);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:4px 8px;border-radius:4px;font-size:.62rem;cursor:pointer;font-family:var(--fb);}
+.gga-del:hover{background:var(--red);color:#fff;}
+.gga-empty{grid-column:1/-1;text-align:center;padding:48px;color:var(--t3);font-size:.82rem;}
 
-/* gallery grid */
-.gallery-grid-admin{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:16px;max-height:500px;overflow-y:auto;}
-.gga-item{aspect-ratio:4/3;background:var(--s2);border-radius:var(--r);overflow:hidden;position:relative;group:true;}
-.gga-item img{width:100%;height:100%;object-fit:cover;transition:.3s;}
-.gga-item:hover img{transform:scale(1.04);}
-.gga-overlay{position:absolute;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;gap:8px;flex-direction:column;}
-.gga-item:hover .gga-overlay{display:flex;}
-.gga-svc{font-size:.62rem;letter-spacing:.08em;color:var(--gold);text-transform:uppercase;text-align:center;padding:0 6px;}
-.gga-del{background:var(--red-a);border:1px solid rgba(239,68,68,.3);color:var(--red);font-size:.68rem;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:var(--fb);transition:var(--tr);}
-.gga-del:hover{background:rgba(239,68,68,.25);}
-.gga-empty{grid-column:1/-1;text-align:center;padding:40px;color:var(--t3);font-size:.82rem;}
+/* REVIEWS PANEL */
+.rev-admin-grid{display:flex;flex-direction:column;gap:10px;padding:16px 20px;}
+.rev-admin-card{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;}
+.rev-admin-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.rev-stars-sm{color:var(--gold);font-size:.78rem;}
+.rev-actions{display:flex;gap:6px;}
+.rev-approve{background:var(--green-a);color:var(--green);border:1px solid rgba(34,197,94,.3);padding:4px 10px;border-radius:4px;font-size:.65rem;cursor:pointer;font-family:var(--fb);}
+.rev-approve:hover{background:var(--green);color:#000;}
+.rev-reject{background:var(--red-a);color:var(--red);border:1px solid rgba(239,68,68,.3);padding:4px 10px;border-radius:4px;font-size:.65rem;cursor:pointer;font-family:var(--fb);}
+.rev-reject:hover{background:var(--red);color:#fff;}
+.rev-txt-sm{font-size:.78rem;color:var(--t2);line-height:1.6;}
+.rev-meta-sm{font-size:.66rem;color:var(--t3);margin-top:6px;}
 
-/* ═══ USERS PANEL ═══ */
-.user-item{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--bdr2);}
-.user-item:last-child{border-bottom:none;}
-.u-av-sm{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;flex-shrink:0;font-family:var(--fh);}
-
-/* ═══ SETTINGS ═══ */
+/* SETTINGS */
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .setting-card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);}
 .setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--bdr2);}
@@ -279,128 +315,92 @@ tr:hover td{background:rgba(255,255,255,.012);}
 .sr-info{flex:1;}
 .sr-label{font-size:.82rem;font-weight:600;color:var(--t1);}
 .sr-desc{font-size:.7rem;color:var(--t3);margin-top:2px;}
-/* toggle */
-.toggle{width:40px;height:22px;background:var(--s4);border-radius:100px;position:relative;cursor:pointer;transition:var(--tr);border:none;flex-shrink:0;}
+.toggle{width:40px;height:22px;background:var(--s4);border-radius:100px;position:relative;cursor:pointer;transition:var(--tr);border:none;}
 .toggle.on{background:var(--gold);}
 .toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:var(--tr);}
 .toggle.on::after{left:21px;}
+.maint-msg-input{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:9px 12px;border-radius:var(--r);font-family:var(--fb);font-size:.82rem;outline:none;margin-top:8px;}
+.save-maint-btn{background:var(--gold);color:#000;border:none;padding:8px 18px;border-radius:var(--r);font-weight:700;font-size:.78rem;cursor:pointer;margin-top:8px;font-family:var(--fh);}
 
-/* ═══ TOAST ═══ */
+/* TOAST */
 .toast{position:fixed;bottom:20px;right:20px;z-index:9500;background:var(--s2);border:1px solid var(--bdr);border-left:3px solid var(--gold);padding:13px 18px;border-radius:var(--r);font-size:.8rem;min-width:230px;transform:translateX(130%);transition:var(--tr);box-shadow:0 8px 32px rgba(0,0,0,.5);}
 .toast.show{transform:none;}
 
-/* ═══ RESPONSIVE ═══ */
-@media(max-width:1100px){
-  .stats-grid{grid-template-columns:repeat(2,1fr);}
-  .two-col{grid-template-columns:1fr;}
-  .gallery-manager{grid-template-columns:1fr;}
-  .settings-grid{grid-template-columns:1fr;}
-}
-@media(max-width:900px){
-  :root{--sidebar-w:0px;}
-  #sidebar{position:fixed;left:0;top:0;bottom:0;z-index:800;transform:translateX(-248px);width:248px;min-width:248px;}
-  #sidebar.mob-open{transform:none;}
-  .tb-menu{display:flex!important;}
-  .search-box input{width:120px;}
-  .three-col{grid-template-columns:1fr 1fr;}
-  .detail-panel{width:100vw;}
-}
-@media(max-width:640px){
-  #content{padding:14px;}
-  .stats-grid{grid-template-columns:1fr 1fr;}
-  .topbar{padding:0 14px;}
-  .three-col{grid-template-columns:1fr;}
-  .gallery-grid-admin{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
-  .card-hdr{flex-direction:column;align-items:flex-start;}
-}
-@media(max-width:400px){
-  .stats-grid{grid-template-columns:1fr;}
-}
+/* RESPONSIVE */
+@media(max-width:1100px){.stats-grid{grid-template-columns:1fr 1fr;}.two-col{grid-template-columns:1fr;}.settings-grid{grid-template-columns:1fr;}.kanban-wrap{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:900px){:root{--sidebar-w:0px;}#sidebar{position:fixed;left:0;top:0;bottom:0;z-index:800;transform:translateX(-248px);width:248px;min-width:248px;}#sidebar.mob-open{transform:none;}.tb-menu{display:flex!important;}.search-box input{width:100px;}.detail-panel{width:100vw;}.gallery-manager{grid-template-columns:1fr;}}
+@media(max-width:640px){#content{padding:12px;}.stats-grid{grid-template-columns:1fr 1fr;}.card-hdr{flex-direction:column;align-items:flex-start;}.kanban-wrap{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
 
-<!-- ═══ AUTH SCREEN — Login · Register · Forgot Password ═══ -->
+<!-- ═══ AUTH SCREEN ═══ -->
 <div id="loginScreen">
   <div class="login-wrap">
     <div class="login-chip">⚡ Admin Portal</div>
     <div class="login-logo">AB Events &amp; Decors</div>
     <div class="login-sub">Administration Dashboard</div>
-
     <div class="auth-tabs" id="adminAuthTabs">
       <button class="auth-tab active" onclick="switchAdminTab('login')">Sign In</button>
       <button class="auth-tab" onclick="switchAdminTab('register')">Register</button>
     </div>
-
-    <!-- LOGIN PANEL -->
+    <!-- LOGIN -->
     <div class="auth-panel active" id="adminLoginPanel">
       <div class="lf-group"><label class="lf-label">Admin Email</label><input class="lf-input" type="email" id="adEmail" placeholder="admin@abevents.in" autocomplete="username"/></div>
-      <div class="lf-group"><label class="lf-label">Password</label><input class="lf-input" type="password" id="adPwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
+      <div class="lf-group"><label class="lf-label">Password</label><input class="lf-input" type="password" id="adPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
       <button class="lbtn" onclick="adminLogin()">Sign In to Dashboard →</button>
       <div class="l-err" id="loginErr"></div>
       <div style="text-align:center;"><button class="l-forgot-btn" onclick="switchAdminTab('forgot')">🔑 Forgot your password?</button></div>
       <div class="l-hint">Restricted to authorised administrators only.<br>Customer site: <a href="index.html">index.html ↗</a></div>
     </div>
-
-    <!-- REGISTER PANEL -->
+    <!-- REGISTER -->
     <div class="auth-panel" id="adminRegPanel">
       <div class="lf-row">
         <div class="lf-group"><label class="lf-label">First Name</label><input class="lf-input" id="regFirstName" placeholder="First"/></div>
         <div class="lf-group"><label class="lf-label">Last Name</label><input class="lf-input" id="regLastName" placeholder="Last"/></div>
       </div>
-      <div class="lf-group"><label class="lf-label">Email Address</label><input class="lf-input" type="email" id="regEmail" placeholder="admin@abevents.in"/></div>
+      <div class="lf-group"><label class="lf-label">Email</label><input class="lf-input" type="email" id="regEmail" placeholder="admin@abevents.in"/></div>
       <div class="lf-group"><label class="lf-label">Phone</label><input class="lf-input" id="regPhone" placeholder="+91 XXXXX XXXXX"/></div>
-      <div class="lf-group">
-        <label class="lf-label">Password</label>
-        <input class="lf-input" type="password" id="regPwd" placeholder="Min. 6 characters" oninput="checkPwStrength(this.value)"/>
-        <div class="pw-bar" id="pwBar"></div>
-        <div class="pw-hint" id="pwHint"></div>
-      </div>
-      <div class="lf-group"><label class="lf-label">Confirm Password</label><input class="lf-input" type="password" id="regPwd2" placeholder="Re-enter password"/></div>
+      <div class="lf-group"><label class="lf-label">Password</label><input class="lf-input" type="password" id="regPwd" placeholder="Min. 6 chars" oninput="checkPwStrength(this.value)"/><div class="pw-bar" id="pwBar"></div><div class="pw-hint" id="pwHint"></div></div>
+      <div class="lf-group"><label class="lf-label">Confirm Password</label><input class="lf-input" type="password" id="regPwd2" placeholder="Re-enter"/></div>
       <button class="lbtn" onclick="adminRegister()">Create Admin Account →</button>
-      <div class="l-err" id="regErr"></div>
-      <div class="l-ok" id="regOk"></div>
-      <div class="l-hint" style="margin-top:10px;">⚠️ Add your email to the ADMIN_EMAILS whitelist in the code to access the dashboard.</div>
+      <div class="l-err" id="regErr"></div><div class="l-ok" id="regOk"></div>
+      <div class="l-hint">⚠️ Add your email to ADMIN_EMAILS_LOCAL in the code to access dashboard after registration.</div>
     </div>
-
-    <!-- FORGOT PASSWORD PANEL -->
+    <!-- FORGOT -->
     <div class="auth-panel" id="adminForgotPanel">
-      <button class="l-forgot-btn" onclick="switchAdminTab('login')" style="margin-bottom:14px;">← Back to Sign In</button>
+      <button class="l-forgot-btn" onclick="switchAdminTab('login')" style="margin-bottom:14px;">← Back</button>
       <div style="font-family:var(--fh);font-size:.98rem;font-weight:700;color:var(--t1);margin-bottom:4px;">Reset Password</div>
-      <div style="font-size:.78rem;color:var(--t2);margin-bottom:16px;">Enter your admin email and we'll send a reset link.</div>
+      <div style="font-size:.78rem;color:var(--t2);margin-bottom:16px;">We'll send a reset link to your email.</div>
       <div class="lf-group"><label class="lf-label">Admin Email</label><input class="lf-input" type="email" id="fpEmail" placeholder="admin@abevents.in"/></div>
       <button class="lbtn" onclick="adminForgotPwd()">Send Reset Link →</button>
-      <div class="l-err" id="fpErr"></div>
-      <div class="l-ok" id="fpOk"></div>
+      <div class="l-err" id="fpErr"></div><div class="l-ok" id="fpOk"></div>
     </div>
-
   </div>
 </div>
 
 <!-- ═══ SIDEBAR ═══ -->
 <aside id="sidebar">
-  <div class="sb-top">
-    <div class="sb-logo">AB Events</div>
-    <div class="sb-tag">Administration Dashboard</div>
-  </div>
+  <div class="sb-top"><div class="sb-logo">AB Events</div><div class="sb-tag">Administration Dashboard</div></div>
   <nav class="sb-nav">
     <div class="sb-sec">Overview</div>
     <a class="nav-item active" href="#" onclick="showPanel('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</a>
+    <a class="nav-item" href="#" onclick="showPanel('analytics',this)"><span class="nav-icon">📈</span>Revenue Analytics</a>
+    <a class="nav-item" href="#" onclick="showPanel('pipeline',this)"><span class="nav-icon">🗂️</span>Booking Pipeline</a>
     <a class="nav-item" href="#" onclick="showPanel('bookings',this)"><span class="nav-icon">📋</span>Bookings<span class="n-badge" id="pendingBadge">0</span></a>
     <a class="nav-item" href="#" onclick="showPanel('users',this)"><span class="nav-icon">👥</span>Customers</a>
     <div class="sb-sec">Content</div>
-    <a class="nav-item" href="#" onclick="showPanel('gallery',this)"><span class="nav-icon">🖼️</span>Gallery & Photos<span class="n-badge gold" id="galBadge">0</span></a>
+    <a class="nav-item" href="#" onclick="showPanel('gallery',this)"><span class="nav-icon">🖼️</span>Gallery &amp; Photos<span class="n-badge gold" id="galBadge">0</span></a>
+    <a class="nav-item" href="#" onclick="showPanel('reviews',this)"><span class="nav-icon">⭐</span>Reviews<span class="n-badge" id="revBadge" style="display:none">!</span></a>
     <div class="sb-sec">System</div>
+    <a class="nav-item" href="#" onclick="showPanel('staff',this)"><span class="nav-icon">👤</span>Staff Management</a>
     <a class="nav-item" href="#" onclick="showPanel('services',this)"><span class="nav-icon">🎊</span>Services</a>
     <a class="nav-item" href="#" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</a>
   </nav>
   <div class="sb-foot">
     <div class="admin-card">
       <div class="a-av" id="sbAvatar">A</div>
-      <div>
-        <div class="a-name" id="sbName">Admin</div>
-        <div class="a-role">Administrator</div>
-      </div>
+      <div><div class="a-name" id="sbName">Admin</div><div class="a-role">Administrator</div></div>
       <button class="sb-out" onclick="adminSignOut()" title="Sign Out">↪</button>
     </div>
   </div>
@@ -408,197 +408,171 @@ tr:hover td{background:rgba(255,255,255,.012);}
 
 <!-- ═══ MAIN ═══ -->
 <div id="main">
-  <!-- TOPBAR -->
+  <div class="maint-banner" id="adminMaintBanner">🔧 Maintenance mode is ON — customer site is showing a maintenance message.</div>
   <div class="topbar">
     <div class="tb-left">
       <button class="tb-menu" onclick="toggleSidebar()">☰</button>
-      <div>
-        <div class="tb-title" id="tbTitle">Dashboard</div>
-        <div class="tb-bread" id="tbBread">AB Events & Decors · Admin</div>
-      </div>
+      <div><div class="tb-title" id="tbTitle">Dashboard</div></div>
     </div>
     <div class="tb-right">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" placeholder="Search bookings…" id="globalSearch" oninput="filterBookings()"/>
-      </div>
+      <div class="search-box"><span style="color:var(--t3)">🔍</span><input type="text" placeholder="Search bookings…" id="globalSearch" oninput="filterBookings()"/></div>
       <button class="tb-btn" onclick="refreshAll()">↻ Refresh</button>
-      <a href="ab-events-customer.html" target="_blank" class="tb-btn">↗ View Site</a>
-      <div class="notif-btn" id="notifBtn"><span>🔔</span><span class="notif-dot" id="notifDot"></span></div>
+      <a href="index.html" target="_blank" class="tb-btn">↗ View Site</a>
+      <!-- Admin Notifications Bell -->
+      <div class="notif-wrap">
+        <div class="notif-btn" onclick="toggleAdminNotifDropdown()">🔔<span class="notif-dot" id="adminNotifDot" style="display:none"></span></div>
+        <div class="notif-dropdown" id="adminNotifDropdown">
+          <div class="notif-hdr"><span class="notif-hdr-ttl">Notifications</span><button class="notif-mark-all" onclick="markAllAdminNotifs()">Mark all read</button></div>
+          <div class="notif-body" id="adminNotifList"><div class="notif-empty">No notifications</div></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- CONTENT -->
   <div id="content">
 
-    <!-- ───── DASHBOARD ───── -->
+    <!-- DASHBOARD -->
     <div class="panel active" id="panel-dashboard">
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-top">
-            <div class="stat-icon-wrap" style="background:var(--gold-a)">📋</div>
-            <span class="stat-trend trend-up" id="trendTotal">↑ New</span>
-          </div>
-          <div class="stat-val" id="statTotal">—</div>
-          <div class="stat-lbl">Total Bookings</div>
-          <div class="stat-sub" id="statTotalSub">Loading…</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-top">
-            <div class="stat-icon-wrap" style="background:var(--yellow-a)">⏳</div>
-            <span class="stat-trend trend-neu" id="trendPending">Review</span>
-          </div>
-          <div class="stat-val" id="statPending">—</div>
-          <div class="stat-lbl">Pending Review</div>
-          <div class="stat-sub">Awaiting your action</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-top">
-            <div class="stat-icon-wrap" style="background:var(--green-a)">✅</div>
-            <span class="stat-trend trend-up" id="trendConfirmed">Active</span>
-          </div>
-          <div class="stat-val" id="statConfirmed">—</div>
-          <div class="stat-lbl">Confirmed Events</div>
-          <div class="stat-sub">Ready to execute</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-top">
-            <div class="stat-icon-wrap" style="background:var(--blue-a)">👥</div>
-            <span class="stat-trend trend-up" id="trendUsers">Growing</span>
-          </div>
-          <div class="stat-val" id="statUsers">—</div>
-          <div class="stat-lbl">Registered Customers</div>
-          <div class="stat-sub">Active accounts</div>
-        </div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--gold-a)">📋</div><span class="stat-trend trend-up" id="trendTotal">↑ New</span></div><div class="stat-val" id="statTotal">—</div><div class="stat-lbl">Total Bookings</div><div class="stat-sub" id="statTotalSub">Loading…</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--yellow-a)">⏳</div><span class="stat-trend trend-neu">Review</span></div><div class="stat-val" id="statPending">—</div><div class="stat-lbl">Pending Review</div><div class="stat-sub">Awaiting action</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--green-a)">✅</div><span class="stat-trend trend-up">Active</span></div><div class="stat-val" id="statConfirmed">—</div><div class="stat-lbl">Confirmed Events</div><div class="stat-sub">Ready to execute</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--blue-a)">👥</div><span class="stat-trend trend-up">Growing</span></div><div class="stat-val" id="statUsers">—</div><div class="stat-lbl">Registered Customers</div><div class="stat-sub">Active accounts</div></div>
       </div>
-
-      <div class="two-col" style="margin-bottom:20px;">
-        <div class="card">
-          <div class="card-hdr"><div><div class="card-ttl">Bookings by Service</div><div class="card-sub">Demand breakdown</div></div></div>
-          <div class="card-body"><div class="mini-bar-chart" id="svcChart"></div></div>
-        </div>
-        <div class="card">
-          <div class="card-hdr"><div><div class="card-ttl">Status Overview</div><div class="card-sub">Current booking states</div></div></div>
-          <div class="card-body"><div class="donut-wrap" id="statusChart"></div></div>
-        </div>
+      <div class="two-col">
+        <div class="card"><div class="card-hdr"><div><div class="card-ttl">Bookings by Service</div><div class="card-sub">Demand breakdown</div></div></div><div class="card-body"><div class="mini-bar-chart" id="svcChart"></div></div></div>
+        <div class="card"><div class="card-hdr"><div><div class="card-ttl">Status Overview</div></div></div><div class="card-body"><div class="donut-wrap" id="statusChart"></div></div></div>
       </div>
-
-      <div class="card">
-        <div class="card-hdr">
-          <div><div class="card-ttl">Recent Booking Requests</div><div class="card-sub">Latest 8 submissions</div></div>
-          <button class="tb-btn" onclick="showPanel('bookings',document.querySelector('.nav-item:nth-child(3)'))">View All →</button>
-        </div>
-        <div class="tbl-wrap">
-          <table><thead><tr><th>Client</th><th>Service</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody id="recentTbl"><tr><td colspan="6" class="empty-rows">Loading…</td></tr></tbody></table>
-        </div>
-      </div>
+      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Recent Booking Requests</div><div class="card-sub">Latest 8</div></div><button class="tb-btn" onclick="showPanel('bookings',null)">View All →</button></div><div class="tbl-wrap"><table><thead><tr><th>Client</th><th>Service</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead><tbody id="recentTbl"></tbody></table></div></div>
     </div>
 
-    <!-- ───── BOOKINGS ───── -->
+    <!-- REVENUE ANALYTICS -->
+    <div class="panel" id="panel-analytics">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--green-a)">💰</div><span class="stat-trend trend-up">Revenue</span></div><div class="stat-val" id="anaRevenue">—</div><div class="stat-lbl">Total Quoted Revenue</div><div class="stat-sub">Sum of all confirmed budgets</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--gold-a)">📊</div><span class="stat-trend trend-up">Avg</span></div><div class="stat-val" id="anaAvg">—</div><div class="stat-lbl">Avg Booking Value</div><div class="stat-sub">Per confirmed event</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--blue-a)">🎯</div><span class="stat-trend trend-up">Rate</span></div><div class="stat-val" id="anaConv">—</div><div class="stat-lbl">Conversion Rate</div><div class="stat-sub">Enquiry → Confirmed</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--purple-a)">📅</div><span class="stat-trend trend-up">Month</span></div><div class="stat-val" id="anaThisMonth">—</div><div class="stat-lbl">This Month Bookings</div><div class="stat-sub" id="anaMonthLabel">Current month</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card"><div class="card-hdr"><div><div class="card-ttl">Monthly Booking Trend</div><div class="card-sub">Last 6 months</div></div></div><div class="card-body"><div class="rev-chart-wrap" id="revBarChart"></div></div></div>
+        <div class="card"><div class="card-hdr"><div><div class="card-ttl">Top Services by Demand</div></div></div><div class="card-body"><div class="mini-bar-chart" id="anaSvcChart"></div></div></div>
+      </div>
+      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Event Type Breakdown</div><div class="card-sub">Bookings by event category</div></div></div><div class="card-body"><div class="mini-bar-chart" id="anaEventChart"></div></div></div>
+    </div>
+
+    <!-- PIPELINE / KANBAN -->
+    <div class="panel" id="panel-pipeline">
+      <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div><div style="font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--t1)">Booking Pipeline</div><div style="font-size:.75rem;color:var(--t3)">Drag bookings between stages</div></div>
+        <button class="tb-btn" onclick="refreshAll()">↻ Refresh</button>
+      </div>
+      <div class="kanban-wrap" id="kanbanBoard"></div>
+    </div>
+
+    <!-- BOOKINGS -->
     <div class="panel" id="panel-bookings">
       <div class="card">
         <div class="card-hdr">
           <div><div class="card-ttl">All Booking Requests</div><div class="card-sub" id="bkSubtitle">Loading…</div></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            <div class="ftabs">
-              <button class="ftab active" onclick="setFilter('all',this)">All</button>
-              <button class="ftab" onclick="setFilter('pending',this)">Pending</button>
-              <button class="ftab" onclick="setFilter('confirmed',this)">Confirmed</button>
-              <button class="ftab" onclick="setFilter('declined',this)">Declined</button>
-            </div>
+        </div>
+        <!-- Filter Row -->
+        <div class="bk-filters">
+          <div class="ftabs" id="statusFilterTabs">
+            <button class="ftab active" onclick="setBkFilter('status','all',this)">All</button>
+            <button class="ftab" onclick="setBkFilter('status','pending',this)">⏳ Pending</button>
+            <button class="ftab" onclick="setBkFilter('status','confirmed',this)">✅ Confirmed</button>
+            <button class="ftab" onclick="setBkFilter('status','declined',this)">✕ Declined</button>
           </div>
+          <select class="bk-filter-select" id="fEventType" onchange="applyBkFilters()">
+            <option value="">All Event Types</option>
+            <option>Wedding</option><option>Reception</option><option>Engagement</option>
+            <option>Birthday Party</option><option>Corporate Event</option>
+            <option>Anniversary</option><option>Baby Shower</option><option>Housewarming</option><option>Other</option>
+          </select>
+          <select class="bk-filter-select" id="fService" onchange="applyBkFilters()">
+            <option value="">All Services</option>
+            <option>Luxury Decor &amp; Styling</option>
+            <option>Professional Photography</option>
+            <option>Live Music &amp; Entertainment</option>
+            <option>Premium Lighting Design</option>
+            <option>Gourmet Catering</option>
+            <option>Complete Event Management</option>
+          </select>
+          <select class="bk-filter-select" id="fSort" onchange="applyBkFilters()">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="event-asc">Event Date ↑</option>
+            <option value="event-desc">Event Date ↓</option>
+          </select>
         </div>
         <div class="tbl-wrap">
-          <table><thead><tr><th>Client</th><th>Service</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody id="allTbl"><tr><td colspan="7" class="empty-rows">Loading…</td></tr></tbody></table>
+          <table><thead><tr><th>Client</th><th>Service</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Final Price</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="allTbl"><tr><td colspan="8" class="empty-rows">Loading…</td></tr></tbody></table>
         </div>
       </div>
     </div>
 
-    <!-- ───── USERS ───── -->
+    <!-- USERS -->
     <div class="panel" id="panel-users">
       <div class="card">
-        <div class="card-hdr">
-          <div><div class="card-ttl">Registered Customers</div><div class="card-sub" id="userSubtitle">Loading…</div></div>
-          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search customers…" id="userSearch" oninput="filterUsers()"/></div>
-        </div>
-        <div id="userList"><div class="empty-rows">Loading customers…</div></div>
+        <div class="card-hdr"><div><div class="card-ttl">Registered Customers</div><div class="card-sub" id="userSubtitle">Loading…</div></div><div class="search-box"><span>🔍</span><input type="text" placeholder="Search…" id="userSearch" oninput="filterUsers()"/></div></div>
+        <div id="userList"></div>
       </div>
     </div>
 
-    <!-- ───── GALLERY & PHOTO UPLOAD ───── -->
+    <!-- GALLERY -->
     <div class="panel" id="panel-gallery">
-      <!-- Cloudinary Setup Notice -->
       <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:var(--r2);padding:14px 18px;margin-bottom:16px;font-size:.78rem;color:var(--t2);line-height:1.8;">
-        <div style="font-family:var(--fh);font-size:.85rem;color:var(--gold);margin-bottom:6px;">☁️ Cloudinary Setup Required (Free — 25 GB)</div>
-        1. Go to <strong style="color:var(--t1)">cloudinary.com</strong> → Sign up free → copy your <strong style="color:var(--t1)">Cloud Name</strong><br>
-        2. Settings → Upload → Upload Presets → Add preset → set <strong style="color:var(--t1)">Signing Mode: Unsigned</strong>, name it <code style="background:var(--s3);padding:1px 7px;border-radius:4px;color:var(--gold)">ab_events_gallery</code><br>
-        3. In this file, replace <code style="background:var(--s3);padding:1px 7px;border-radius:4px;color:var(--gold)">YOUR_CLOUD_NAME</code> with your actual Cloud Name (search for it in the code)
+        <div style="font-family:var(--fh);font-size:.85rem;color:var(--gold);margin-bottom:6px;">☁️ Cloudinary Setup (Free 25GB)</div>
+        1. Go to <strong>cloudinary.com</strong> → Sign up → copy your <strong>Cloud Name</strong><br>
+        2. Settings → Upload → Add Preset → set <strong>Unsigned</strong>, name it <code style="background:var(--s3);padding:1px 7px;border-radius:4px;color:var(--gold)">ab_events_gallery</code><br>
+        3. In this file, find <code style="background:var(--s3);padding:1px 7px;border-radius:4px;color:var(--gold)">YOUR_CLOUD_NAME</code> and replace with your Cloud Name
       </div>
-
       <div class="card" style="margin-bottom:16px;">
-        <div class="card-hdr">
-          <div><div class="card-ttl">📸 Upload New Photo</div><div class="card-sub">Add images by service &amp; event category — shown instantly on customer site</div></div>
-        </div>
+        <div class="card-hdr"><div><div class="card-ttl">📸 Upload New Photo</div><div class="card-sub">Add images by service &amp; event category</div></div></div>
         <div class="card-body">
           <div class="gallery-manager">
-            <!-- Upload Zone -->
             <div>
               <div class="upload-zone" id="dropZone" onclick="document.getElementById('photoFileInput').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
-                <div class="uz-icon">📁</div>
-                <div class="uz-title">Drop image here</div>
+                <div class="uz-icon">📁</div><div class="uz-title">Drop image here</div>
                 <div class="uz-sub">or click to browse — JPG, PNG, WebP up to 5MB</div>
                 <button class="uz-btn" type="button">Choose File</button>
               </div>
               <input type="file" id="photoFileInput" class="uz-input" accept="image/*" onchange="onFileSelect(event)"/>
             </div>
-            <!-- Upload Form -->
             <div class="upload-form">
               <label class="uf-label">Preview</label>
               <div id="uploadPreview">No image selected</div>
               <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
-
-              <label class="uf-label">Service Category *</label>
+              <label class="uf-label" style="margin-top:8px;">Service Category *</label>
               <select class="uf-select" id="uploadService">
                 <option value="">— Select Service —</option>
-                <option>Luxury Decor &amp; Styling</option>
-                <option>Professional Photography</option>
-                <option>Live Music &amp; Entertainment</option>
-                <option>Premium Lighting Design</option>
-                <option>Gourmet Catering</option>
-                <option>Complete Event Management</option>
+                <option>Luxury Decor &amp; Styling</option><option>Professional Photography</option>
+                <option>Live Music &amp; Entertainment</option><option>Premium Lighting Design</option>
+                <option>Gourmet Catering</option><option>Complete Event Management</option>
               </select>
-
-              <label class="uf-label" style="margin-top:10px;">Event Category *</label>
+              <label class="uf-label" style="margin-top:8px;">Event Category *</label>
               <select class="uf-select" id="uploadEventCat">
                 <option value="">— Select Event Type —</option>
-                <option value="Wedding">💍 Wedding</option>
-                <option value="Engagement">💝 Engagement</option>
-                <option value="Reception">🎉 Reception</option>
-                <option value="Baby Shower">👶 Baby Shower</option>
-                <option value="Birthday">🎂 Birthday</option>
-                <option value="Anniversary">🌹 Anniversary</option>
-                <option value="Corporate">🏢 Corporate</option>
-                <option value="Housewarming">🏠 Housewarming</option>
+                <option value="Wedding">💍 Wedding</option><option value="Engagement">💝 Engagement</option>
+                <option value="Reception">🎉 Reception</option><option value="Baby Shower">👶 Baby Shower</option>
+                <option value="Birthday">🎂 Birthday</option><option value="Anniversary">🌹 Anniversary</option>
+                <option value="Housewarming">🏠 Housewarming</option><option value="Corporate">🏢 Corporate</option>
                 <option value="General">📸 General / Other</option>
               </select>
-
-              <label class="uf-label" style="margin-top:10px;">Caption (optional)</label>
+              <label class="uf-label" style="margin-top:8px;">Caption (optional)</label>
               <input class="uf-input" id="uploadCaption" placeholder="e.g. Lotus floral mandap at HICC"/>
               <button id="uploadBtn" onclick="uploadPhoto()" disabled>Upload Photo →</button>
-              <div id="uploadMsg"></div>
+              <div id="uploadMsg" style="margin-top:6px;"></div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Gallery Grid with filters -->
       <div class="card">
-        <div class="card-hdr" style="flex-wrap:wrap;gap:10px;">
-          <div><div class="card-ttl">Uploaded Gallery Photos</div><div class="card-sub" id="gallerySubtitle">Photos uploaded via admin dashboard</div></div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
-            <!-- Service filter -->
+        <div class="card-hdr" style="flex-wrap:wrap;gap:8px;">
+          <div><div class="card-ttl">Uploaded Gallery Photos</div><div class="card-sub" id="gallerySubtitle">Loading…</div></div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
             <div class="ftabs" id="galleryServiceTabs" style="flex-wrap:wrap;">
               <button class="ftab active" onclick="setGalSvcFilter('',this)">All Services</button>
               <button class="ftab" onclick="setGalSvcFilter('Luxury Decor &amp; Styling',this)">Decor</button>
@@ -607,42 +581,67 @@ tr:hover td{background:rgba(255,255,255,.012);}
               <button class="ftab" onclick="setGalSvcFilter('Premium Lighting Design',this)">Lighting</button>
               <button class="ftab" onclick="setGalSvcFilter('Live Music &amp; Entertainment',this)">Music</button>
             </div>
-            <!-- Event category filter -->
-            <div class="ftabs" id="galleryCatTabs" style="flex-wrap:wrap;margin-top:4px;">
+            <div class="ftabs" id="galleryCatTabs" style="flex-wrap:wrap;">
               <button class="ftab active" onclick="setGalCatFilter('',this)">All Events</button>
               <button class="ftab" onclick="setGalCatFilter('Wedding',this)">💍 Wedding</button>
               <button class="ftab" onclick="setGalCatFilter('Engagement',this)">💝 Engagement</button>
               <button class="ftab" onclick="setGalCatFilter('Baby Shower',this)">👶 Baby Shower</button>
               <button class="ftab" onclick="setGalCatFilter('Birthday',this)">🎂 Birthday</button>
               <button class="ftab" onclick="setGalCatFilter('Anniversary',this)">🌹 Anniversary</button>
-              <button class="ftab" onclick="setGalCatFilter('Corporate',this)">🏢 Corporate</button>
               <button class="ftab" onclick="setGalCatFilter('Housewarming',this)">🏠 Housewarming</button>
+              <button class="ftab" onclick="setGalCatFilter('Corporate',this)">🏢 Corporate</button>
             </div>
           </div>
         </div>
-        <div class="gallery-grid-admin" id="adminGalleryGrid">
-          <div class="gga-empty">Loading photos…</div>
-        </div>
+        <div class="gallery-grid-admin" id="adminGalleryGrid"><div class="gga-empty">Loading photos…</div></div>
       </div>
     </div>
 
-    <!-- ───── SERVICES ───── -->
-    <div class="panel" id="panel-services">
-      <div class="three-col">
-        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--gold-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🌸</div><div class="stat-val" id="svcStat0">—</div><div class="stat-lbl">Decor & Styling</div></div>
-        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--blue-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">📷</div><div class="stat-val" id="svcStat1">—</div><div class="stat-lbl">Photography</div></div>
-        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--purple);background:rgba(167,139,250,.14);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🎵</div><div class="stat-val" id="svcStat2">—</div><div class="stat-lbl">Music & Entertainment</div></div>
-        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--yellow-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">✨</div><div class="stat-val" id="svcStat3">—</div><div class="stat-lbl">Lighting Design</div></div>
-        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--green-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🍽️</div><div class="stat-val" id="svcStat4">—</div><div class="stat-lbl">Gourmet Catering</div></div>
-        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--red-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🎊</div><div class="stat-val" id="svcStat5">—</div><div class="stat-lbl">Event Management</div></div>
+    <!-- REVIEWS -->
+    <div class="panel" id="panel-reviews">
+      <div class="card">
+        <div class="card-hdr"><div><div class="card-ttl">Customer Reviews</div><div class="card-sub" id="revSubtitle">Pending approval</div></div></div>
+        <div class="rev-admin-grid" id="revAdminList"><div class="gga-empty">No pending reviews</div></div>
+      </div>
+    </div>
+
+    <!-- STAFF -->
+    <div class="panel" id="panel-staff">
+      <div class="add-staff-form">
+        <div class="card-ttl" style="margin-bottom:12px;">Add Team Member</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;flex-wrap:wrap;">
+          <div class="lf-group" style="margin-bottom:0;"><label class="lf-label">Name</label><input class="lf-input" id="staffName" placeholder="Full name"/></div>
+          <div class="lf-group" style="margin-bottom:0;"><label class="lf-label">Role</label>
+            <select class="lf-input" id="staffRole">
+              <option>Photographer</option><option>Decorator</option><option>Coordinator</option>
+              <option>Lighting Tech</option><option>Caterer</option><option>DJ / Music</option><option>Driver</option>
+            </select>
+          </div>
+          <div class="lf-group" style="margin-bottom:0;"><label class="lf-label">Phone</label><input class="lf-input" id="staffPhone" placeholder="+91 XXXXX XXXXX"/></div>
+        </div>
+        <button class="lbtn" style="max-width:200px;margin-top:12px;" onclick="addStaff()">Add Team Member →</button>
+        <div id="staffMsg" style="font-size:.75rem;margin-top:8px;"></div>
       </div>
       <div class="card">
-        <div class="card-hdr"><div class="card-ttl">Service Demand Breakdown</div></div>
-        <div class="card-body"><div class="mini-bar-chart" id="svcChartFull"></div></div>
+        <div class="card-hdr"><div><div class="card-ttl">Team Members</div><div class="card-sub" id="staffSubtitle">Loading…</div></div></div>
+        <div class="staff-grid" style="padding:16px 20px;" id="staffGrid"><div class="gga-empty">No team members added yet.</div></div>
       </div>
     </div>
 
-    <!-- ───── SETTINGS ───── -->
+    <!-- SERVICES -->
+    <div class="panel" id="panel-services">
+      <div class="three-col">
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--gold-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🌸</div><div class="stat-val" id="svcStat0">—</div><div class="stat-lbl">Decor &amp; Styling</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--blue-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">📷</div><div class="stat-val" id="svcStat1">—</div><div class="stat-lbl">Photography</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--purple-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🎵</div><div class="stat-val" id="svcStat2">—</div><div class="stat-lbl">Music &amp; Entertainment</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--yellow-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">✨</div><div class="stat-val" id="svcStat3">—</div><div class="stat-lbl">Lighting Design</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--green-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🍽️</div><div class="stat-val" id="svcStat4">—</div><div class="stat-lbl">Catering (Coming Soon)</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--red-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🎊</div><div class="stat-val" id="svcStat5">—</div><div class="stat-lbl">Event Management</div></div>
+      </div>
+      <div class="card"><div class="card-hdr"><div class="card-ttl">Service Demand Breakdown</div></div><div class="card-body"><div class="mini-bar-chart" id="svcChartFull"></div></div></div>
+    </div>
+
+    <!-- SETTINGS -->
     <div class="panel" id="panel-settings">
       <div class="settings-grid">
         <div class="card setting-card">
@@ -656,63 +655,77 @@ tr:hover td{background:rgba(255,255,255,.012);}
           </div>
         </div>
         <div class="card setting-card">
-          <div class="card-hdr"><div class="card-ttl">Notifications</div></div>
-          <div class="setting-row"><div class="sr-info"><div class="sr-label">New Booking Alerts</div><div class="sr-desc">Get notified on new booking requests</div></div><button class="toggle on" id="tog1" onclick="this.classList.toggle('on')"></button></div>
-          <div class="setting-row"><div class="sr-info"><div class="sr-label">Customer Registration</div><div class="sr-desc">Alert when new customers register</div></div><button class="toggle on" id="tog2" onclick="this.classList.toggle('on')"></button></div>
-          <div class="setting-row"><div class="sr-info"><div class="sr-label">Daily Summary Email</div><div class="sr-desc">Receive daily booking summary</div></div><button class="toggle" id="tog3" onclick="this.classList.toggle('on')"></button></div>
-          <div class="setting-row"><div class="sr-info"><div class="sr-label">Customer Site Maintenance</div><div class="sr-desc">Show maintenance banner on customer site</div></div><button class="toggle" id="tog4" onclick="this.classList.toggle('on')"></button></div>
+          <div class="card-hdr"><div class="card-ttl">Website Maintenance Mode</div></div>
+          <div class="setting-row">
+            <div class="sr-info"><div class="sr-label">Maintenance Mode</div><div class="sr-desc">Show maintenance message on customer site</div></div>
+            <button class="toggle" id="togMaintenance" onclick="toggleMaintenance()"></button>
+          </div>
+          <div style="padding:14px 20px;">
+            <label class="lf-label">Maintenance Message</label>
+            <input class="maint-msg-input" id="maintMsgInput" placeholder="e.g. We are performing scheduled maintenance. Back shortly!"/>
+            <button class="save-maint-btn" onclick="saveMaintenance()">Save Maintenance Settings</button>
+            <div id="maintSaveMsg" style="font-size:.75rem;margin-top:8px;"></div>
+          </div>
+          <div class="setting-row"><div class="sr-info"><div class="sr-label">New Booking Alerts</div><div class="sr-desc">In-app notifications for new bookings</div></div><button class="toggle on" id="tog1" onclick="this.classList.toggle('on')"></button></div>
+          <div class="setting-row"><div class="sr-info"><div class="sr-label">Email Notifications</div><div class="sr-desc">EmailJS — set up Service ID &amp; Template ID in code</div></div><button class="toggle" id="togEmail" onclick="this.classList.toggle('on')"></button></div>
         </div>
       </div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
+  </div>
+</div>
 
 <!-- BOOKING DETAIL PANEL -->
 <div class="detail-ov" id="detailOv" onclick="closeDetail(event)">
   <div class="detail-panel" id="detailPanel">
-    <div class="dp-hdr">
-      <div class="dp-ttl">Booking Details</div>
-      <button class="dp-x" onclick="closeDetailPanel()">✕</button>
-    </div>
+    <div class="dp-hdr"><div class="dp-ttl">Booking Details</div><button class="dp-x" onclick="closeDetailPanel()">✕</button></div>
     <div class="dp-body" id="dpBody"></div>
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- ══════════ FIREBASE ══════════ -->
+<!-- FIREBASE -->
 <script type="module">
-import { initializeApp } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore,collection,getDocs,doc,updateDoc,addDoc,deleteDoc,query,where,orderBy,serverTimestamp } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-// Firebase Storage removed — using Cloudinary for uploads
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import{getFirestore,collection,getDocs,doc,getDoc,updateDoc,addDoc,deleteDoc,query,where,orderBy,serverTimestamp,onSnapshot,setDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ▸ Replace with your Firebase config
 const cfg={apiKey:"AIzaSyDo8u-SZMHPXBLdJV4oq5rNiPz6p33KSF4",authDomain:"abevents-38a91.firebaseapp.com",projectId:"abevents-38a91",storageBucket:"abevents-38a91.appspot.com",messagingSenderId:"408468587854",appId:"1:408468587854:web:09c108c41c4fb7cd81ca1f"};
 const app=initializeApp(cfg);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-// ── CLOUDINARY CONFIG ── Replace with YOUR values from cloudinary.com dashboard ──
-const CLOUDINARY_CLOUD = 'di0ihwmg0';     // e.g. 'dxxxxxxxxx'  ← CHANGE THIS
-const CLOUDINARY_PRESET = 'ab_events_gallery';  // unsigned upload preset you created
+// ── CLOUDINARY CONFIG ──
+const CLOUDINARY_CLOUD='di0ihwmg0'; // ← CHANGE THIS to your Cloudinary cloud name
+const CLOUDINARY_PRESET='ab_events_gallery';
 
-let allBookings=[],allUsers=[],allGallery=[],currentFilter='all',curDetailId=null;
-let selectedFile=null;
-
-// ── AUTH ──
-// Add your email here to grant admin access
+// ── ADMIN WHITELIST ──
 const ADMIN_EMAILS_LOCAL=['srikanth.ambati4957@gmail.com','owner@abevents.in','abevents@gmail.com'];
 
+// ── EMAILJS CONFIG ── (optional — for email notifications)
+const EMAILJS_SERVICE_ID='YOUR_EMAILJS_SERVICE_ID';
+const EMAILJS_TEMPLATE_ID='YOUR_EMAILJS_TEMPLATE_ID';
+const EMAILJS_PUBLIC_KEY='YOUR_EMAILJS_PUBLIC_KEY';
+
+let allBookings=[],allUsers=[],allGallery=[],allStaff=[],allReviews=[];
+let bkFilterStatus='all',bkFilterEventType='',bkFilterService='',bkFilterSort='date-desc';
+let _galSvc='',_galCat='',selectedFile=null,curDetailId=null;
+let adminNotifList=[];
+
+// ── AUTH STATE ──
 onAuthStateChanged(auth,async user=>{
   if(user&&ADMIN_EMAILS_LOCAL.includes(user.email)){
     document.getElementById('loginScreen').classList.add('gone');
     document.getElementById('sbName').textContent=user.displayName||user.email.split('@')[0];
     document.getElementById('sbAvatar').textContent=(user.displayName||user.email)[0].toUpperCase();
     document.getElementById('setEmail').value=user.email;
+    document.getElementById('setName').value=user.displayName||'';
     await loadAll();
+    listenAdminNotifications();
+    loadMaintenance();
+    loadReviews();
+    loadStaff();
   } else if(user){
     await signOut(auth);
     const el=document.getElementById('loginErr');
@@ -722,15 +735,16 @@ onAuthStateChanged(auth,async user=>{
   }
 });
 
+// ── SIGN IN ──
 window.adminLogin=async()=>{
   const el=document.getElementById('loginErr'); if(el) el.textContent='';
   try{ await signInWithEmailAndPassword(auth,document.getElementById('adEmail').value.trim(),document.getElementById('adPwd').value); }
-  catch(e){ const el=document.getElementById('loginErr'); if(el) el.textContent=fe(e.code); }
+  catch(e){ if(el) el.textContent=fe(e.code); }
 };
 
 // ── REGISTER ──
 window.adminRegister=async()=>{
-  const errEl=document.getElementById('regErr'); const okEl=document.getElementById('regOk');
+  const errEl=document.getElementById('regErr'),okEl=document.getElementById('regOk');
   if(errEl) errEl.textContent=''; if(okEl) okEl.innerHTML='';
   const email=document.getElementById('regEmail').value.trim();
   const pwd=document.getElementById('regPwd').value;
@@ -740,13 +754,10 @@ window.adminRegister=async()=>{
   if(pwd.length<6){if(errEl)errEl.textContent='Password must be at least 6 characters.';return;}
   try{
     const cred=await createUserWithEmailAndPassword(auth,email,pwd);
-    await addDoc(collection(db,'admins'),{
-      uid:cred.user.uid,
-      firstName:document.getElementById('regFirstName').value.trim(),
-      lastName:document.getElementById('regLastName').value.trim(),
-      email,phone:document.getElementById('regPhone').value.trim(),
-      role:'admin',createdAt:serverTimestamp()
-    });
+    const fname=document.getElementById('regFirstName').value.trim();
+    const lname=document.getElementById('regLastName').value.trim();
+    await updateProfile(cred.user,{displayName:fname+' '+lname});
+    await addDoc(collection(db,'admins'),{uid:cred.user.uid,firstName:fname,lastName:lname,email,phone:document.getElementById('regPhone').value.trim(),role:'admin',createdAt:serverTimestamp()});
     if(okEl) okEl.innerHTML='<span style="color:var(--green)">✓ Account created! Add your email to ADMIN_EMAILS_LOCAL in the code, then sign in.</span>';
     ['regFirstName','regLastName','regEmail','regPhone','regPwd','regPwd2'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
     setTimeout(()=>window.switchAdminTab('login'),3000);
@@ -755,14 +766,13 @@ window.adminRegister=async()=>{
 
 // ── FORGOT PASSWORD ──
 window.adminForgotPwd=async()=>{
-  const errEl=document.getElementById('fpErr'); const okEl=document.getElementById('fpOk');
+  const errEl=document.getElementById('fpErr'),okEl=document.getElementById('fpOk');
   if(errEl) errEl.textContent=''; if(okEl) okEl.innerHTML='';
   const email=document.getElementById('fpEmail').value.trim();
-  if(!email){if(errEl)errEl.textContent='Please enter your email address.';return;}
+  if(!email){if(errEl)errEl.textContent='Please enter your email.';return;}
   try{
     await sendPasswordResetEmail(auth,email);
-    if(okEl) okEl.innerHTML='<span style="color:var(--green)">✓ Reset link sent! Check your inbox and spam folder.</span>';
-    if(typeof showToast!=='undefined') showToast('Password reset email sent 📧');
+    if(okEl) okEl.innerHTML='<span style="color:var(--green)">✓ Reset link sent! Check inbox &amp; spam.</span>';
   } catch(e){ if(errEl) errEl.textContent=fe(e.code); }
 };
 
@@ -780,85 +790,279 @@ async function loadBookings(){
     const snap=await getDocs(collection(db,'bookings'));
     allBookings=snap.docs.map(d=>({id:d.id,...d.data()}));
     allBookings.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    renderBookings(); updateBadges();
-  } catch(e){ console.error(e); }
+    applyBkFilters(); updateBadges();
+  }catch(e){console.error(e);}
 }
-
 async function loadUsers(){
   try{
     const snap=await getDocs(collection(db,'users'));
     allUsers=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderUsers();
-  } catch(e){ console.error(e); }
+  }catch(e){console.error(e);}
 }
-
 async function loadGallery(){
   try{
     const snap=await getDocs(collection(db,'gallery'));
     allGallery=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderAdminGallery();
     document.getElementById('galBadge').textContent=allGallery.length;
-    document.getElementById('gallerySubtitle').textContent=`${allGallery.length} photos uploaded`;
-  } catch(e){ console.error(e); }
+    document.getElementById('gallerySubtitle').textContent=allGallery.length+' photos uploaded';
+  }catch(e){console.error(e);}
 }
+async function loadReviews(){
+  try{
+    const snap=await getDocs(collection(db,'reviews'));
+    allReviews=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const pending=allReviews.filter(r=>!r.approved).length;
+    const badge=document.getElementById('revBadge');
+    badge.style.display=pending>0?'inline-block':'none';
+    badge.textContent=pending;
+    document.getElementById('revSubtitle').textContent=pending+' pending approval · '+allReviews.filter(r=>r.approved).length+' published';
+    document.getElementById('revAdminList').innerHTML=allReviews.length?allReviews.map(r=>`
+      <div class="rev-admin-card">
+        <div class="rev-admin-hdr">
+          <div><span class="rev-stars-sm">${'★'.repeat(r.rating)+'☆'.repeat(5-r.rating)}</span> <strong style="font-size:.8rem;color:var(--t1)">${r.name||'Anonymous'}</strong> <span style="font-size:.68rem;color:var(--t3)">${r.event||''}</span></div>
+          <div class="rev-actions">
+            ${!r.approved?`<button class="rev-approve" onclick="approveReview('${r.id}')">✓ Approve</button>`:''}
+            <button class="rev-reject" onclick="deleteReview('${r.id}')">🗑 Delete</button>
+          </div>
+        </div>
+        <div class="rev-txt-sm">${r.text||''}</div>
+        <div class="rev-meta-sm">${r.approved?'<span style="color:var(--green)">● Published</span>':'<span style="color:var(--yellow)">● Pending Approval</span>'}</div>
+      </div>`).join('')
+      :'<div class="gga-empty">No reviews yet.</div>';
+  }catch(e){console.error(e);}
+}
+window.approveReview=async(id)=>{
+  await updateDoc(doc(db,'reviews',id),{approved:true});
+  showToast('Review approved and published ✓');
+  await loadReviews();
+};
+window.deleteReview=async(id)=>{
+  if(!confirm('Delete this review permanently?')) return;
+  await deleteDoc(doc(db,'reviews',id));
+  showToast('Review deleted.');
+  await loadReviews();
+};
+
+async function loadStaff(){
+  try{
+    const snap=await getDocs(collection(db,'staff'));
+    allStaff=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderStaff();
+  }catch(e){console.error(e);}
+}
+function renderStaff(){
+  const grid=document.getElementById('staffGrid');
+  document.getElementById('staffSubtitle').textContent=allStaff.length+' team member'+(allStaff.length!==1?'s':'');
+  if(!allStaff.length){grid.innerHTML='<div class="gga-empty">No team members added yet. Use the form above.</div>';return;}
+  const roleColors={'Photographer':'var(--blue)','Decorator':'var(--gold)','Coordinator':'var(--purple)','Lighting Tech':'var(--yellow)','Caterer':'var(--green)','DJ / Music':'#EC4899','Driver':'var(--t2)'};
+  grid.innerHTML=allStaff.map(s=>`
+    <div class="staff-card">
+      <div class="staff-name">${s.name||'—'}</div>
+      <div class="staff-role" style="color:${roleColors[s.role]||'var(--gold)'}">● ${s.role||'—'}</div>
+      <div class="staff-contact">📞 ${s.phone||'No phone'}</div>
+      <button class="staff-del" onclick="deleteStaff('${s.id}')">🗑 Remove</button>
+    </div>`).join('');
+}
+window.addStaff=async()=>{
+  const name=document.getElementById('staffName').value.trim();
+  const role=document.getElementById('staffRole').value;
+  const phone=document.getElementById('staffPhone').value.trim();
+  const msg=document.getElementById('staffMsg');
+  if(!name){msg.innerHTML='<span style="color:var(--red)">Name is required.</span>';return;}
+  await addDoc(collection(db,'staff'),{name,role,phone,addedAt:serverTimestamp()});
+  msg.innerHTML='<span style="color:var(--green)">✓ Team member added!</span>';
+  document.getElementById('staffName').value='';
+  document.getElementById('staffPhone').value='';
+  await loadStaff();
+  setTimeout(()=>msg.innerHTML='',3000);
+};
+window.deleteStaff=async(id)=>{
+  if(!confirm('Remove this team member?')) return;
+  await deleteDoc(doc(db,'staff',id));
+  await loadStaff();
+  showToast('Staff member removed.');
+};
+
+// ── MAINTENANCE MODE ──
+async function loadMaintenance(){
+  try{
+    const snap=await getDocs(collection(db,'settings'));
+    if(!snap.empty){
+      const s=snap.docs[0].data();
+      const tog=document.getElementById('togMaintenance');
+      const banner=document.getElementById('adminMaintBanner');
+      if(s.maintenance){tog.classList.add('on');banner.classList.add('show');}
+      else{tog.classList.remove('on');banner.classList.remove('show');}
+      document.getElementById('maintMsgInput').value=s.maintenanceMsg||'';
+    }
+  }catch(e){}
+}
+window.toggleMaintenance=()=>{document.getElementById('togMaintenance').classList.toggle('on');};
+window.saveMaintenance=async()=>{
+  const maintenance=document.getElementById('togMaintenance').classList.contains('on');
+  const maintenanceMsg=document.getElementById('maintMsgInput').value.trim();
+  const msg=document.getElementById('maintSaveMsg');
+  try{
+    const snap=await getDocs(collection(db,'settings'));
+    if(!snap.empty){await updateDoc(doc(db,'settings',snap.docs[0].id),{maintenance,maintenanceMsg});}
+    else{await addDoc(collection(db,'settings'),{maintenance,maintenanceMsg});}
+    msg.innerHTML='<span style="color:var(--green)">✓ Maintenance settings saved!</span>';
+    const banner=document.getElementById('adminMaintBanner');
+    maintenance?banner.classList.add('show'):banner.classList.remove('show');
+    showToast(maintenance?'🔧 Maintenance mode ON':'✓ Site is back online');
+    setTimeout(()=>msg.innerHTML='',3000);
+  }catch(e){msg.innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>';}
+};
+
+// ── ADMIN NOTIFICATIONS (real-time) ──
+function listenAdminNotifications(){
+  const q=query(collection(db,'admin_notifications'),orderBy('createdAt','desc'));
+  onSnapshot(q,snap=>{
+    adminNotifList=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const unread=adminNotifList.filter(n=>!n.read).length;
+    const dot=document.getElementById('adminNotifDot');
+    if(unread>0){dot.style.display='block';}else{dot.style.display='none';}
+    document.getElementById('adminNotifList').innerHTML=adminNotifList.length?
+      adminNotifList.slice(0,15).map(n=>`<div class="notif-item ${n.read?'':' unread'}" onclick="readAdminNotif('${n.id}')"><div class="notif-msg">${n.message||''}</div><div class="notif-time">${n.createdAt?.toDate?n.createdAt.toDate().toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</div></div>`).join('')
+      :'<div class="notif-empty">No notifications</div>';
+  });
+}
+window.readAdminNotif=async(id)=>{
+  await updateDoc(doc(db,'admin_notifications',id),{read:true});
+};
+window.markAllAdminNotifs=async()=>{
+  const unread=adminNotifList.filter(n=>!n.read);
+  await Promise.all(unread.map(n=>updateDoc(doc(db,'admin_notifications',n.id),{read:true})));
+};
+window.toggleAdminNotifDropdown=()=>{
+  const dd=document.getElementById('adminNotifDropdown');
+  dd.classList.toggle('open');
+};
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.notif-wrap')){
+    document.getElementById('adminNotifDropdown')?.classList.remove('open');
+  }
+});
 
 // ── DASHBOARD ──
 function renderDashboard(){
   const p=allBookings.filter(b=>b.status==='pending').length;
   const c=allBookings.filter(b=>b.status==='confirmed').length;
   document.getElementById('statTotal').textContent=allBookings.length;
-  document.getElementById('statTotalSub').textContent=`${p} pending review`;
+  document.getElementById('statTotalSub').textContent=p+' pending review';
   document.getElementById('statPending').textContent=p;
   document.getElementById('statConfirmed').textContent=c;
   document.getElementById('statUsers').textContent=allUsers.length;
   renderSvcChart('svcChart'); renderStatusChart('statusChart');
   renderRows('recentTbl',allBookings.slice(0,8),true);
   renderServicesPanel();
+  renderAnalytics();
+  renderKanban();
 }
 
-function renderSvcChart(id){
-  const counts={};
-  allBookings.forEach(b=>{if(b.service)counts[b.service]=(counts[b.service]||0)+1;});
-  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  const max=sorted[0]?.[1]||1;
-  const el=document.getElementById(id);
-  if(!sorted.length){el.innerHTML='<div style="color:var(--t3);font-size:.8rem;text-align:center;padding:20px">No bookings yet</div>';return;}
-  el.innerHTML=sorted.map(([nm,cnt])=>`
-    <div class="mbc-row">
-      <div class="mbc-label" title="${nm}">${nm.split(' ').slice(0,2).join(' ')}</div>
-      <div class="mbc-track"><div class="mbc-fill" style="width:${Math.round(cnt/max*100)}%"></div></div>
-      <div class="mbc-val">${cnt}</div>
+// ── ANALYTICS ──
+function renderAnalytics(){
+  const confirmed=allBookings.filter(b=>b.status==='confirmed');
+  const conv=allBookings.length?Math.round(confirmed.length/allBookings.length*100):0;
+  // Extract numeric budget values (rough)
+  const budgetSum=confirmed.reduce((sum,b)=>{
+    const m=b.budget?.replace(/[^0-9]/g,'');
+    return sum+(parseInt(m)||0);
+  },0);
+  const avg=confirmed.length?Math.round(budgetSum/confirmed.length):0;
+  // This month
+  const now=new Date();
+  const thisMonth=allBookings.filter(b=>{
+    if(!b.createdAt?.seconds) return false;
+    const d=new Date(b.createdAt.seconds*1000);
+    return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+  }).length;
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('anaRevenue').textContent=budgetSum>0?'₹'+budgetSum.toLocaleString('en-IN'):'—';
+  document.getElementById('anaAvg').textContent=avg>0?'₹'+avg.toLocaleString('en-IN'):'—';
+  document.getElementById('anaConv').textContent=conv+'%';
+  document.getElementById('anaThisMonth').textContent=thisMonth;
+  document.getElementById('anaMonthLabel').textContent=months[now.getMonth()]+' '+now.getFullYear();
+  // Monthly trend (last 6 months)
+  const monthCounts=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const cnt=allBookings.filter(b=>{
+      if(!b.createdAt?.seconds) return false;
+      const bd=new Date(b.createdAt.seconds*1000);
+      return bd.getMonth()===d.getMonth()&&bd.getFullYear()===d.getFullYear();
+    }).length;
+    monthCounts.push({label:months[d.getMonth()],count:cnt});
+  }
+  const maxCnt=Math.max(...monthCounts.map(m=>m.count),1);
+  document.getElementById('revBarChart').innerHTML=monthCounts.map(m=>`
+    <div class="rev-bar-col">
+      <div class="rev-bar-val">${m.count||''}</div>
+      <div class="rev-bar" style="height:${Math.max(m.count/maxCnt*150,4)}px"></div>
+      <div class="rev-bar-lbl">${m.label}</div>
     </div>`).join('');
+  renderSvcChart('anaSvcChart');
+  // Event type breakdown
+  const evtCounts={};
+  allBookings.forEach(b=>{if(b.eventType)evtCounts[b.eventType]=(evtCounts[b.eventType]||0)+1;});
+  const evtSorted=Object.entries(evtCounts).sort((a,b)=>b[1]-a[1]);
+  const evtMax=evtSorted[0]?.[1]||1;
+  document.getElementById('anaEventChart').innerHTML=evtSorted.map(([nm,cnt])=>`
+    <div class="mbc-row"><div class="mbc-label" title="${nm}">${nm}</div>
+    <div class="mbc-track"><div class="mbc-fill" style="width:${Math.round(cnt/evtMax*100)}%"></div></div>
+    <div class="mbc-val">${cnt}</div></div>`).join('');
 }
 
-function renderStatusChart(id){
-  const tot=allBookings.length||1;
-  const p=allBookings.filter(b=>b.status==='pending').length;
-  const c=allBookings.filter(b=>b.status==='confirmed').length;
-  const d=allBookings.filter(b=>b.status==='declined').length;
-  document.getElementById(id).innerHTML=`
-    <div class="donut-row"><div class="donut-dot" style="background:var(--yellow)"></div><div class="donut-lbl">⏳ Pending</div><div class="donut-val">${p} <span style="color:var(--t3)">(${Math.round(p/tot*100)}%)</span></div></div>
-    <div class="donut-row"><div class="donut-dot" style="background:var(--green)"></div><div class="donut-lbl">✅ Confirmed</div><div class="donut-val">${c} <span style="color:var(--t3)">(${Math.round(c/tot*100)}%)</span></div></div>
-    <div class="donut-row"><div class="donut-dot" style="background:var(--red)"></div><div class="donut-lbl">✕ Declined</div><div class="donut-val">${d} <span style="color:var(--t3)">(${Math.round(d/tot*100)}%)</span></div></div>
-    <div class="donut-row" style="margin-top:4px;border-top:1px solid var(--bdr2);padding-top:10px;"><div class="donut-dot" style="background:var(--t3)"></div><div class="donut-lbl">📊 Total</div><div class="donut-val">${allBookings.length}</div></div>`;
+// ── KANBAN / PIPELINE ──
+const PIPELINE_STAGES=['New Enquiry','Consultation Scheduled','Proposal Sent','Confirmed','Completed'];
+const STAGE_COLORS=['var(--blue)','var(--purple)','var(--yellow)','var(--green)','var(--t3)'];
+function renderKanban(){
+  const board=document.getElementById('kanbanBoard');
+  board.innerHTML=PIPELINE_STAGES.map((stage,si)=>{
+    const cards=allBookings.filter(b=>(b.pipeline||'New Enquiry')===stage);
+    return `<div class="kb-col" ondragover="event.preventDefault();this.classList.add('kb-drag-over')" ondragleave="this.classList.remove('kb-drag-over')" ondrop="dropOnStage(event,'${stage}',this)">
+      <div class="kb-col-hdr" style="color:${STAGE_COLORS[si]}">${stage}<span class="kb-col-count">${cards.length}</span></div>
+      ${cards.map(b=>`<div class="kb-card" draggable="true" ondragstart="dragCard(event,'${b.id}')" onclick="viewDetail('${b.id}')">
+        <div class="kb-card-name">${b.name||b.userEmail||'—'}</div>
+        <div class="kb-card-svc">${(b.service||'—').split(' ').slice(0,3).join(' ')}</div>
+        <div class="kb-card-date">📅 ${b.eventDate||'Date TBD'}</div>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
 }
+let draggedCardId=null;
+window.dragCard=(e,id)=>{draggedCardId=id;e.dataTransfer.effectAllowed='move';};
+window.dropOnStage=async(e,stage,col)=>{
+  e.preventDefault(); col.classList.remove('kb-drag-over');
+  if(!draggedCardId) return;
+  await updateDoc(doc(db,'bookings',draggedCardId),{pipeline:stage,updatedAt:serverTimestamp()});
+  const idx=allBookings.findIndex(b=>b.id===draggedCardId);
+  if(idx>-1) allBookings[idx].pipeline=stage;
+  // Auto update status for Confirmed/Completed stages
+  if(stage==='Confirmed'){ allBookings[idx].status='confirmed'; await updateDoc(doc(db,'bookings',draggedCardId),{status:'confirmed'}); sendBookingNotification(draggedCardId,'confirmed'); }
+  renderKanban(); applyBkFilters(); updateBadges(); renderDashboard();
+  showToast('Moved to '+stage+' ✓');
+  draggedCardId=null;
+};
 
 // ── BOOKINGS TABLE ──
 function renderRows(tbodyId,data,short=false){
   const tbody=document.getElementById(tbodyId);
   if(!data.length){tbody.innerHTML=`<tr><td colspan="${short?6:8}" class="empty-rows">No bookings found.</td></tr>`;return;}
   tbody.innerHTML=data.map(b=>{
-    const sCls=b.status==='confirmed'?'bdg-confirmed':b.status==='declined'?'bdg-declined':'bdg-pending';
-    const sLbl=b.status||'pending';
-    const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
-    const extra=short?'':`<td>${b.eventType||'—'}</td>`;
-    const guest='';
+    const sCls=b.status==='confirmed'?'bdg-confirmed':b.status==='declined'?'bdg-declined':b.status==='modified'?'bdg-modified':'bdg-pending';
+    const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):' — ';
+    const extra=short?'':`<td style="font-size:.75rem">${b.eventType||'—'}</td>`;
+    const priceCol=short?'':`<td style="color:var(--gold);font-size:.75rem">${b.finalPrice||'—'}</td>`;
     return`<tr>
       <td><div class="cell-primary">${b.name||b.userEmail||'—'}</div><div class="cell-sub">${b.email||''}</div></td>
-      <td style="font-size:.77rem">${b.service||'—'}</td>
-      ${extra}<td style="white-space:nowrap">${dt}</td>${guest}
-      <td style="white-space:nowrap">${b.budget||'—'}</td>
-      <td><span class="bdg ${sCls}">${sLbl}</span></td>
+      <td style="font-size:.75rem">${b.service||'—'}</td>
+      ${extra}<td style="white-space:nowrap;font-size:.75rem">${dt}</td>
+      <td style="white-space:nowrap;font-size:.75rem">${b.budget||'—'}</td>
+      ${priceCol}
+      <td><span class="bdg ${sCls}">${b.status||'pending'}</span></td>
       <td><div class="act-btns">
         <button class="act-btn act-view" onclick="viewDetail('${b.id}')">View</button>
         ${b.status!=='confirmed'?`<button class="act-btn act-ok" onclick="updateStatus('${b.id}','confirmed')">✓</button>`:''}
@@ -868,22 +1072,34 @@ function renderRows(tbodyId,data,short=false){
   }).join('');
 }
 
-function renderBookings(){
+function applyBkFilters(){
   let data=[...allBookings];
-  if(currentFilter!=='all') data=data.filter(b=>b.status===currentFilter);
-  const search=(document.getElementById('globalSearch').value||'').toLowerCase();
-  if(search) data=data.filter(b=>(b.name||'').toLowerCase().includes(search)||(b.email||'').toLowerCase().includes(search)||(b.service||'').toLowerCase().includes(search)||(b.eventType||'').toLowerCase().includes(search));
+  if(bkFilterStatus!=='all') data=data.filter(b=>b.status===bkFilterStatus);
+  if(bkFilterEventType) data=data.filter(b=>b.eventType===bkFilterEventType);
+  if(bkFilterService) data=data.filter(b=>b.service===bkFilterService);
+  const search=(document.getElementById('globalSearch')?.value||'').toLowerCase();
+  if(search) data=data.filter(b=>(b.name||b.email||b.service||b.eventType||'').toLowerCase().includes(search));
+  // Sort
+  if(bkFilterSort==='date-asc') data.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+  else if(bkFilterSort==='event-asc') data.sort((a,b)=>(a.eventDate||'').localeCompare(b.eventDate||''));
+  else if(bkFilterSort==='event-desc') data.sort((a,b)=>(b.eventDate||'').localeCompare(a.eventDate||''));
+  else data.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
   renderRows('allTbl',data,false);
-  document.getElementById('bkSubtitle').textContent=`${data.length} booking${data.length!==1?'s':''} ${currentFilter!=='all'?'('+currentFilter+')':''}`;
+  document.getElementById('bkSubtitle').textContent=data.length+' booking'+(data.length!==1?'s':'');
 }
-
-window.setFilter=(f,el)=>{
-  currentFilter=f;
-  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  renderBookings();
+window.setBkFilter=(type,val,el)=>{
+  if(type==='status'){
+    bkFilterStatus=val;
+    document.querySelectorAll('#statusFilterTabs .ftab').forEach(t=>t.classList.remove('active'));
+    if(el) el.classList.add('active');
+  }
+  applyBkFilters();
 };
-window.filterBookings=renderBookings;
+window.filterBookings=applyBkFilters;
+// Hook dropdowns
+document.getElementById('fEventType').addEventListener('change',e=>{bkFilterEventType=e.target.value;applyBkFilters();});
+document.getElementById('fService').addEventListener('change',e=>{bkFilterService=e.target.value;applyBkFilters();});
+document.getElementById('fSort').addEventListener('change',e=>{bkFilterSort=e.target.value;applyBkFilters();});
 
 // ── STATUS UPDATE ──
 window.updateStatus=async(id,status)=>{
@@ -891,55 +1107,123 @@ window.updateStatus=async(id,status)=>{
     await updateDoc(doc(db,'bookings',id),{status,updatedAt:serverTimestamp()});
     const idx=allBookings.findIndex(b=>b.id===id);
     if(idx>-1) allBookings[idx].status=status;
-    renderBookings(); renderDashboard(); updateBadges();
+    applyBkFilters(); renderDashboard(); updateBadges();
     showToast(status==='confirmed'?'✅ Booking confirmed!':'✕ Booking declined.');
     if(curDetailId===id) viewDetail(id);
-  } catch(e){ showToast('Error updating status.'); }
+    sendBookingNotification(id,status);
+  }catch(e){showToast('Error updating status.');}
 };
 
-// ── DETAIL ──
+// ── EMAIL NOTIFICATION ──
+async function sendBookingNotification(bookingId,status){
+  const bk=allBookings.find(b=>b.id===bookingId);
+  if(!bk||!bk.email) return;
+  // Save customer notification to Firestore
+  if(bk.userId&&bk.userId!=='guest'){
+    const msg=status==='confirmed'?
+      `🎉 Your booking for ${bk.service} on ${bk.eventDate||'TBD'} has been confirmed! We will contact you shortly.`:
+      `Your booking for ${bk.service} has been declined. Please contact us for more info.`;
+    await addDoc(collection(db,'notifications'),{userId:bk.userId,message:msg,bookingId,read:false,createdAt:serverTimestamp()});
+  }
+  // Optional EmailJS notification
+  if(EMAILJS_SERVICE_ID==='YOUR_EMAILJS_SERVICE_ID') return;
+  try{
+    if(typeof emailjs!=='undefined'){
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+      await emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
+        to_email:bk.email,
+        to_name:bk.name||'Customer',
+        service:bk.service,
+        event_date:bk.eventDate||'TBD',
+        status:status==='confirmed'?'Confirmed ✓':'Declined',
+        message:status==='confirmed'?'Great news! Your booking has been confirmed.':'We regret to inform you that we cannot accommodate your booking at this time.'
+      });
+    }
+  }catch(e){console.log('EmailJS:',e.message);}
+}
+
+// ── DETAIL VIEW ──
 window.viewDetail=id=>{
   const b=allBookings.find(b=>b.id===id);if(!b)return;
   curDetailId=id;
-  const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):'—';
-  const sub=b.createdAt?new Date(b.createdAt.seconds*1000).toLocaleString('en-IN'):'—';
+  const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):' — ';
+  const sub=b.createdAt?new Date(b.createdAt.seconds*1000).toLocaleString('en-IN'):' — ';
+  const mod=b.modifiedAt?new Date(b.modifiedAt.seconds*1000).toLocaleString('en-IN'):null;
   document.getElementById('dpBody').innerHTML=`
     <div class="dp-sec">
       <div class="dp-sec-ttl">Client Information</div>
       <div class="dp-row"><span class="dp-key">Name</span><span class="dp-val">${b.name||'—'}</span></div>
       <div class="dp-row"><span class="dp-key">Email</span><span class="dp-val">${b.email||'—'}</span></div>
       <div class="dp-row"><span class="dp-key">Phone</span><span class="dp-val">${b.phone||'—'}</span></div>
+      <div class="dp-row"><span class="dp-key">Type</span><span class="dp-val">${b.isGuest?'👤 Guest':'✓ Registered'}</span></div>
     </div>
     <div class="dp-sec">
       <div class="dp-sec-ttl">Event Details</div>
       <div class="dp-row"><span class="dp-key">Service</span><span class="dp-val">${b.service||'—'}</span></div>
       <div class="dp-row"><span class="dp-key">Event Type</span><span class="dp-val">${b.eventType||'—'}</span></div>
-      <div class="dp-row"><span class="dp-key">Date</span><span class="dp-val">${dt}</span></div>
-
+      <div class="dp-row"><span class="dp-key">Event Date</span><span class="dp-val">${dt}</span></div>
       <div class="dp-row"><span class="dp-key">Budget</span><span class="dp-val" style="color:var(--gold)">${b.budget||'—'}</span></div>
       <div class="dp-row"><span class="dp-key">Venue</span><span class="dp-val">${b.venue||'—'}</span></div>
       <div class="dp-row"><span class="dp-key">Submitted</span><span class="dp-val">${sub}</span></div>
+      ${mod?`<div class="dp-row"><span class="dp-key">Modified</span><span class="dp-val" style="color:var(--purple)">${mod}</span></div>`:''}
+      <div class="dp-row"><span class="dp-key">Pipeline</span><span class="dp-val">${b.pipeline||'New Enquiry'}</span></div>
     </div>
     ${b.message?`<div class="dp-sec"><div class="dp-sec-ttl">Client's Vision</div><div style="font-size:.78rem;line-height:1.7;color:var(--t2)">${b.message}</div></div>`:''}
     <div class="dp-sec">
-      <div class="dp-sec-ttl">Status</div>
-      <span class="bdg bdg-${b.status||'pending'}" style="font-size:.75rem;padding:5px 13px">${b.status||'pending'}</span>
+      <div class="dp-sec-ttl">Status &amp; Actions</div>
+      <span class="bdg bdg-${b.status||'pending'}" style="font-size:.75rem;padding:5px 13px;display:inline-block;margin-bottom:12px">${b.status||'pending'}</span>
+      <div class="dp-actions">
+        <button class="dp-btn dp-ok" onclick="updateStatus('${id}','confirmed')">✓ Confirm</button>
+        <button class="dp-btn dp-no" onclick="updateStatus('${id}','declined')">✕ Decline</button>
+        <button class="dp-btn dp-mod" onclick="openKanbanMove('${id}')">📋 Move Stage</button>
+      </div>
     </div>
     <div class="dp-sec">
-      <div class="dp-sec-ttl">Actions</div>
-      <div class="dp-actions">
-        <button class="dp-btn dp-ok" onclick="updateStatus('${id}','confirmed')">✓ Confirm Booking</button>
-        <button class="dp-btn dp-no" onclick="updateStatus('${id}','declined')">✕ Decline Booking</button>
+      <div class="dp-sec-ttl">Final Price (after discussion)</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:6px;">Enter the agreed final price to show on customer's booking.</div>
+      <div class="price-input-wrap">
+        <input type="text" id="finalPriceInput" placeholder="e.g. ₹2,50,000" value="${b.finalPrice||''}" />
+        <button class="price-save-btn" onclick="saveFinalPrice('${id}')">Save Price</button>
       </div>
+      <div id="priceSaveMsg" style="font-size:.72rem;margin-top:6px;color:var(--green);"></div>
     </div>
     <div class="dp-sec">
       <div class="dp-sec-ttl">Admin Notes</div>
       <textarea class="note-ta" id="noteTA" placeholder="Internal notes…">${b.adminNote||''}</textarea>
       <button class="note-save" onclick="saveNote('${id}')">Save Note</button>
+    </div>
+    <div class="dp-sec">
+      <div class="dp-sec-ttl">Google Calendar</div>
+      ${b.eventDate?`<a href="${gcalLink(b)}" target="_blank" class="dp-btn dp-mod" style="text-decoration:none;display:inline-block;margin-top:4px;">📅 Add to Google Calendar</a>`:`<span style="font-size:.75rem;color:var(--t3)">Set an event date to generate calendar link.</span>`}
     </div>`;
   document.getElementById('detailOv').classList.add('open');
 };
-
+function gcalLink(b){
+  const dt=b.eventDate?b.eventDate.replace(/-/g,''):'';
+  const title=encodeURIComponent(`AB Events: ${b.name||'Client'} - ${b.service||''}`);
+  const details=encodeURIComponent(`Budget: ${b.budget||'—'}\nVenue: ${b.venue||'—'}\nPhone: ${b.phone||'—'}\nEmail: ${b.email||'—'}`);
+  const loc=encodeURIComponent(b.venue||'Hyderabad');
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dt}/${dt}&details=${details}&location=${loc}`;
+}
+window.saveFinalPrice=async(id)=>{
+  const price=document.getElementById('finalPriceInput').value.trim();
+  const msg=document.getElementById('priceSaveMsg');
+  await updateDoc(doc(db,'bookings',id),{finalPrice:price,updatedAt:serverTimestamp()});
+  const idx=allBookings.findIndex(b=>b.id===id);
+  if(idx>-1) allBookings[idx].finalPrice=price;
+  msg.textContent='✓ Final price saved and visible to customer.';
+  showToast('Final price saved ✓');
+  applyBkFilters();
+};
+window.openKanbanMove=(id)=>{
+  const b=allBookings.find(b=>b.id===id);
+  if(!b) return;
+  const current=b.pipeline||'New Enquiry';
+  const choice=prompt('Move to stage:\n0: New Enquiry\n1: Consultation Scheduled\n2: Proposal Sent\n3: Confirmed\n4: Completed\n\nCurrent: '+current+'\nEnter 0-4:');
+  if(choice===null) return;
+  const stage=PIPELINE_STAGES[parseInt(choice)];
+  if(stage){ window.dropOnStage({preventDefault:()=>{}},stage,{classList:{remove:()=>{}}}); draggedCardId=id; window.dropOnStage({preventDefault:()=>{}},stage,{classList:{remove:()=>{}}}); }
+};
 window.saveNote=async id=>{
   const note=document.getElementById('noteTA').value;
   await updateDoc(doc(db,'bookings',id),{adminNote:note});
@@ -947,47 +1231,64 @@ window.saveNote=async id=>{
   if(idx>-1) allBookings[idx].adminNote=note;
   showToast('Note saved ✓');
 };
-
 window.closeDetail=e=>{if(e.target===document.getElementById('detailOv'))closeDetailPanel();};
 window.closeDetailPanel=()=>{document.getElementById('detailOv').classList.remove('open');curDetailId=null;};
+
+// ── CHARTS ──
+function renderSvcChart(id){
+  const counts={};
+  allBookings.forEach(b=>{if(b.service)counts[b.service]=(counts[b.service]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max=sorted[0]?.[1]||1;
+  const el=document.getElementById(id);
+  if(!sorted.length){el.innerHTML='<div style="color:var(--t3);font-size:.8rem;text-align:center;padding:20px">No bookings yet</div>';return;}
+  el.innerHTML=sorted.map(([nm,cnt])=>`
+    <div class="mbc-row"><div class="mbc-label" title="${nm}">${nm.split(' ').slice(0,2).join(' ')}</div>
+    <div class="mbc-track"><div class="mbc-fill" style="width:${Math.round(cnt/max*100)}%"></div></div>
+    <div class="mbc-val">${cnt}</div></div>`).join('');
+}
+function renderStatusChart(id){
+  const tot=allBookings.length||1;
+  const p=allBookings.filter(b=>b.status==='pending').length;
+  const c=allBookings.filter(b=>b.status==='confirmed').length;
+  const d=allBookings.filter(b=>b.status==='declined').length;
+  document.getElementById(id).innerHTML=`
+    <div class="donut-row"><div class="donut-dot" style="background:var(--yellow)"></div><div class="donut-lbl">⏳ Pending</div><div class="donut-val">${p} <span style="color:var(--t3)">(${Math.round(p/tot*100)}%)</span></div></div>
+    <div class="donut-row"><div class="donut-dot" style="background:var(--green)"></div><div class="donut-lbl">✅ Confirmed</div><div class="donut-val">${c} <span style="color:var(--t3)">(${Math.round(c/tot*100)}%)</span></div></div>
+    <div class="donut-row"><div class="donut-dot" style="background:var(--red)"></div><div class="donut-lbl">✕ Declined</div><div class="donut-val">${d} <span style="color:var(--t3)">(${Math.round(d/tot*100)}%)</span></div></div>
+    <div class="donut-row" style="margin-top:4px;border-top:1px solid var(--bdr2);padding-top:8px;"><div class="donut-dot" style="background:var(--t3)"></div><div class="donut-lbl">Total</div><div class="donut-val">${allBookings.length}</div></div>`;
+}
 
 // ── USERS ──
 const uvColors=['#C9A84C','#60A5FA','#22C55E','#EC4899','#F59E0B','#A78BFA'];
 function renderUsers(filter=''){
-  const uc=document.getElementById('userCount');
   const ul=document.getElementById('userList');
   let users=allUsers;
   if(filter) users=users.filter(u=>(u.firstName+' '+u.lastName+u.email).toLowerCase().includes(filter.toLowerCase()));
-  document.getElementById('userSubtitle').textContent=`${users.length} registered customer${users.length!==1?'s':''}`;
+  document.getElementById('userSubtitle').textContent=users.length+' registered customer'+(users.length!==1?'s':'');
   if(!users.length){ul.innerHTML='<div class="empty-rows">No customers found.</div>';return;}
   ul.innerHTML=users.map((u,i)=>{
     const nm=`${u.firstName||''} ${u.lastName||''}`.trim()||u.email||'Unknown';
     const bc=allBookings.filter(b=>b.userId===u.uid).length;
-    const c=uvColors[i%uvColors.length];
+    const clr=uvColors[i%uvColors.length];
     return`<div class="user-item">
-      <div class="u-av-sm" style="background:${c}22;color:${c}">${nm[0]?.toUpperCase()}</div>
-      <div style="flex:1">
-        <div style="font-size:.83rem;font-weight:600;color:var(--t1)">${nm}</div>
-        <div style="font-size:.72rem;color:var(--t3)">${u.email||'—'} · ${u.phone||'No phone'}</div>
-      </div>
+      <div class="u-av-sm" style="background:${clr}22;color:${clr}">${(nm[0]||'?').toUpperCase()}</div>
+      <div style="flex:1"><div style="font-size:.83rem;font-weight:600;color:var(--t1)">${nm}</div><div style="font-size:.72rem;color:var(--t3)">${u.email||'—'} · ${u.phone||'No phone'}</div></div>
       <span class="bdg bdg-new">${bc} booking${bc!==1?'s':''}</span>
     </div>`;
   }).join('');
 }
 window.filterUsers=()=>renderUsers(document.getElementById('userSearch').value);
 
-// ── GALLERY UPLOAD ──
+// ── GALLERY UPLOAD (CLOUDINARY) ──
 window.onFileSelect=e=>{
-  const file=e.target.files[0]; if(!file)return;
+  const file=e.target.files[0];if(!file)return;
   selectedFile=file;
   const reader=new FileReader();
-  reader.onload=ev=>{
-    document.getElementById('uploadPreview').innerHTML=`<img src="${ev.target.result}" alt="preview"/>`;
-  };
+  reader.onload=ev=>{document.getElementById('uploadPreview').innerHTML=`<img src="${ev.target.result}" alt="preview"/>`;};
   reader.readAsDataURL(file);
   document.getElementById('uploadBtn').disabled=false;
 };
-
 window.onDragOver=e=>{e.preventDefault();document.getElementById('dropZone').classList.add('drag');};
 window.onDragLeave=e=>{document.getElementById('dropZone').classList.remove('drag');};
 window.onDrop=e=>{
@@ -999,7 +1300,6 @@ window.onDrop=e=>{
   reader.readAsDataURL(file);
   document.getElementById('uploadBtn').disabled=false;
 };
-
 window.uploadPhoto=async()=>{
   if(!selectedFile){showToast('Please select an image first.');return;}
   const svc=document.getElementById('uploadService').value;
@@ -1008,8 +1308,7 @@ window.uploadPhoto=async()=>{
   if(!eventCat){showToast('Please select an event category.');return;}
   if(selectedFile.size>5*1024*1024){showToast('File too large. Max 5MB.');return;}
   if(CLOUDINARY_CLOUD==='YOUR_CLOUD_NAME'){
-    showToast('⚠️ Set your Cloudinary Cloud Name in the code first!');
-    document.getElementById('uploadMsg').innerHTML='<span class="msg-err">⚠️ Please set CLOUDINARY_CLOUD to your actual Cloud Name (find it on cloudinary.com dashboard).</span>';
+    document.getElementById('uploadMsg').innerHTML='<span class="msg-err">⚠️ Set your CLOUDINARY_CLOUD name in the code first! (search for YOUR_CLOUD_NAME)</span>';
     return;
   }
   const caption=document.getElementById('uploadCaption').value.trim();
@@ -1021,115 +1320,74 @@ window.uploadPhoto=async()=>{
   prog.style.display='block'; bar.style.width='5%';
   msg.innerHTML='<span style="color:var(--gold)">⬆️ Uploading to Cloudinary…</span>';
   try{
-    // ── Upload to Cloudinary via unsigned preset — no API key needed ──
     const formData=new FormData();
-    formData.append('file', selectedFile);
-    formData.append('upload_preset', CLOUDINARY_PRESET);
-    formData.append('folder', 'ab-events/gallery');
-
+    formData.append('file',selectedFile);
+    formData.append('upload_preset',CLOUDINARY_PRESET);
+    formData.append('folder','ab-events/gallery');
     bar.style.width='35%';
-    const res=await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
-      {method:'POST', body:formData}
-    );
+    const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,{method:'POST',body:formData});
     bar.style.width='70%';
-    if(!res.ok){
-      const errData=await res.json().catch(()=>({}));
-      throw new Error(errData.error?.message||`HTTP ${res.status} — check your Cloud Name and Preset`);
-    }
+    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error?.message||'HTTP '+res.status);}
     const data=await res.json();
-    const url=data.secure_url;
     bar.style.width='85%';
-
-    // ── Save URL + metadata to Firestore ──
-    await addDoc(collection(db,'gallery'),{
-      url,
-      service:svc,
-      eventCategory:eventCat,
-      caption:caption||eventCat,
-      cloudinaryId:data.public_id,
-      uploadedAt:serverTimestamp()
-    });
+    await addDoc(collection(db,'gallery'),{url:data.secure_url,service:svc,eventCategory:eventCat,caption:caption||eventCat,cloudinaryId:data.public_id,uploadedAt:serverTimestamp()});
     bar.style.width='100%';
-    setTimeout(()=>{prog.style.display='none'; bar.style.width='0%';},600);
+    setTimeout(()=>{prog.style.display='none';bar.style.width='0%';},500);
     msg.innerHTML='<span class="msg-ok">✓ Photo uploaded and live on customer site!</span>';
-    btn.textContent='Upload Photo →'; btn.disabled=true;
-    selectedFile=null;
+    btn.textContent='Upload Photo →';btn.disabled=true;selectedFile=null;
     document.getElementById('uploadPreview').innerHTML='No image selected';
     document.getElementById('uploadCaption').value='';
     document.getElementById('uploadService').value='';
     document.getElementById('uploadEventCat').value='';
     document.getElementById('photoFileInput').value='';
-    showToast('📸 Photo uploaded successfully!');
+    showToast('📸 Photo uploaded!');
     await loadGallery();
-  } catch(err){
-    prog.style.display='none'; bar.style.width='0%';
+  }catch(err){
+    prog.style.display='none';bar.style.width='0%';
     msg.innerHTML='<span class="msg-err">Upload failed: '+err.message+'</span>';
-    btn.disabled=false; btn.textContent='Upload Photo →';
+    btn.disabled=false;btn.textContent='Upload Photo →';
   }
 };
 
-// dual filters – svc & event category
-let _galSvc='', _galCat='';
-
+// ── GALLERY RENDER ──
+let _galSvcFilter='',_galCatFilter='';
 function renderAdminGallery(){
   const grid=document.getElementById('adminGalleryGrid');
   let photos=[...allGallery];
-  if(_galSvc) photos=photos.filter(p=>p.service===_galSvc);
-  if(_galCat) photos=photos.filter(p=>p.eventCategory===_galCat);
-  const total=photos.length;
+  if(_galSvcFilter) photos=photos.filter(p=>p.service===_galSvcFilter);
+  if(_galCatFilter) photos=photos.filter(p=>p.eventCategory===_galCatFilter);
   const sub=document.getElementById('gallerySubtitle');
-  if(sub) sub.textContent=total+' photo'+(total!==1?'s':'')+' uploaded';
-  if(!total){
-    grid.innerHTML='<div class="gga-empty">No photos match this filter. Upload new photos or try a different filter.</div>';
-    return;
-  }
+  if(sub) sub.textContent=photos.length+' photo'+(photos.length!==1?'s':'')+' uploaded';
+  if(!photos.length){grid.innerHTML='<div class="gga-empty">No photos match this filter.</div>';return;}
   grid.innerHTML=photos.map(p=>`
     <div class="gga-item">
       <img src="${p.url}" alt="${p.caption||''}" loading="lazy"/>
       <div class="gga-overlay">
-        <div class="gga-svc" style="font-size:.68rem;font-weight:600;color:var(--gold)">${(p.service||'').split(' ').slice(0,2).join(' ')}</div>
-        <div style="font-size:.62rem;color:rgba(201,168,76,.7);margin-top:1px">${p.eventCategory||''}</div>
-        ${p.caption?`<div style="font-size:.63rem;color:rgba(255,255,255,.55);text-align:center;padding:2px 6px 0">${p.caption}</div>`:''}
+        <div class="gga-svc">${(p.service||'').split(' ').slice(0,2).join(' ')}</div>
+        <div style="font-size:.6rem;color:rgba(201,168,76,.7)">${p.eventCategory||''}</div>
+        ${p.caption?`<div style="font-size:.6rem;color:rgba(255,255,255,.5);text-align:center">${p.caption}</div>`:''}
         <button class="gga-del" onclick="deletePhoto('${p.id}','${(p.storagePath||'').replace(/'/g,"\'")}')">🗑 Delete</button>
       </div>
     </div>`).join('');
 }
-
-window.setGalSvcFilter=(f,el)=>{
-  _galSvc=f;
-  document.querySelectorAll('#galleryServiceTabs .ftab').forEach(t=>t.classList.remove('active'));
-  if(el) el.classList.add('active');
-  renderAdminGallery();
-};
-window.setGalCatFilter=(f,el)=>{
-  _galCat=f;
-  document.querySelectorAll('#galleryCatTabs .ftab').forEach(t=>t.classList.remove('active'));
-  if(el) el.classList.add('active');
-  renderAdminGallery();
-};
+window.setGalSvcFilter=(f,el)=>{_galSvcFilter=f;document.querySelectorAll('#galleryServiceTabs .ftab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');renderAdminGallery();};
+window.setGalCatFilter=(f,el)=>{_galCatFilter=f;document.querySelectorAll('#galleryCatTabs .ftab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');renderAdminGallery();};
 window.setGalleryFilter=window.setGalSvcFilter;
-
-
 window.deletePhoto=async(id,path)=>{
-  if(!confirm('Delete this photo? It will be removed from the customer site.')) return;
+  if(!confirm('Delete this photo?')) return;
   try{
     await deleteDoc(doc(db,'gallery',id));
-    if(path){try{await deleteObject(ref(storage,path));}catch(e){}}
     allGallery=allGallery.filter(p=>p.id!==id);
     renderAdminGallery();
     document.getElementById('galBadge').textContent=allGallery.length;
     showToast('Photo deleted.');
-  } catch(e){ showToast('Error deleting photo.'); }
+  }catch(e){showToast('Error deleting photo.');}
 };
 
 // ── SERVICES PANEL ──
 function renderServicesPanel(){
   const svcs=['Luxury Decor & Styling','Professional Photography','Live Music & Entertainment','Premium Lighting Design','Gourmet Catering','Complete Event Management'];
-  svcs.forEach((s,i)=>{
-    const el=document.getElementById('svcStat'+i);
-    if(el) el.textContent=allBookings.filter(b=>b.service===s).length;
-  });
+  svcs.forEach((s,i)=>{const el=document.getElementById('svcStat'+i);if(el)el.textContent=allBookings.filter(b=>b.service===s).length;});
   renderSvcChart('svcChartFull');
 }
 
@@ -1137,66 +1395,58 @@ function renderServicesPanel(){
 function updateBadges(){
   const p=allBookings.filter(b=>b.status==='pending').length;
   document.getElementById('pendingBadge').textContent=p;
-  document.getElementById('notifDot').style.display=p>0?'block':'none';
 }
-function fe(c){const m={'auth/user-not-found':'No account found with that email.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'Email already registered.','auth/weak-password':'Password must be at least 6 characters.','auth/too-many-requests':'Too many attempts. Try later.','auth/invalid-email':'Invalid email format.','auth/missing-password':'Please enter your password.'};return m[c]||'Something went wrong. Try again.';}
+function fe(c){const m={'auth/user-not-found':'No account found.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'Email already registered.','auth/weak-password':'Password needs 6+ characters.','auth/too-many-requests':'Too many attempts. Try later.','auth/invalid-email':'Invalid email format.'};return m[c]||'Something went wrong.';}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
-window.saveSettings=()=>{showToast('Settings saved ✓');document.getElementById('settingsMsg').innerHTML='<span style="color:var(--green)">Settings saved.</span>';};
-
-// expose
+window.saveSettings=async()=>{
+  const name=document.getElementById('setName').value.trim();
+  const pwd=document.getElementById('setPwd').value;
+  try{
+    if(name&&auth.currentUser) await updateProfile(auth.currentUser,{displayName:name});
+    document.getElementById('sbName').textContent=name||auth.currentUser?.email.split('@')[0];
+    document.getElementById('settingsMsg').innerHTML='<span style="color:var(--green)">Settings saved ✓</span>';
+    showToast('Settings saved ✓');
+  }catch(e){document.getElementById('settingsMsg').innerHTML='<span style="color:var(--red)">'+e.message+'</span>';}
+};
 window.showToast=showToast;
-window.filterUsers=window.filterUsers;
 </script>
 
 <script>
 // ── AUTH TAB SWITCHER ──
 window.switchAdminTab=function(t){
   var panelMap={login:'adminLoginPanel',register:'adminRegPanel',forgot:'adminForgotPanel'};
-  Object.keys(panelMap).forEach(function(key){
-    var el=document.getElementById(panelMap[key]);
-    if(el) el.classList.toggle('active',key===t);
-  });
+  Object.keys(panelMap).forEach(function(key){var el=document.getElementById(panelMap[key]);if(el)el.classList.toggle('active',key===t);});
   var tabs=document.getElementById('adminAuthTabs');
   if(tabs) tabs.style.display=t==='forgot'?'none':'flex';
-  document.querySelectorAll('.auth-tab').forEach(function(tab,i){
-    tab.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register'));
-  });
+  document.querySelectorAll('.auth-tab').forEach(function(tab,i){tab.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register'));});
   ['loginErr','regErr','regOk','fpErr','fpOk'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='';});
 };
-
 // ── PASSWORD STRENGTH ──
 window.checkPwStrength=function(v){
-  var bar=document.getElementById('pwBar');
-  var hint=document.getElementById('pwHint');
+  var bar=document.getElementById('pwBar'),hint=document.getElementById('pwHint');
   if(!v){bar.style.width='0';bar.style.background='';if(hint)hint.textContent='';return;}
   var score=0;
-  if(v.length>=6) score++;
-  if(v.length>=10) score++;
-  if(/[A-Z]/.test(v)) score++;
-  if(/[0-9!@#$%^&*]/.test(v)) score++;
+  if(v.length>=6)score++;if(v.length>=10)score++;if(/[A-Z]/.test(v))score++;if(/[0-9!@#$%]/.test(v))score++;
   var levels=[['0','',''],['25%','#EF4444','Weak'],['50%','#F59E0B','Fair'],['75%','#60A5FA','Good'],['100%','#22C55E','Strong']];
-  var l=levels[Math.min(score,4)];
-  bar.style.width=l[0]; bar.style.background=l[1];
-  if(hint){hint.textContent=l[2]||''; hint.style.color=l[1];}
+  var l=levels[Math.min(score,4)];bar.style.width=l[0];bar.style.background=l[1];
+  if(hint){hint.textContent=l[2]||'';hint.style.color=l[1];}
 };
-
 // ── PANEL NAV ──
-let mobSidebarOpen=false;
+var mobSidebarOpen=false;
 function showPanel(id,el){
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(el) el.classList.add('active');
-  const titles={dashboard:'Dashboard',bookings:'Booking Requests',users:'Customers',gallery:'Gallery & Photos',services:'Services Analytics',settings:'Settings'};
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  var panel=document.getElementById('panel-'+id);if(panel)panel.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  if(el)el.classList.add('active');
+  var titles={dashboard:'Dashboard',analytics:'Revenue Analytics',pipeline:'Booking Pipeline',bookings:'Booking Requests',users:'Customers',gallery:'Gallery & Photos',reviews:'Reviews',staff:'Staff Management',services:'Services',settings:'Settings'};
   document.getElementById('tbTitle').textContent=titles[id]||id;
-  if(window.innerWidth<900){ toggleSidebar(); }
+  if(window.innerWidth<900)toggleSidebar();
 }
 function toggleSidebar(){
   mobSidebarOpen=!mobSidebarOpen;
   document.getElementById('sidebar').classList.toggle('mob-open',mobSidebarOpen);
 }
-// close sidebar on outside click (mobile)
-document.addEventListener('click',e=>{
+document.addEventListener('click',function(e){
   if(window.innerWidth<900&&mobSidebarOpen&&!e.target.closest('#sidebar')&&!e.target.closest('.tb-menu')){
     mobSidebarOpen=false;document.getElementById('sidebar').classList.remove('mob-open');
   }

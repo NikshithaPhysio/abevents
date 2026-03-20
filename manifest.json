@@ -1,0 +1,26 @@
+{
+  "name": "AB Events & Decors",
+  "short_name": "AB Events",
+  "description": "Hyderabad's Premier Event Studio — Weddings, Decor, Catering & more",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#080808",
+  "theme_color": "#C9A84C",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/C9A84C/000000?text=AB",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/C9A84C/000000?text=AB",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "business"],
+  "lang": "en-IN"
+}
