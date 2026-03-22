@@ -448,7 +448,7 @@ tbody tr:hover td{background:var(--s2);}
         <div class="card"><div class="card-hdr"><div><div class="card-ttl">Bookings by Service</div><div class="card-sub">Demand breakdown</div></div></div><div class="card-body"><div class="mini-bar-chart" id="svcChart"></div></div></div>
         <div class="card"><div class="card-hdr"><div><div class="card-ttl">Status Overview</div></div></div><div class="card-body"><div class="donut-wrap" id="statusChart"></div></div></div>
       </div>
-      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Recent Booking Requests</div><div class="card-sub">Latest 8</div></div><button class="tb-btn" onclick="showPanel('bookings',null)">View All →</button></div><div class="tbl-wrap"><table><thead><tr><th>Client</th><th>Service</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead><tbody id="recentTbl"></tbody></table></div></div>
+      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Recent Booking Requests</div><div class="card-sub">Latest 8</div></div><button class="tb-btn" onclick="showPanel('bookings',null)">View All →</button></div><div class="tbl-wrap"><table><thead><tr><th>Booking ID</th><th>Client</th><th>Service</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead><tbody id="recentTbl"></tbody></table></div></div>
     </div>
 
     <!-- REVENUE ANALYTICS -->
@@ -514,7 +514,7 @@ tbody tr:hover td{background:var(--s2);}
           </select>
         </div>
         <div class="tbl-wrap">
-          <table><thead><tr><th>Client</th><th>Service</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Final Price</th><th>Status</th><th>Actions</th></tr></thead>
+          <table><thead><tr><th>Booking ID</th><th>Client</th><th>Service</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Final Price</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody id="allTbl"><tr><td colspan="8" class="empty-rows">Loading…</td></tr></tbody></table>
         </div>
       </div>
@@ -1150,6 +1150,7 @@ function renderKanban() {
     var cardHtml = cards.map(function(b) {
       return '<div class="kb-card" draggable="true" ondragstart="dragCard(event,\'' + b.id + '\')" onclick="viewDetail(\'' + b.id + '\')">' +
         '<div class="kb-card-name">' + (b.name || b.userEmail || '—') + '</div>' +
+        (b.bookingId ? '<div style="font-family:monospace;font-size:.62rem;color:var(--gold);opacity:.85;margin:1px 0">' + b.bookingId + '</div>' : '') +
         '<div class="kb-card-svc">' + (b.service || '—').split(' ').slice(0, 3).join(' ') + '</div>' +
         '<div class="kb-card-date">&#128197; ' + (b.eventDate || 'Date TBD') + '</div></div>';
     }).join('');
@@ -1194,16 +1195,1342 @@ window.openKanbanMove = function(id) {
 function renderRows(tbodyId, data, short) {
   var tbody = document.getElementById(tbodyId);
   if (!tbody) return;
-  if (!data.length) { tbody.innerHTML = '<tr><td colspan="' + (short ? 6 : 8) + '" class="empty-rows">No bookings found.</td></tr>'; return; }
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="' + (short ? 7 : 9) + '" class="empty-rows">No bookings found.</td></tr>'; return; }
   tbody.innerHTML = data.map(function(b) {
     var sCls = b.status === 'confirmed' ? 'bdg-confirmed' : b.status === 'declined' ? 'bdg-declined' : b.status === 'completed' ? 'bdg-completed' : b.status === 'modified' ? 'bdg-modified' : 'bdg-pending';
     var sLbl = b.pipeline || (b.status === 'pending' ? 'New Enquiry' : b.status || 'New Enquiry');
     var dt   = b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '—';
+    var bkId = b.bookingId || '—';
+    var bkIdCell = '<td><span style="font-family:monospace;font-size:.68rem;color:var(--gold);background:rgba(201,168,76,.1);padding:2px 7px;border-radius:3px;white-space:nowrap;letter-spacing:.04em">' + bkId + '</span></td>';
     var extra    = short ? '' : '<td style="font-size:.75rem">' + (b.eventType || '—') + '</td>';
     var priceCol = short ? '' : '<td style="color:var(--gold);font-size:.75rem">' + (b.finalPrice || '—') + '</td>';
     var confirmBtn = b.status !== 'confirmed' && b.status !== 'completed' ? '<button class="act-btn act-ok" onclick="updateStatus(\'' + b.id + '\',\'confirmed\')">&#10003;</button>' : '';
     var declineBtn = b.status !== 'declined'  ? '<button class="act-btn act-no" onclick="updateStatus(\'' + b.id + '\',\'declined\')">&#10005;</button>' : '';
-    return '<tr><td><div class="cell-primary">' + (b.name || b.userEmail || '—') + '</div><div class="cell-sub">' + (b.email || '') + '</div></td>' +
+    return '<tr>' + bkIdCell +
+      '<td><div class="cell-primary">' + (b.name || b.userEmail || '—') + '</div><div class="cell-sub">' + (b.email || '') + '</div></td>' +
+      '<td style="font-size:.75rem">' + (b.service || '—') + '</td>' +
+      extra + '<td style="white-space:nowrap;font-size:.75rem">' + dt + '</td>' +
+      '<td style="white-space:nowrap;font-size:.75rem">' + (b.budget || '—') + '</td>' +
+      priceCol +
+      '<td><span class="bdg ' + sCls + '">' + sLbl + '</span></td>' +
+      '<td><div class="act-btns"><button class="act-btn act-view" onclick="viewDetail(\'' + b.id + '\')">View</button>' +
+      confirmBtn + declineBtn + '</div></td></tr>';
+  }).join('');
+}
+
+function applyBkFilters() {
+  var data = allBookings.slice();
+  if (bkFilterStatus !== 'all') {
+    if (bkFilterStatus === 'pending') {
+      data = data.filter(function(b) { return b.status === 'pending' || b.status === 'New Enquiry' || (!b.status && !b.pipeline) || (b.pipeline === 'New Enquiry' && b.status !== 'confirmed' && b.status !== 'declined' && b.status !== 'completed'); });
+    } else {
+      data = data.filter(function(b) { return b.status === bkFilterStatus; });
+    }
+  }
+  if (bkFilterEventType) data = data.filter(function(b) { return b.eventType === bkFilterEventType; });
+  if (bkFilterService)   data = data.filter(function(b) { return b.service   === bkFilterService;   });
+  var search = ((document.getElementById('globalSearch') || {}).value || '').toLowerCase();
+  if (search) data = data.filter(function(b) { return (b.name || b.email || b.service || b.eventType || '').toLowerCase().includes(search); });
+  if (bkFilterSort === 'date-asc')    data.sort(function(a, b) { return (a.createdAt && a.createdAt.seconds || 0) - (b.createdAt && b.createdAt.seconds || 0); });
+  else if (bkFilterSort === 'event-asc')  data.sort(function(a, b) { return (a.eventDate || '') > (b.eventDate || '') ? 1 : -1; });
+  else if (bkFilterSort === 'event-desc') data.sort(function(a, b) { return (a.eventDate || '') < (b.eventDate || '') ? 1 : -1; });
+  else data.sort(function(a, b) { return (b.createdAt && b.createdAt.seconds || 0) - (a.createdAt && a.createdAt.seconds || 0); });
+  renderRows('allTbl', data, false);
+  var sub = document.getElementById('bkSubtitle');
+  if (sub) sub.textContent = data.length + ' booking' + (data.length !== 1 ? 's' : '');
+}
+window.filterBookings = applyBkFilters;
+
+window.setBkFilter = function(type, val, el) {
+  if (type === 'status') {
+    bkFilterStatus = val;
+    document.querySelectorAll('#statusFilterTabs .ftab').forEach(function(t) { t.classList.remove('active'); });
+    if (el) el.classList.add('active');
+  }
+  applyBkFilters();
+};
+
+// Hook filter dropdowns once DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  var fe = document.getElementById('fEventType');
+  var fs = document.getElementById('fService');
+  var fso = document.getElementById('fSort');
+  if (fe)  fe.addEventListener('change',  function(e) { bkFilterEventType = e.target.value; applyBkFilters(); });
+  if (fs)  fs.addEventListener('change',  function(e) { bkFilterService   = e.target.value; applyBkFilters(); });
+  if (fso) fso.addEventListener('change', function(e) { bkFilterSort      = e.target.value; applyBkFilters(); });
+});
+
+// ════════════════════════════════════════════════════
+//  STATUS UPDATE
+// ════════════════════════════════════════════════════
+window.updateStatus = function(id, status) {
+  db.collection('bookings').doc(id).update({ status: status, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(function() {
+    var idx = allBookings.findIndex(function(b) { return b.id === id; });
+    if (idx > -1) allBookings[idx].status = status;
+    applyBkFilters(); renderDashboard(); updateBadges();
+    showToast(status === 'confirmed' ? '✅ Booking confirmed!' : '✕ Booking declined.');
+    if (curDetailId === id) viewDetail(id);
+    sendBookingNotification(id, status);
+  }).catch(function(e) { showToast('Error: ' + e.message); });
+};
+
+function sendBookingNotification(bookingId, status) {
+  var bk = allBookings.find(function(b) { return b.id === bookingId; });
+  if (!bk) return;
+  if (bk.userId && bk.userId !== 'guest') {
+    var msg = status === 'confirmed'
+      ? 'Your booking for ' + (bk.service || 'your event') + ' on ' + (bk.eventDate || 'TBD') + ' has been confirmed!'
+      : 'Your booking for ' + (bk.service || 'your event') + ' has been declined. Please contact us for more info.';
+    db.collection('notifications').add({ userId: bk.userId, message: msg, bookingId: bookingId, read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  }
+  if (EMAILJS_SERVICE_ID === 'YOUR_EMAILJS_SERVICE_ID') return;
+  if (typeof emailjs !== 'undefined' && bk.email) {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: bk.email, to_name: bk.name || 'Customer', service: bk.service || '',
+      event_date: bk.eventDate || 'TBD',
+      status: status === 'confirmed' ? 'Confirmed' : 'Declined',
+      message: status === 'confirmed' ? 'Your booking has been confirmed!' : 'We cannot accommodate your booking at this time.'
+    });
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  BOOKING DETAIL VIEW
+// ════════════════════════════════════════════════════
+window.viewDetail = function(id) {
+  var b = allBookings.find(function(b) { return b.id === id; });
+  if (!b) return;
+  curDetailId = id;
+  var dt  = b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' }) : '—';
+  var sub = b.createdAt ? new Date(b.createdAt.seconds * 1000).toLocaleString('en-IN') : '—';
+  var mod = b.modifiedAt ? new Date(b.modifiedAt.seconds * 1000).toLocaleString('en-IN') : null;
+
+  var modRow    = mod ? '<div class="dp-row"><span class="dp-key">Modified</span><span class="dp-val" style="color:var(--purple)">' + mod + '</span></div>' : '';
+  var msgSec    = b.message ? '<div class="dp-sec"><div class="dp-sec-ttl">Client\'s Vision</div><div style="font-size:.78rem;line-height:1.7;color:var(--t2)">' + b.message + '</div></div>' : '';
+  var staffOpts = allStaff.map(function(s) {
+    return '<option value="' + s.name + '"' + (b.assignedStaff === s.name ? ' selected' : '') + '>' + s.name + ' (' + s.role + ')</option>';
+  }).join('');
+  var staffDone = b.assignedStaff ? '<div style="font-size:.75rem;color:var(--green);">&#10003; Assigned: <strong>' + b.assignedStaff + '</strong></div>' : '';
+
+  document.getElementById('dpBody').innerHTML =
+    '<div class="dp-sec"><div class="dp-sec-ttl">Client Information</div>' +
+    '<div class="dp-row"><span class="dp-key">Name</span><span class="dp-val">' + (b.name || '—') + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Email</span><span class="dp-val">' + (b.email || '—') + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Phone</span><span class="dp-val">' + (b.phone || '—') + '</span></div>' +
+    '<div class="dp-row"><span class="dp-key">Type</span><span class="dp-val">' + (b.isGuest ? 'Guest' : 'Registered') + '</span></div></div>' +
+    '<div class="dp-sec"><div class="dp-sec-ttl">Event Details</div>' +
+    '<div class="dp-row"><span class="dp-key">Booking ID</span><span class="dp-val" style="font-family:monospace;color:var(--gold);letter-spacing:.05em">' + (b.bookingId || '—') + '</span></div>' +
+    OCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AB Events — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<!-- EmailJS for notifications -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+:root{
+  --bg:#0C0C0E;--s1:#141416;--s2:#1A1A1E;--s3:#222228;--s4:#2A2A32;
+  --bdr:rgba(255,255,255,.06);--bdr2:rgba(255,255,255,.04);
+  --gold:#C9A84C;--gold-a:rgba(201,168,76,.14);--gold-a2:rgba(201,168,76,.07);
+  --green:#22C55E;--green-a:rgba(34,197,94,.14);
+  --red:#EF4444;--red-a:rgba(239,68,68,.12);
+  --yellow:#F59E0B;--yellow-a:rgba(245,158,11,.14);
+  --blue:#60A5FA;--blue-a:rgba(96,165,250,.12);
+  --purple:#A78BFA;--purple-a:rgba(167,139,250,.14);
+  --t1:#EAEAF0;--t2:#9999A8;--t3:#55555F;--t4:#3A3A44;
+  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+  --r:8px;--r2:12px;--ease:cubic-bezier(.4,0,.2,1);--tr:.25s var(--ease);
+  --sidebar-w:248px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--t1);font-family:var(--fb);font-size:14px;display:flex;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--s4);border-radius:4px;}
+
+/* AUTH */
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:20px;}
+#loginScreen.gone{display:none;}
+.login-wrap{width:100%;max-width:440px;}
+.login-logo{font-family:var(--fh);font-size:1.2rem;font-weight:700;color:var(--gold);margin-bottom:4px;}
+.login-sub{font-size:.8rem;color:var(--t3);margin-bottom:28px;}
+.login-chip{display:inline-flex;align-items:center;gap:6px;background:var(--gold-a);border:1px solid rgba(201,168,76,.22);padding:5px 12px;border-radius:100px;font-size:.68rem;color:var(--gold);letter-spacing:.08em;margin-bottom:22px;}
+.auth-tabs{display:flex;background:var(--s2);border-radius:var(--r);padding:3px;gap:3px;margin-bottom:22px;}
+.auth-tab{flex:1;padding:9px 6px;text-align:center;font-size:.73rem;font-weight:600;cursor:pointer;border-radius:6px;color:var(--t2);background:transparent;border:none;font-family:var(--fh);transition:var(--tr);}
+.auth-tab.active{background:var(--gold);color:#000;}
+.auth-panel{display:none;}.auth-panel.active{display:block;}
+.lf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.lf-group{margin-bottom:14px;}
+.lf-label{display:block;font-size:.7rem;font-weight:500;color:var(--t2);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase;}
+.lf-input{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:11px 14px;border-radius:var(--r);font-family:var(--fb);font-size:.875rem;outline:none;transition:var(--tr);}
+.lf-input:focus{border-color:rgba(201,168,76,.4);box-shadow:0 0 0 3px rgba(201,168,76,.08);}
+.lbtn{width:100%;background:var(--gold);color:#000;padding:12px;border-radius:var(--r);font-family:var(--fh);font-weight:700;font-size:.85rem;cursor:pointer;border:none;transition:var(--tr);margin-top:4px;}
+.lbtn:hover{background:#D4B05C;}
+.l-err{font-size:.75rem;color:var(--red);margin-top:8px;min-height:16px;}
+.l-ok{font-size:.75rem;color:var(--green);margin-top:8px;min-height:16px;}
+.l-hint{font-size:.72rem;color:var(--t4);margin-top:14px;text-align:center;line-height:1.6;}
+.l-hint a{color:var(--gold);}
+.l-forgot-btn{background:none;border:none;color:var(--gold);font-size:.73rem;cursor:pointer;font-family:var(--fb);opacity:.8;margin-top:10px;display:inline-block;}
+.pw-bar{height:3px;border-radius:2px;margin-top:5px;background:var(--s4);transition:all .3s;width:0;}
+.pw-hint{font-size:.68rem;margin-top:3px;min-height:14px;}
+
+/* LAYOUT */
+#sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);height:100vh;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;transition:var(--tr);flex-shrink:0;}
+#main{flex:1;height:100vh;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+/* SIDEBAR */
+.sb-top{padding:20px 18px;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.sb-logo{font-family:var(--fh);font-weight:800;font-size:1rem;color:var(--gold);}
+.sb-tag{font-size:.65rem;color:var(--t3);margin-top:2px;}
+.sb-nav{padding:12px 10px;flex:1;overflow-y:auto;}
+.sb-sec{font-size:.62rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);padding:0 8px;margin:14px 0 6px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:6px;cursor:pointer;color:var(--t2);font-size:.83rem;font-weight:500;transition:var(--tr);text-decoration:none;border:1px solid transparent;user-select:none;}
+.nav-item:hover{background:var(--s2);color:var(--t1);}
+.nav-item.active{background:var(--gold-a);color:var(--gold);border-color:rgba(201,168,76,.18);}
+.nav-icon{width:16px;text-align:center;flex-shrink:0;font-size:.95rem;}
+.n-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:100px;min-width:18px;text-align:center;}
+.n-badge.gold{background:var(--gold);color:#000;}
+.sb-foot{padding:14px;border-top:1px solid var(--bdr);flex-shrink:0;}
+.admin-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r);background:var(--s2);cursor:pointer;transition:var(--tr);}
+.admin-card:hover{background:var(--s3);}
+.a-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#D4B05C);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;flex-shrink:0;font-family:var(--fh);}
+.a-name{font-size:.82rem;font-weight:600;color:var(--t1);}
+.a-role{font-size:.67rem;color:var(--gold);}
+.sb-out{background:none;border:none;color:var(--t3);font-size:.9rem;cursor:pointer;margin-left:auto;padding:4px;transition:var(--tr);}
+.sb-out:hover{color:var(--red);}
+
+/* TOPBAR */
+.topbar{padding:0 24px;height:60px;background:var(--s1);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.tb-left{display:flex;align-items:center;gap:14px;}
+.tb-menu{background:none;border:none;color:var(--t2);cursor:pointer;font-size:1.1rem;padding:4px;display:none;}
+.tb-title{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--t1);}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 12px;transition:var(--tr);}
+.search-box:focus-within{border-color:rgba(201,168,76,.3);}
+.search-box input{background:none;border:none;outline:none;color:var(--t1);font-size:.82rem;font-family:var(--fb);width:160px;}
+.search-box input::placeholder{color:var(--t3);}
+.tb-btn{background:var(--s2);border:1px solid var(--bdr);color:var(--t2);padding:7px 14px;border-radius:var(--r);font-size:.75rem;cursor:pointer;transition:var(--tr);font-family:var(--fb);display:flex;align-items:center;gap:6px;text-decoration:none;}
+.tb-btn:hover{border-color:rgba(201,168,76,.3);color:var(--gold);}
+
+/* NOTIFICATION BELL */
+.notif-wrap{position:relative;}
+.notif-btn{position:relative;width:34px;height:34px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--tr);}
+.notif-btn:hover{border-color:rgba(201,168,76,.3);}
+.notif-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--red);border-radius:50%;border:1.5px solid var(--s1);}
+.notif-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r2);box-shadow:0 12px 40px rgba(0,0,0,.5);display:none;flex-direction:column;z-index:500;max-height:400px;overflow:hidden;}
+.notif-dropdown.open{display:flex;}
+.notif-hdr{padding:12px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;}
+.notif-hdr-ttl{font-size:.82rem;font-weight:600;color:var(--t1);}
+.notif-mark-all{font-size:.7rem;color:var(--gold);cursor:pointer;background:none;border:none;}
+.notif-body{flex:1;overflow-y:auto;}
+.notif-item{padding:12px 16px;border-bottom:1px solid var(--bdr2);cursor:pointer;transition:var(--tr);}
+.notif-item:hover{background:var(--s3);}
+.notif-item.unread{border-left:3px solid var(--gold);}
+.notif-msg{font-size:.78rem;color:var(--t1);line-height:1.5;}
+.notif-time{font-size:.68rem;color:var(--t3);margin-top:3px;}
+.notif-empty{padding:24px;text-align:center;font-size:.78rem;color:var(--t3);}
+
+/* MAINTENANCE BANNER */
+.maint-banner{background:linear-gradient(135deg,#C9A84C20,#C9A84C10);border-bottom:2px solid var(--gold);padding:10px 24px;font-size:.78rem;color:var(--gold);text-align:center;display:none;flex-shrink:0;font-weight:500;}
+.maint-banner.show{display:block;}
+
+/* CONTENT */
+#content{flex:1;overflow-y:auto;padding:24px;}
+.panel{display:none;animation:pIn .2s var(--ease);}
+.panel.active{display:block;}
+@keyframes pIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);padding:18px 20px;transition:var(--tr);}
+.stat-card:hover{border-color:rgba(201,168,76,.15);}
+.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.stat-icon-wrap{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.stat-val{font-family:var(--fh);font-size:2rem;font-weight:800;color:var(--t1);line-height:1;}
+.stat-lbl{font-size:.72rem;color:var(--t2);margin-top:4px;}
+.stat-sub{font-size:.66rem;color:var(--t3);margin-top:2px;}
+.stat-trend{font-size:.65rem;padding:3px 8px;border-radius:100px;font-weight:600;}
+.trend-up{background:var(--green-a);color:var(--green);}
+.trend-neu{background:var(--yellow-a);color:var(--yellow);}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);margin-bottom:16px;overflow:hidden;}
+.card-hdr{padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.card-ttl{font-family:var(--fh);font-size:.9rem;font-weight:700;color:var(--t1);}
+.card-sub{font-size:.72rem;color:var(--t3);margin-top:2px;}
+.card-body{padding:16px 20px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+
+/* CHARTS */
+.mini-bar-chart{display:flex;flex-direction:column;gap:8px;}
+.mbc-row{display:flex;align-items:center;gap:8px;}
+.mbc-label{font-size:.72rem;color:var(--t2);width:100px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mbc-track{flex:1;height:6px;background:var(--s3);border-radius:3px;overflow:hidden;}
+.mbc-fill{height:100%;background:linear-gradient(90deg,var(--gold),#D4B05C);border-radius:3px;transition:width .8s var(--ease);}
+.mbc-val{font-size:.72rem;color:var(--gold);width:24px;text-align:right;flex-shrink:0;}
+.donut-wrap{display:flex;flex-direction:column;gap:10px;}
+.donut-row{display:flex;align-items:center;gap:10px;}
+.donut-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.donut-lbl{font-size:.78rem;color:var(--t2);flex:1;}
+.donut-val{font-size:.82rem;font-weight:600;color:var(--t1);}
+
+/* REVENUE CHART */
+.rev-chart-wrap{height:180px;display:flex;align-items:flex-end;gap:6px;padding:0 4px;}
+.rev-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.rev-bar{width:100%;background:linear-gradient(to top,var(--gold),#E2C97E);border-radius:3px 3px 0 0;min-height:4px;transition:height .6s var(--ease);}
+.rev-bar-lbl{font-size:.58rem;color:var(--t3);}
+.rev-bar-val{font-size:.6rem;color:var(--gold);}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;text-align:left;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--bdr);white-space:nowrap;}
+tbody td{padding:12px 16px;font-size:.8rem;color:var(--t2);border-bottom:1px solid var(--bdr2);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--s2);}
+.cell-primary{font-size:.83rem;font-weight:600;color:var(--t1);}
+.cell-sub{font-size:.7rem;color:var(--t3);margin-top:1px;}
+.empty-rows{text-align:center;padding:32px;color:var(--t3);}
+
+/* BADGES */
+.bdg{font-size:.62rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:100px;border:1px solid;}
+.bdg-pending{color:var(--yellow);border-color:rgba(245,158,11,.3);background:var(--yellow-a);}
+.bdg-confirmed{color:var(--green);border-color:rgba(34,197,94,.3);background:var(--green-a);}
+.bdg-declined{color:var(--red);border-color:rgba(239,68,68,.3);background:var(--red-a);}
+.bdg-new{color:var(--blue);border-color:rgba(96,165,250,.3);background:var(--blue-a);}
+.bdg-completed{color:var(--t2);border-color:rgba(153,153,168,.3);background:rgba(153,153,168,.1);}
+.bdg-modified{color:var(--purple);border-color:rgba(167,139,250,.3);background:var(--purple-a);}
+
+/* FILTERS */
+.ftabs{display:flex;gap:4px;flex-wrap:wrap;}
+.ftab{background:var(--s2);border:1px solid var(--bdr);color:var(--t2);padding:5px 12px;border-radius:100px;font-size:.7rem;cursor:pointer;transition:var(--tr);font-family:var(--fb);}
+.ftab:hover{border-color:rgba(201,168,76,.3);color:var(--gold);}
+.ftab.active{background:var(--gold-a);border-color:rgba(201,168,76,.35);color:var(--gold);font-weight:600;}
+
+/* BOOKING FILTERS ROW */
+.bk-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;padding:12px 16px;background:var(--s2);border-radius:var(--r);}
+.bk-filter-select{background:var(--s3);border:1px solid var(--bdr);color:var(--t1);padding:6px 10px;border-radius:var(--r);font-size:.76rem;font-family:var(--fb);outline:none;}
+.bk-filter-select option{background:var(--s3);}
+
+/* ACTION BUTTONS */
+.act-btns{display:flex;gap:4px;}
+.act-btn{font-size:.65rem;padding:4px 10px;border:1px solid var(--bdr);border-radius:4px;cursor:pointer;font-family:var(--fb);transition:var(--tr);background:transparent;color:var(--t2);}
+.act-btn:hover{border-color:var(--gold);color:var(--gold);}
+.act-ok{color:var(--green);border-color:rgba(34,197,94,.3);}
+.act-ok:hover{background:var(--green-a);}
+.act-no{color:var(--red);border-color:rgba(239,68,68,.3);}
+.act-no:hover{background:var(--red-a);}
+.act-view{color:var(--blue);border-color:rgba(96,165,250,.3);}
+.act-view:hover{background:var(--blue-a);}
+
+/* KANBAN */
+.kanban-wrap{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;overflow-x:auto;min-height:400px;}
+.kb-col{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r2);padding:12px;min-width:180px;}
+.kb-col-hdr{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bdr);}
+.kb-col-count{font-size:.62rem;color:var(--t3);margin-left:6px;}
+.kb-card{background:var(--s3);border:1px solid var(--bdr);border-radius:var(--r);padding:10px;margin-bottom:8px;cursor:grab;transition:var(--tr);}
+.kb-card:active{cursor:grabbing;opacity:.8;}
+.kb-card:hover{border-color:rgba(201,168,76,.25);}
+.kb-card-name{font-size:.78rem;font-weight:600;color:var(--t1);}
+.kb-card-svc{font-size:.67rem;color:var(--gold);margin-top:2px;}
+.kb-card-date{font-size:.63rem;color:var(--t3);margin-top:3px;}
+.kb-drag-over{background:var(--gold-a);border-color:var(--gold);}
+
+/* DETAIL PANEL */
+.detail-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:800;display:none;}
+.detail-ov.open{display:block;}
+.detail-panel{position:fixed;top:0;right:0;bottom:0;width:420px;background:var(--s1);border-left:1px solid var(--bdr);overflow-y:auto;z-index:801;}
+.dp-hdr{padding:18px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--s1);}
+.dp-ttl{font-family:var(--fh);font-size:.92rem;font-weight:700;color:var(--t1);}
+.dp-x{background:none;border:none;color:var(--t2);font-size:1.2rem;cursor:pointer;}
+.dp-body{padding:18px 20px;}
+.dp-sec{margin-bottom:20px;}
+.dp-sec-ttl{font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:10px;}
+.dp-row{display:flex;align-items:flex-start;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr2);gap:10px;}
+.dp-key{font-size:.76rem;color:var(--t3);flex-shrink:0;}
+.dp-val{font-size:.78rem;color:var(--t1);text-align:right;word-break:break-word;}
+.dp-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.dp-btn{padding:8px 16px;border-radius:var(--r);font-size:.78rem;font-family:var(--fb);cursor:pointer;border:none;font-weight:600;transition:var(--tr);}
+.dp-ok{background:var(--green-a);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+.dp-ok:hover{background:var(--green);color:#000;}
+.dp-no{background:var(--red-a);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+.dp-no:hover{background:var(--red);color:#fff;}
+.dp-mod{background:var(--blue-a);color:var(--blue);border:1px solid rgba(96,165,250,.3);}
+.dp-mod:hover{background:var(--blue);color:#000;}
+.note-ta{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:10px;font-family:var(--fb);font-size:.8rem;border-radius:var(--r);outline:none;resize:vertical;min-height:80px;margin-bottom:8px;}
+.note-ta:focus{border-color:rgba(201,168,76,.3);}
+.note-save{background:var(--gold);color:#000;border:none;padding:7px 16px;border-radius:var(--r);font-size:.75rem;font-weight:700;cursor:pointer;font-family:var(--fh);}
+.price-input-wrap{display:flex;gap:8px;margin-top:8px;}
+.price-input-wrap input{flex:1;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:9px 12px;border-radius:var(--r);font-family:var(--fb);font-size:.85rem;outline:none;}
+.price-input-wrap input:focus{border-color:rgba(201,168,76,.4);}
+.price-save-btn{background:var(--gold);color:#000;border:none;padding:9px 14px;border-radius:var(--r);font-weight:700;cursor:pointer;font-size:.78rem;font-family:var(--fh);white-space:nowrap;}
+
+/* USERS */
+.user-item{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--bdr2);transition:var(--tr);}
+.user-item:hover{background:var(--s2);}
+.u-av-sm{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;flex-shrink:0;font-family:var(--fh);}
+
+/* STAFF PANEL */
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:14px;}
+.staff-card{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;display:flex;flex-direction:column;gap:8px;}
+.staff-name{font-size:.88rem;font-weight:600;color:var(--t1);}
+.staff-role{font-size:.7rem;color:var(--gold);letter-spacing:.06em;}
+.staff-contact{font-size:.72rem;color:var(--t3);}
+.staff-del{background:var(--red-a);border:1px solid rgba(239,68,68,.25);color:var(--red);padding:5px 10px;border-radius:var(--r);font-size:.68rem;cursor:pointer;font-family:var(--fb);align-self:flex-start;margin-top:4px;}
+.staff-del:hover{background:var(--red);color:#fff;}
+.add-staff-form{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;margin-bottom:16px;}
+
+/* GALLERY */
+.gallery-manager{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.upload-zone{border:2px dashed rgba(201,168,76,.25);border-radius:var(--r2);padding:32px 20px;text-align:center;cursor:pointer;transition:var(--tr);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:var(--gold-a2);}
+.uz-icon{font-size:2rem;margin-bottom:8px;}
+.uz-title{font-size:.88rem;font-weight:600;color:var(--t1);margin-bottom:4px;}
+.uz-sub{font-size:.72rem;color:var(--t3);margin-bottom:12px;}
+.uz-btn{background:var(--s3);border:1px solid var(--bdr);color:var(--t2);padding:7px 16px;border-radius:var(--r);font-size:.75rem;cursor:pointer;font-family:var(--fb);}
+.uz-input{display:none;}
+.upload-form{display:flex;flex-direction:column;gap:8px;}
+.uf-label{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);}
+.uf-select,.uf-input{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:9px 12px;border-radius:var(--r);font-family:var(--fb);font-size:.82rem;outline:none;}
+.uf-select option{background:var(--s2);}
+.uf-select:focus,.uf-input:focus{border-color:rgba(201,168,76,.3);}
+#uploadBtn{background:var(--gold);color:#000;border:none;padding:10px;border-radius:var(--r);font-family:var(--fh);font-weight:700;font-size:.82rem;cursor:pointer;transition:var(--tr);}
+#uploadBtn:disabled{opacity:.45;cursor:not-allowed;}
+#uploadPreview{height:100px;border-radius:var(--r);background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--t3);overflow:hidden;}
+#uploadPreview img{width:100%;height:100%;object-fit:cover;border-radius:var(--r);}
+.upload-progress{display:none;height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:4px;}
+.upload-progress-bar{height:100%;background:linear-gradient(90deg,var(--gold),#E2C97E);width:0;transition:width .3s;}
+.msg-ok{color:var(--green);font-size:.75rem;}
+.msg-err{color:var(--red);font-size:.75rem;}
+.gallery-grid-admin{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;padding:16px 20px;}
+.gga-item{position:relative;aspect-ratio:1;border-radius:var(--r);overflow:hidden;cursor:pointer;}
+.gga-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+.gga-item:hover img{transform:scale(1.05);}
+.gga-overlay{position:absolute;inset:0;background:rgba(0,0,0,.65);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;opacity:0;transition:var(--tr);padding:6px;}
+.gga-item:hover .gga-overlay{opacity:1;}
+.gga-svc{font-size:.62rem;font-weight:600;color:var(--gold);text-align:center;}
+.gga-del{background:var(--red-a);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:4px 8px;border-radius:4px;font-size:.62rem;cursor:pointer;font-family:var(--fb);}
+.gga-del:hover{background:var(--red);color:#fff;}
+.gga-empty{grid-column:1/-1;text-align:center;padding:48px;color:var(--t3);font-size:.82rem;}
+
+/* REVIEWS PANEL */
+.rev-admin-grid{display:flex;flex-direction:column;gap:10px;padding:16px 20px;}
+.rev-admin-card{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;}
+.rev-admin-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.rev-stars-sm{color:var(--gold);font-size:.78rem;}
+.rev-actions{display:flex;gap:6px;}
+.rev-approve{background:var(--green-a);color:var(--green);border:1px solid rgba(34,197,94,.3);padding:4px 10px;border-radius:4px;font-size:.65rem;cursor:pointer;font-family:var(--fb);}
+.rev-approve:hover{background:var(--green);color:#000;}
+.rev-reject{background:var(--red-a);color:var(--red);border:1px solid rgba(239,68,68,.3);padding:4px 10px;border-radius:4px;font-size:.65rem;cursor:pointer;font-family:var(--fb);}
+.rev-reject:hover{background:var(--red);color:#fff;}
+.rev-txt-sm{font-size:.78rem;color:var(--t2);line-height:1.6;}
+.rev-meta-sm{font-size:.66rem;color:var(--t3);margin-top:6px;}
+
+/* SETTINGS */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.setting-card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r2);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--bdr2);}
+.setting-row:last-child{border-bottom:none;}
+.sr-info{flex:1;}
+.sr-label{font-size:.82rem;font-weight:600;color:var(--t1);}
+.sr-desc{font-size:.7rem;color:var(--t3);margin-top:2px;}
+.toggle{width:40px;height:22px;background:var(--s4);border-radius:100px;position:relative;cursor:pointer;transition:var(--tr);border:none;}
+.toggle.on{background:var(--gold);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:var(--tr);}
+.toggle.on::after{left:21px;}
+.maint-msg-input{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:9px 12px;border-radius:var(--r);font-family:var(--fb);font-size:.82rem;outline:none;margin-top:8px;}
+.save-maint-btn{background:var(--gold);color:#000;border:none;padding:8px 18px;border-radius:var(--r);font-weight:700;font-size:.78rem;cursor:pointer;margin-top:8px;font-family:var(--fh);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;z-index:9500;background:var(--s2);border:1px solid var(--bdr);border-left:3px solid var(--gold);padding:13px 18px;border-radius:var(--r);font-size:.8rem;min-width:230px;transform:translateX(130%);transition:var(--tr);box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.toast.show{transform:none;}
+
+/* RESPONSIVE */
+@media(max-width:1100px){.stats-grid{grid-template-columns:1fr 1fr;}.two-col{grid-template-columns:1fr;}.settings-grid{grid-template-columns:1fr;}.kanban-wrap{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:900px){:root{--sidebar-w:0px;}#sidebar{position:fixed;left:0;top:0;bottom:0;z-index:800;transform:translateX(-248px);width:248px;min-width:248px;}#sidebar.mob-open{transform:none;}.tb-menu{display:flex!important;}.search-box input{width:100px;}.detail-panel{width:100vw;}.gallery-manager{grid-template-columns:1fr;}}
+@media(max-width:640px){#content{padding:12px;}.stats-grid{grid-template-columns:1fr 1fr;}.card-hdr{flex-direction:column;align-items:flex-start;}.kanban-wrap{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ═══ AUTH SCREEN ═══ -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-chip">⚡ Admin Portal</div>
+    <div class="login-logo">AB Events &amp; Decors</div>
+    <div class="login-sub">Administration Dashboard</div>
+    <div class="auth-tabs" id="adminAuthTabs">
+      <button class="auth-tab active" onclick="switchAdminTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAdminTab('register')">Register</button>
+    </div>
+    <!-- LOGIN -->
+    <div class="auth-panel active" id="adminLoginPanel">
+      <div class="lf-group"><label class="lf-label">Admin Email</label><input class="lf-input" type="email" id="adEmail" placeholder="admin@abevents.in" autocomplete="username"/></div>
+      <div class="lf-group"><label class="lf-label">Password</label><input class="lf-input" type="password" id="adPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
+      <button class="lbtn" id="loginBtn" onclick="adminLogin()">Sign In to Dashboard</button>
+      <div class="l-err" id="loginErr"></div>
+      <div style="text-align:center;"><button class="l-forgot-btn" onclick="switchAdminTab('forgot')">🔑 Forgot your password?</button></div>
+      <div class="l-hint">Restricted to authorised administrators only.<br>Customer site: <a href="index.html">index.html ↗</a></div>
+      <div id="domainNotice" style="display:none;margin-top:14px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:12px 14px;font-size:.72rem;color:#FCA5A5;line-height:1.7;">
+        <strong>Domain not authorized?</strong><br>
+        Go to <strong>Firebase Console → Authentication → Settings → Authorized Domains</strong> and add your site's domain (e.g. <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:3px;">yourusername.github.io</code>).
+      </div>
+    </div>
+    <!-- REGISTER -->
+    <div class="auth-panel" id="adminRegPanel">
+      <div class="lf-row">
+        <div class="lf-group"><label class="lf-label">First Name</label><input class="lf-input" id="regFirstName" placeholder="First"/></div>
+        <div class="lf-group"><label class="lf-label">Last Name</label><input class="lf-input" id="regLastName" placeholder="Last"/></div>
+      </div>
+      <div class="lf-group"><label class="lf-label">Email</label><input class="lf-input" type="email" id="regEmail" placeholder="admin@abevents.in"/></div>
+      <div class="lf-group"><label class="lf-label">Phone</label><input class="lf-input" id="regPhone" placeholder="+91 XXXXX XXXXX"/></div>
+      <div class="lf-group"><label class="lf-label">Password</label><input class="lf-input" type="password" id="regPwd" placeholder="Min. 6 chars" oninput="checkPwStrength(this.value)"/><div class="pw-bar" id="pwBar"></div><div class="pw-hint" id="pwHint"></div></div>
+      <div class="lf-group"><label class="lf-label">Confirm Password</label><input class="lf-input" type="password" id="regPwd2" placeholder="Re-enter"/></div>
+      <button class="lbtn" onclick="adminRegister()">Create Admin Account →</button>
+      <div class="l-err" id="regErr"></div><div class="l-ok" id="regOk"></div>
+      <div class="l-hint">⚠️ Add your email to ADMIN_EMAILS_LOCAL in the code to access dashboard after registration.</div>
+    </div>
+    <!-- FORGOT -->
+    <div class="auth-panel" id="adminForgotPanel">
+      <button class="l-forgot-btn" onclick="switchAdminTab('login')" style="margin-bottom:14px;">← Back</button>
+      <div style="font-family:var(--fh);font-size:.98rem;font-weight:700;color:var(--t1);margin-bottom:4px;">Reset Password</div>
+      <div style="font-size:.78rem;color:var(--t2);margin-bottom:16px;">We'll send a reset link to your email.</div>
+      <div class="lf-group"><label class="lf-label">Admin Email</label><input class="lf-input" type="email" id="fpEmail" placeholder="admin@abevents.in"/></div>
+      <button class="lbtn" onclick="adminForgotPwd()">Send Reset Link →</button>
+      <div class="l-err" id="fpErr"></div><div class="l-ok" id="fpOk"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside id="sidebar">
+  <div class="sb-top"><div class="sb-logo">AB Events</div><div class="sb-tag">Administration Dashboard</div></div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Overview</div>
+    <a class="nav-item active" href="#" onclick="showPanel('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</a>
+    <a class="nav-item" href="#" onclick="showPanel('analytics',this)"><span class="nav-icon">📈</span>Revenue Analytics</a>
+    <a class="nav-item" href="#" onclick="showPanel('pipeline',this)"><span class="nav-icon">🗂️</span>Booking Pipeline</a>
+    <a class="nav-item" href="#" onclick="showPanel('bookings',this)"><span class="nav-icon">📋</span>Bookings<span class="n-badge" id="pendingBadge">0</span></a>
+    <a class="nav-item" href="#" onclick="showPanel('users',this)"><span class="nav-icon">👥</span>Customers</a>
+    <div class="sb-sec">Content</div>
+    <a class="nav-item" href="#" onclick="showPanel('gallery',this)"><span class="nav-icon">🖼️</span>Gallery &amp; Photos<span class="n-badge gold" id="galBadge">0</span></a>
+    <a class="nav-item" href="#" onclick="showPanel('reviews',this)"><span class="nav-icon">⭐</span>Reviews<span class="n-badge" id="revBadge" style="display:none">!</span></a>
+    <div class="sb-sec">System</div>
+    <a class="nav-item" href="#" onclick="showPanel('staff',this)"><span class="nav-icon">👤</span>Staff Management</a>
+    <a class="nav-item" href="#" onclick="showPanel('services',this)"><span class="nav-icon">🎊</span>Services</a>
+    <a class="nav-item" href="#" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</a>
+  </nav>
+  <div class="sb-foot">
+    <div class="admin-card">
+      <div class="a-av" id="sbAvatar">A</div>
+      <div><div class="a-name" id="sbName">Admin</div><div class="a-role">Administrator</div></div>
+      <button class="sb-out" onclick="adminSignOut()" title="Sign Out">↪</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div id="main">
+  <div class="maint-banner" id="adminMaintBanner">🔧 Maintenance mode is ON — customer site is showing a maintenance message.</div>
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="tb-menu" onclick="toggleSidebar()">☰</button>
+      <div><div class="tb-title" id="tbTitle">Dashboard</div></div>
+    </div>
+    <div class="tb-right">
+      <div class="search-box"><span style="color:var(--t3)">🔍</span><input type="text" placeholder="Search bookings…" id="globalSearch" oninput="filterBookings()"/></div>
+      <button class="tb-btn" onclick="refreshAll()">↻ Refresh</button>
+      <a href="index.html" target="_blank" class="tb-btn">↗ View Site</a>
+      <!-- Admin Notifications Bell -->
+      <div class="notif-wrap">
+        <div class="notif-btn" onclick="toggleAdminNotifDropdown()">🔔<span class="notif-dot" id="adminNotifDot" style="display:none"></span></div>
+        <div class="notif-dropdown" id="adminNotifDropdown">
+          <div class="notif-hdr"><span class="notif-hdr-ttl">Notifications</span><button class="notif-mark-all" onclick="markAllAdminNotifs()">Mark all read</button></div>
+          <div class="notif-body" id="adminNotifList"><div class="notif-empty">No notifications</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="content">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--gold-a)">📋</div><span class="stat-trend trend-up" id="trendTotal">↑ New</span></div><div class="stat-val" id="statTotal">—</div><div class="stat-lbl">Total Bookings</div><div class="stat-sub" id="statTotalSub">Loading…</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--yellow-a)">⏳</div><span class="stat-trend trend-neu">Review</span></div><div class="stat-val" id="statPending">—</div><div class="stat-lbl">Pending Review</div><div class="stat-sub">Awaiting action</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--green-a)">✅</div><span class="stat-trend trend-up">Active</span></div><div class="stat-val" id="statConfirmed">—</div><div class="stat-lbl">Confirmed Events</div><div class="stat-sub">Ready to execute</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--blue-a)">👥</div><span class="stat-trend trend-up">Growing</span></div><div class="stat-val" id="statUsers">—</div><div class="stat-lbl">Registered Customers</div><div class="stat-sub">Active accounts</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card"><div class="card-hdr"><div><div class="card-ttl">Bookings by Service</div><div class="card-sub">Demand breakdown</div></div></div><div class="card-body"><div class="mini-bar-chart" id="svcChart"></div></div></div>
+        <div class="card"><div class="card-hdr"><div><div class="card-ttl">Status Overview</div></div></div><div class="card-body"><div class="donut-wrap" id="statusChart"></div></div></div>
+      </div>
+      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Recent Booking Requests</div><div class="card-sub">Latest 8</div></div><button class="tb-btn" onclick="showPanel('bookings',null)">View All →</button></div><div class="tbl-wrap"><table><thead><tr><th>Booking ID</th><th>Client</th><th>Service</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead><tbody id="recentTbl"></tbody></table></div></div>
+    </div>
+
+    <!-- REVENUE ANALYTICS -->
+    <div class="panel" id="panel-analytics">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--green-a)">💰</div><span class="stat-trend trend-up">Revenue</span></div><div class="stat-val" id="anaRevenue">—</div><div class="stat-lbl">Total Quoted Revenue</div><div class="stat-sub">Sum of all confirmed budgets</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--gold-a)">📊</div><span class="stat-trend trend-up">Avg</span></div><div class="stat-val" id="anaAvg">—</div><div class="stat-lbl">Avg Booking Value</div><div class="stat-sub">Per confirmed event</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--blue-a)">🎯</div><span class="stat-trend trend-up">Rate</span></div><div class="stat-val" id="anaConv">—</div><div class="stat-lbl">Conversion Rate</div><div class="stat-sub">Enquiry → Confirmed</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--purple-a)">📅</div><span class="stat-trend trend-up">Month</span></div><div class="stat-val" id="anaThisMonth">—</div><div class="stat-lbl">This Month Bookings</div><div class="stat-sub" id="anaMonthLabel">Current month</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card" style="margin-bottom:14px;"><div style="padding:12px 20px;font-size:.76rem;color:var(--yellow);" id="anaPendingPrice"></div></div>
+      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Monthly Booking Trend</div><div class="card-sub">Last 6 months</div></div></div><div class="card-body"><div class="rev-chart-wrap" id="revBarChart"></div></div></div>
+        <div class="card"><div class="card-hdr"><div><div class="card-ttl">Top Services by Demand</div></div></div><div class="card-body"><div class="mini-bar-chart" id="anaSvcChart"></div></div></div>
+      </div>
+      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Event Type Breakdown</div><div class="card-sub">Bookings by event category</div></div></div><div class="card-body"><div class="mini-bar-chart" id="anaEventChart"></div></div></div>
+    </div>
+
+    <!-- PIPELINE / KANBAN -->
+    <div class="panel" id="panel-pipeline">
+      <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div><div style="font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--t1)">Booking Pipeline</div><div style="font-size:.75rem;color:var(--t3)">Drag bookings between stages</div></div>
+        <button class="tb-btn" onclick="refreshAll()">↻ Refresh</button>
+      </div>
+      <div class="kanban-wrap" id="kanbanBoard"></div>
+    </div>
+
+    <!-- BOOKINGS -->
+    <div class="panel" id="panel-bookings">
+      <div class="card">
+        <div class="card-hdr">
+          <div><div class="card-ttl">All Booking Requests</div><div class="card-sub" id="bkSubtitle">Loading…</div></div>
+        </div>
+        <!-- Filter Row -->
+        <div class="bk-filters">
+          <div class="ftabs" id="statusFilterTabs">
+            <button class="ftab active" onclick="setBkFilter('status','all',this)">All</button>
+            <button class="ftab" onclick="setBkFilter('status','pending',this)">🔔 New Enquiry</button>
+            <button class="ftab" onclick="setBkFilter('status','confirmed',this)">✅ Confirmed</button>
+            <button class="ftab" onclick="setBkFilter('status','declined',this)">✕ Declined</button>
+            <button class="ftab" onclick="setBkFilter('status','completed',this)">🎊 Completed</button>
+          </div>
+          <select class="bk-filter-select" id="fEventType" onchange="applyBkFilters()">
+            <option value="">All Event Types</option>
+            <option>Wedding</option><option>Reception</option><option>Engagement</option>
+            <option>Birthday Party</option><option>Corporate Event</option>
+            <option>Anniversary</option><option>Baby Shower</option><option>Housewarming</option><option>Other</option>
+          </select>
+          <select class="bk-filter-select" id="fService" onchange="applyBkFilters()">
+            <option value="">All Services</option>
+            <option>Luxury Decor &amp; Styling</option>
+            <option>Professional Photography</option>
+            <option>Live Music &amp; Entertainment</option>
+            <option>Premium Lighting Design</option>
+            <option>Gourmet Catering</option>
+            <option>Complete Event Management</option>
+          </select>
+          <select class="bk-filter-select" id="fSort" onchange="applyBkFilters()">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="event-asc">Event Date ↑</option>
+            <option value="event-desc">Event Date ↓</option>
+          </select>
+        </div>
+        <div class="tbl-wrap">
+          <table><thead><tr><th>Booking ID</th><th>Client</th><th>Service</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Final Price</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="allTbl"><tr><td colspan="8" class="empty-rows">Loading…</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="panel" id="panel-users">
+      <div class="card">
+        <div class="card-hdr"><div><div class="card-ttl">Registered Customers</div><div class="card-sub" id="userSubtitle">Loading…</div></div><div class="search-box"><span>🔍</span><input type="text" placeholder="Search…" id="userSearch" oninput="filterUsers()"/></div></div>
+        <div id="userList"></div>
+      </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="panel" id="panel-gallery">
+      <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:var(--r2);padding:14px 18px;margin-bottom:16px;font-size:.78rem;color:var(--t2);line-height:1.8;">
+        <div style="font-family:var(--fh);font-size:.85rem;color:var(--gold);margin-bottom:6px;">☁️ Cloudinary Setup (Free 25GB)</div>
+        1. Go to <strong>cloudinary.com</strong> → Sign up → copy your <strong>Cloud Name</strong><br>
+        2. Settings → Upload → Add Preset → set <strong>Unsigned</strong>, name it <code style="background:var(--s3);padding:1px 7px;border-radius:4px;color:var(--gold)">ab_events_gallery</code><br>
+        3. In this file, find <code style="background:var(--s3);padding:1px 7px;border-radius:4px;color:var(--gold)">YOUR_CLOUD_NAME</code> and replace with your Cloud Name
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-hdr"><div><div class="card-ttl">📸 Upload New Photo</div><div class="card-sub">Add images by service &amp; event category</div></div></div>
+        <div class="card-body">
+          <div class="gallery-manager">
+            <div>
+              <div class="upload-zone" id="dropZone" onclick="document.getElementById('photoFileInput').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+                <div class="uz-icon">📁</div><div class="uz-title">Drop image here</div>
+                <div class="uz-sub">or click to browse — JPG, PNG, WebP up to 5MB</div>
+                <button class="uz-btn" type="button">Choose File</button>
+              </div>
+              <input type="file" id="photoFileInput" class="uz-input" accept="image/*" onchange="onFileSelect(event)"/>
+            </div>
+            <div class="upload-form">
+              <label class="uf-label">Preview</label>
+              <div id="uploadPreview">No image selected</div>
+              <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
+              <label class="uf-label" style="margin-top:8px;">Service Category *</label>
+              <select class="uf-select" id="uploadService">
+                <option value="">— Select Service —</option>
+                <option>Luxury Decor &amp; Styling</option><option>Professional Photography</option>
+                <option>Live Music &amp; Entertainment</option><option>Premium Lighting Design</option>
+                <option>Gourmet Catering</option><option>Complete Event Management</option>
+              </select>
+              <label class="uf-label" style="margin-top:8px;">Event Category *</label>
+              <select class="uf-select" id="uploadEventCat">
+                <option value="">— Select Event Type —</option>
+                <option value="Wedding">💍 Wedding</option><option value="Engagement">💝 Engagement</option>
+                <option value="Reception">🎉 Reception</option><option value="Baby Shower">👶 Baby Shower</option>
+                <option value="Birthday">🎂 Birthday</option><option value="Anniversary">🌹 Anniversary</option>
+                <option value="Housewarming">🏠 Housewarming</option><option value="Corporate">🏢 Corporate</option>
+                <option value="General">📸 General / Other</option>
+              </select>
+              <label class="uf-label" style="margin-top:8px;">Caption (optional)</label>
+              <input class="uf-input" id="uploadCaption" placeholder="e.g. Lotus floral mandap at HICC"/>
+              <button id="uploadBtn" onclick="uploadPhoto()" disabled>Upload Photo →</button>
+              <div id="uploadMsg" style="margin-top:6px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr" style="flex-wrap:wrap;gap:8px;">
+          <div><div class="card-ttl">Uploaded Gallery Photos</div><div class="card-sub" id="gallerySubtitle">Loading…</div></div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div class="ftabs" id="galleryServiceTabs" style="flex-wrap:wrap;">
+              <button class="ftab active" onclick="setGalSvcFilter('',this)">All Services</button>
+              <button class="ftab" onclick="setGalSvcFilter('Luxury Decor &amp; Styling',this)">Decor</button>
+              <button class="ftab" onclick="setGalSvcFilter('Professional Photography',this)">Photo</button>
+              <button class="ftab" onclick="setGalSvcFilter('Gourmet Catering',this)">Catering</button>
+              <button class="ftab" onclick="setGalSvcFilter('Premium Lighting Design',this)">Lighting</button>
+              <button class="ftab" onclick="setGalSvcFilter('Live Music &amp; Entertainment',this)">Music</button>
+            </div>
+            <div class="ftabs" id="galleryCatTabs" style="flex-wrap:wrap;">
+              <button class="ftab active" onclick="setGalCatFilter('',this)">All Events</button>
+              <button class="ftab" onclick="setGalCatFilter('Wedding',this)">💍 Wedding</button>
+              <button class="ftab" onclick="setGalCatFilter('Engagement',this)">💝 Engagement</button>
+              <button class="ftab" onclick="setGalCatFilter('Baby Shower',this)">👶 Baby Shower</button>
+              <button class="ftab" onclick="setGalCatFilter('Birthday',this)">🎂 Birthday</button>
+              <button class="ftab" onclick="setGalCatFilter('Anniversary',this)">🌹 Anniversary</button>
+              <button class="ftab" onclick="setGalCatFilter('Housewarming',this)">🏠 Housewarming</button>
+              <button class="ftab" onclick="setGalCatFilter('Corporate',this)">🏢 Corporate</button>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-grid-admin" id="adminGalleryGrid"><div class="gga-empty">Loading photos…</div></div>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="panel" id="panel-reviews">
+      <div class="card">
+        <div class="card-hdr"><div><div class="card-ttl">Customer Reviews</div><div class="card-sub" id="revSubtitle">Pending approval</div></div></div>
+        <div class="rev-admin-grid" id="revAdminList"><div class="gga-empty">No pending reviews</div></div>
+      </div>
+    </div>
+
+    <!-- STAFF -->
+    <div class="panel" id="panel-staff">
+      <div class="add-staff-form">
+        <div class="card-ttl" style="margin-bottom:12px;">Add Team Member</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;flex-wrap:wrap;">
+          <div class="lf-group" style="margin-bottom:0;"><label class="lf-label">Name</label><input class="lf-input" id="staffName" placeholder="Full name"/></div>
+          <div class="lf-group" style="margin-bottom:0;"><label class="lf-label">Role</label>
+            <select class="lf-input" id="staffRole">
+              <option>Photographer</option><option>Decorator</option><option>Coordinator</option>
+              <option>Lighting Tech</option><option>Caterer</option><option>DJ / Music</option><option>Driver</option>
+            </select>
+          </div>
+          <div class="lf-group" style="margin-bottom:0;"><label class="lf-label">Phone</label><input class="lf-input" id="staffPhone" placeholder="+91 XXXXX XXXXX"/></div>
+        </div>
+        <button class="lbtn" style="max-width:200px;margin-top:12px;" onclick="addStaff()">Add Team Member →</button>
+        <div id="staffMsg" style="font-size:.75rem;margin-top:8px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div><div class="card-ttl">Team Members</div><div class="card-sub" id="staffSubtitle">Loading…</div></div></div>
+        <div class="staff-grid" style="padding:16px 20px;" id="staffGrid"><div class="gga-empty">No team members added yet.</div></div>
+      </div>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="panel" id="panel-services">
+      <div class="three-col">
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--gold-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🌸</div><div class="stat-val" id="svcStat0">—</div><div class="stat-lbl">Decor &amp; Styling</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--blue-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">📷</div><div class="stat-val" id="svcStat1">—</div><div class="stat-lbl">Photography</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--purple-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🎵</div><div class="stat-val" id="svcStat2">—</div><div class="stat-lbl">Music &amp; Entertainment</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--yellow-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">✨</div><div class="stat-val" id="svcStat3">—</div><div class="stat-lbl">Lighting Design</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--green-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🍽️</div><div class="stat-val" id="svcStat4">—</div><div class="stat-lbl">Catering (Coming Soon)</div></div>
+        <div class="stat-card"><div class="stat-icon-wrap" style="background:var(--red-a);font-size:1.4rem;width:42px;height:42px;margin-bottom:12px;">🎊</div><div class="stat-val" id="svcStat5">—</div><div class="stat-lbl">Event Management</div></div>
+      </div>
+      <div class="card"><div class="card-hdr"><div class="card-ttl">Service Demand Breakdown</div></div><div class="card-body"><div class="mini-bar-chart" id="svcChartFull"></div></div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="settings-grid">
+        <div class="card setting-card">
+          <div class="card-hdr"><div class="card-ttl">Account Settings</div></div>
+          <div style="padding:20px;">
+            <div class="lf-group"><label class="lf-label">Display Name</label><input class="lf-input" id="setName" placeholder="Admin Name"/></div>
+            <div class="lf-group"><label class="lf-label">Email</label><input class="lf-input" type="email" id="setEmail" disabled style="opacity:.45;"/></div>
+            <div class="lf-group"><label class="lf-label">New Password</label><input class="lf-input" type="password" id="setPwd" placeholder="Leave blank to keep current"/></div>
+            <button class="lbtn" style="max-width:180px;" onclick="saveSettings()">Save Changes</button>
+            <div id="settingsMsg" style="font-size:.75rem;margin-top:10px;min-height:16px;"></div>
+          </div>
+        </div>
+        <div class="card setting-card">
+          <div class="card-hdr"><div class="card-ttl">Website Maintenance Mode</div></div>
+          <div class="setting-row">
+            <div class="sr-info"><div class="sr-label">Maintenance Mode</div><div class="sr-desc">Show maintenance message on customer site</div></div>
+            <button class="toggle" id="togMaintenance" onclick="toggleMaintenance()"></button>
+          </div>
+          <div style="padding:14px 20px;">
+            <label class="lf-label">Maintenance Message</label>
+            <input class="maint-msg-input" id="maintMsgInput" placeholder="e.g. We are performing scheduled maintenance. Back shortly!"/>
+            <button class="save-maint-btn" onclick="saveMaintenance()">Save Maintenance Settings</button>
+            <div id="maintSaveMsg" style="font-size:.75rem;margin-top:8px;"></div>
+          </div>
+          <div class="setting-row"><div class="sr-info"><div class="sr-label">New Booking Alerts</div><div class="sr-desc">In-app notifications for new bookings</div></div><button class="toggle on" id="tog1" onclick="this.classList.toggle('on')"></button></div>
+          <div class="setting-row"><div class="sr-info"><div class="sr-label">Email Notifications</div><div class="sr-desc">EmailJS — set up Service ID &amp; Template ID in code</div></div><button class="toggle" id="togEmail" onclick="this.classList.toggle('on')"></button></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOOKING DETAIL PANEL -->
+<div class="detail-ov" id="detailOv" onclick="closeDetail(event)">
+  <div class="detail-panel" id="detailPanel">
+    <div class="dp-hdr"><div class="dp-ttl">Booking Details</div><button class="dp-x" onclick="closeDetailPanel()">✕</button></div>
+    <div class="dp-body" id="dpBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+
+<!-- Firebase Compat CDN (no ES modules — works in all browsers/deployments) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script>
+// ════════════════════════════════════════════════════
+//  AB EVENTS & DECORS — ADMIN DASHBOARD
+//  Uses Firebase Compat (no ES modules) for reliability
+// ════════════════════════════════════════════════════
+
+// ── FIREBASE CONFIG ──
+const firebaseConfig = {
+  apiKey:            "AIzaSyDo8u-SZMHPXBLdJV4oq5rNiPz6p33KSF4",
+  authDomain:        "abevents-38a91.firebaseapp.com",
+  projectId:         "abevents-38a91",
+  storageBucket:     "abevents-38a91.appspot.com",
+  messagingSenderId: "408468587854",
+  appId:             "1:408468587854:web:09c108c41c4fb7cd81ca1f"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ── CLOUDINARY CONFIG ──
+// Replace YOUR_CLOUD_NAME with your Cloudinary cloud name from cloudinary.com
+var CLOUDINARY_CLOUD  = 'YOUR_CLOUD_NAME';
+var CLOUDINARY_PRESET = 'ab_events_gallery';
+
+// ── EMAILJS CONFIG (optional) ──
+var EMAILJS_SERVICE_ID  = 'YOUR_EMAILJS_SERVICE_ID';
+var EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
+var EMAILJS_PUBLIC_KEY  = 'YOUR_EMAILJS_PUBLIC_KEY';
+
+// ── ADMIN WHITELIST ──
+// Add YOUR email address here to gain access
+var ADMIN_EMAILS = [
+  'admin@abevents.in',
+  'owner@abevents.in',
+  'abevents@gmail.com'
+  // 'youremail@gmail.com'  ← ADD YOUR EMAIL HERE
+];
+
+// ── PIPELINE STAGES ──
+var PIPELINE_STAGES = ['New Enquiry','Consultation Scheduled','Proposal Sent','Confirmed','Completed','Declined'];
+var STAGE_COLORS    = ['var(--blue)','var(--purple)','var(--yellow)','var(--green)','var(--t3)','var(--red)'];
+
+// ── STATE ──
+var allBookings=[], allUsers=[], allGallery=[], allStaff=[], allReviews=[];
+var bkFilterStatus='all', bkFilterEventType='', bkFilterService='', bkFilterSort='date-desc';
+var galSvcFilter='', galCatFilter='', selectedFile=null, curDetailId=null, draggedCardId=null;
+var adminNotifList=[];
+
+// ════════════════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════════════════
+auth.onAuthStateChanged(function(user) {
+  if (user && ADMIN_EMAILS.includes(user.email)) {
+    document.getElementById('loginScreen').classList.add('gone');
+    document.getElementById('sbName').textContent   = user.displayName || user.email.split('@')[0];
+    document.getElementById('sbAvatar').textContent = (user.displayName || user.email)[0].toUpperCase();
+    var setEmail = document.getElementById('setEmail');
+    var setName  = document.getElementById('setName');
+    if (setEmail) setEmail.value = user.email;
+    if (setName)  setName.value  = user.displayName || '';
+    loadAll();
+    listenAdminNotifications();
+    loadMaintenance();
+    loadReviews();
+    loadStaff();
+  } else if (user) {
+    auth.signOut();
+    showLoginErr('Access denied. Your email is not in the admin whitelist.');
+  } else {
+    document.getElementById('loginScreen').classList.remove('gone');
+  }
+});
+
+function showLoginErr(msg) {
+  var el = document.getElementById('loginErr');
+  if (el) el.textContent = msg;
+}
+
+window.adminLogin = function() {
+  var el  = document.getElementById('loginErr');
+  var btn = document.getElementById('loginBtn');
+  if (el) el.textContent = '';
+  var email = (document.getElementById('adEmail').value || '').trim();
+  var pwd   = document.getElementById('adPwd').value || '';
+  if (!email || !pwd) { if (el) el.textContent = 'Please enter your email and password.'; return; }
+  if (btn) { btn.textContent = 'Signing in...'; btn.disabled = true; }
+  auth.signInWithEmailAndPassword(email, pwd)
+    .then(function() {
+      // success — onAuthStateChanged handles the rest
+    })
+    .catch(function(e) {
+      console.error('Login error:', e.code, e.message);
+      if (e.code === 'auth/unauthorized-domain') {
+        if (el) el.innerHTML = 'Domain not authorized.<br>Go to <b>Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized Domains</b> and add <b>' + location.hostname + '</b>';
+        var dn = document.getElementById('domainNotice');
+        if (dn) dn.style.display = 'block';
+      } else {
+        if (el) el.textContent = fe(e.code) + ' [' + e.code + ']';
+      }
+    })
+    .finally(function() {
+      if (btn) { btn.textContent = 'Sign In to Dashboard'; btn.disabled = false; }
+    });
+};
+
+window.adminRegister = function() {
+  var errEl = document.getElementById('regErr');
+  var okEl  = document.getElementById('regOk');
+  if (errEl) errEl.textContent = '';
+  if (okEl)  okEl.innerHTML    = '';
+  var email = (document.getElementById('regEmail').value || '').trim();
+  var pwd   = document.getElementById('regPwd').value   || '';
+  var pwd2  = document.getElementById('regPwd2').value  || '';
+  if (!email || !pwd) { if (errEl) errEl.textContent = 'Please fill all required fields.'; return; }
+  if (pwd !== pwd2)   { if (errEl) errEl.textContent = 'Passwords do not match.'; return; }
+  if (pwd.length < 6) { if (errEl) errEl.textContent = 'Password must be at least 6 characters.'; return; }
+  auth.createUserWithEmailAndPassword(email, pwd)
+    .then(function(cred) {
+      var fname = (document.getElementById('regFirstName').value || '').trim();
+      var lname = (document.getElementById('regLastName').value  || '').trim();
+      return cred.user.updateProfile({ displayName: fname + ' ' + lname })
+        .then(function() {
+          return db.collection('admins').add({
+            uid: cred.user.uid, firstName: fname, lastName: lname, email: email,
+            phone: (document.getElementById('regPhone').value || '').trim(),
+            role: 'admin', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+    })
+    .then(function() {
+      if (okEl) okEl.innerHTML = '<span style="color:var(--green)">Account created! Add your email to ADMIN_EMAILS in the code, then sign in.</span>';
+      ['regFirstName','regLastName','regEmail','regPhone','regPwd','regPwd2'].forEach(function(id) {
+        var el = document.getElementById(id); if (el) el.value = '';
+      });
+      setTimeout(function() { switchAdminTab('login'); }, 3000);
+    })
+    .catch(function(e) { if (errEl) errEl.textContent = fe(e.code); });
+};
+
+window.adminForgotPwd = function() {
+  var errEl = document.getElementById('fpErr');
+  var okEl  = document.getElementById('fpOk');
+  if (errEl) errEl.textContent = '';
+  if (okEl)  okEl.innerHTML    = '';
+  var email = (document.getElementById('fpEmail').value || '').trim();
+  if (!email) { if (errEl) errEl.textContent = 'Please enter your email.'; return; }
+  auth.sendPasswordResetEmail(email)
+    .then(function() {
+      if (okEl) okEl.innerHTML = '<span style="color:var(--green)">Reset link sent! Check your inbox and spam folder.</span>';
+    })
+    .catch(function(e) { if (errEl) errEl.textContent = fe(e.code); });
+};
+
+window.adminSignOut = function() { auth.signOut().then(function() { location.reload(); }); };
+
+// ════════════════════════════════════════════════════
+//  LOAD ALL DATA
+// ════════════════════════════════════════════════════
+function loadAll() {
+  Promise.all([loadBookings(), loadUsers(), loadGallery()]).then(function() {
+    renderDashboard();
+  });
+}
+window.refreshAll = loadAll;
+
+function loadBookings() {
+  return db.collection('bookings').get().then(function(snap) {
+    allBookings = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    allBookings.sort(function(a, b) { return (b.createdAt && b.createdAt.seconds || 0) - (a.createdAt && a.createdAt.seconds || 0); });
+    applyBkFilters(); updateBadges();
+  }).catch(function(e) { console.error('loadBookings:', e.message); });
+}
+
+function loadUsers() {
+  return db.collection('users').get().then(function(snap) {
+    allUsers = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    renderUsers();
+  }).catch(function(e) { console.error('loadUsers:', e.message); });
+}
+
+function loadGallery() {
+  return db.collection('gallery').get().then(function(snap) {
+    allGallery = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    renderAdminGallery();
+    var gb = document.getElementById('galBadge');
+    if (gb) gb.textContent = allGallery.length;
+    var gs = document.getElementById('gallerySubtitle');
+    if (gs) gs.textContent = allGallery.length + ' photos uploaded';
+  }).catch(function(e) { console.error('loadGallery:', e.message); });
+}
+
+function loadReviews() {
+  db.collection('reviews').get().then(function(snap) {
+    allReviews = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    var pending  = allReviews.filter(function(r) { return !r.approved; }).length;
+    var approved = allReviews.filter(function(r) { return r.approved;  }).length;
+    var badge = document.getElementById('revBadge');
+    if (badge) { badge.style.display = pending > 0 ? 'inline-block' : 'none'; badge.textContent = pending; }
+    var sub = document.getElementById('revSubtitle');
+    if (sub) sub.textContent = pending + ' pending approval · ' + approved + ' published';
+    var list = document.getElementById('revAdminList');
+    if (!list) return;
+    if (!allReviews.length) { list.innerHTML = '<div class="gga-empty">No reviews yet.</div>'; return; }
+    list.innerHTML = allReviews.map(function(r) {
+      var stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+      var approveBtn = !r.approved ? '<button class="rev-approve" onclick="approveReview(\'' + r.id + '\')">✓ Approve</button>' : '';
+      var badge2 = r.approved
+        ? '<div class="rev-meta-sm"><span style="color:var(--green)">● Published</span></div>'
+        : '<div class="rev-meta-sm"><span style="color:var(--yellow)">● Pending Approval</span></div>';
+      return '<div class="rev-admin-card">' +
+        '<div class="rev-admin-hdr"><div><span class="rev-stars-sm">' + stars + '</span> <strong style="font-size:.8rem;color:var(--t1)">' + (r.name || 'Anonymous') + '</strong> <span style="font-size:.68rem;color:var(--t3)">' + (r.event || '') + '</span></div>' +
+        '<div class="rev-actions">' + approveBtn + '<button class="rev-reject" onclick="deleteReview(\'' + r.id + '\')">🗑 Delete</button></div></div>' +
+        '<div class="rev-txt-sm">' + (r.text || '') + '</div>' + badge2 + '</div>';
+    }).join('');
+  }).catch(function(e) { console.error('loadReviews:', e.message); });
+}
+
+window.approveReview = function(id) {
+  db.collection('reviews').doc(id).update({ approved: true }).then(function() {
+    showToast('Review approved ✓'); loadReviews();
+  });
+};
+window.deleteReview = function(id) {
+  if (!confirm('Delete this review permanently?')) return;
+  db.collection('reviews').doc(id).delete().then(function() {
+    showToast('Review deleted.'); loadReviews();
+  });
+};
+
+function loadStaff() {
+  db.collection('staff').get().then(function(snap) {
+    allStaff = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    renderStaff();
+  }).catch(function(e) { console.error('loadStaff:', e.message); });
+}
+
+function renderStaff() {
+  var grid = document.getElementById('staffGrid');
+  var sub  = document.getElementById('staffSubtitle');
+  if (sub) sub.textContent = allStaff.length + ' team member' + (allStaff.length !== 1 ? 's' : '');
+  if (!grid) return;
+  if (!allStaff.length) { grid.innerHTML = '<div class="gga-empty">No team members added yet.</div>'; return; }
+  var colors = { Photographer:'var(--blue)', Decorator:'var(--gold)', Coordinator:'var(--purple)', 'Lighting Tech':'var(--yellow)', Caterer:'var(--green)', 'DJ / Music':'#EC4899', Driver:'var(--t2)' };
+  grid.innerHTML = allStaff.map(function(s) {
+    return '<div class="staff-card">' +
+      '<div class="staff-name">' + (s.name || '—') + '</div>' +
+      '<div class="staff-role" style="color:' + (colors[s.role] || 'var(--gold)') + '">● ' + (s.role || '—') + '</div>' +
+      '<div class="staff-contact">📞 ' + (s.phone || 'No phone') + '</div>' +
+      '<button class="staff-del" onclick="deleteStaff(\'' + s.id + '\')">🗑 Remove</button>' +
+      '</div>';
+  }).join('');
+}
+
+window.addStaff = function() {
+  var name  = (document.getElementById('staffName').value  || '').trim();
+  var role  = document.getElementById('staffRole').value   || '';
+  var phone = (document.getElementById('staffPhone').value || '').trim();
+  var msg   = document.getElementById('staffMsg');
+  if (!name) { if (msg) msg.innerHTML = '<span style="color:var(--red)">Name is required.</span>'; return; }
+  db.collection('staff').add({ name: name, role: role, phone: phone, addedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(function() {
+    if (msg) msg.innerHTML = '<span style="color:var(--green)">✓ Team member added!</span>';
+    document.getElementById('staffName').value = '';
+    document.getElementById('staffPhone').value = '';
+    loadStaff(); setTimeout(function() { if (msg) msg.innerHTML = ''; }, 3000);
+  });
+};
+
+window.deleteStaff = function(id) {
+  if (!confirm('Remove this team member?')) return;
+  db.collection('staff').doc(id).delete().then(function() { loadStaff(); showToast('Staff member removed.'); });
+};
+
+// ════════════════════════════════════════════════════
+//  MAINTENANCE MODE
+// ════════════════════════════════════════════════════
+function loadMaintenance() {
+  db.collection('settings').get().then(function(snap) {
+    if (snap.empty) return;
+    var s      = snap.docs[0].data();
+    var tog    = document.getElementById('togMaintenance');
+    var banner = document.getElementById('adminMaintBanner');
+    var input  = document.getElementById('maintMsgInput');
+    if (s.maintenance) { if (tog) tog.classList.add('on'); if (banner) banner.classList.add('show'); }
+    else               { if (tog) tog.classList.remove('on'); if (banner) banner.classList.remove('show'); }
+    if (input && s.maintenanceMsg) input.value = s.maintenanceMsg;
+  }).catch(function(e) { console.error('loadMaintenance:', e.message); });
+}
+window.toggleMaintenance = function() { document.getElementById('togMaintenance').classList.toggle('on'); };
+window.saveMaintenance = function() {
+  var maintenance    = document.getElementById('togMaintenance').classList.contains('on');
+  var maintenanceMsg = (document.getElementById('maintMsgInput').value || '').trim();
+  var msg = document.getElementById('maintSaveMsg');
+  db.collection('settings').get().then(function(snap) {
+    var ref = snap.empty ? db.collection('settings').doc() : snap.docs[0].ref;
+    return ref.set({ maintenance: maintenance, maintenanceMsg: maintenanceMsg }, { merge: true });
+  }).then(function() {
+    if (msg) msg.innerHTML = '<span style="color:var(--green)">✓ Maintenance settings saved!</span>';
+    var banner = document.getElementById('adminMaintBanner');
+    if (banner) maintenance ? banner.classList.add('show') : banner.classList.remove('show');
+    showToast(maintenance ? '🔧 Maintenance mode ON' : '✓ Site is back online');
+    setTimeout(function() { if (msg) msg.innerHTML = ''; }, 3000);
+  }).catch(function(e) { if (msg) msg.innerHTML = '<span style="color:var(--red)">' + e.message + '</span>'; });
+};
+
+// ════════════════════════════════════════════════════
+//  ADMIN NOTIFICATIONS (real-time)
+// ════════════════════════════════════════════════════
+function listenAdminNotifications() {
+  db.collection('admin_notifications').orderBy('createdAt', 'desc')
+    .onSnapshot(function(snap) {
+      adminNotifList = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+      var unread = adminNotifList.filter(function(n) { return !n.read; }).length;
+      var dot    = document.getElementById('adminNotifDot');
+      if (dot) dot.style.display = unread > 0 ? 'block' : 'none';
+      var list = document.getElementById('adminNotifList');
+      if (!list) return;
+      if (!adminNotifList.length) { list.innerHTML = '<div class="notif-empty">No notifications</div>'; return; }
+      list.innerHTML = adminNotifList.slice(0, 15).map(function(n) {
+        var t = n.createdAt && n.createdAt.toDate ? n.createdAt.toDate().toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+        return '<div class="notif-item' + (n.read ? '' : ' unread') + '" onclick="readAdminNotif(\'' + n.id + '\')">' +
+          '<div class="notif-msg">' + (n.message || '') + '</div>' +
+          '<div class="notif-time">' + t + '</div></div>';
+      }).join('');
+    }, function(e) { console.error('notifications:', e.message); });
+}
+
+window.readAdminNotif = function(id) {
+  db.collection('admin_notifications').doc(id).update({ read: true });
+};
+window.markAllAdminNotifs = function() {
+  adminNotifList.filter(function(n) { return !n.read; }).forEach(function(n) {
+    db.collection('admin_notifications').doc(n.id).update({ read: true });
+  });
+};
+window.toggleAdminNotifDropdown = function() {
+  document.getElementById('adminNotifDropdown').classList.toggle('open');
+};
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.notif-wrap')) {
+    var dd = document.getElementById('adminNotifDropdown');
+    if (dd) dd.classList.remove('open');
+  }
+});
+
+// ════════════════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════════════════
+function renderDashboard() {
+  autoStageBookings();
+  var p = allBookings.filter(function(b) { return b.status === 'pending'; }).length;
+  var c = allBookings.filter(function(b) { return b.status === 'confirmed'; }).length;
+  setText('statTotal',     allBookings.length);
+  setText('statTotalSub',  p + ' pending review');
+  setText('statPending',   p);
+  setText('statConfirmed', c);
+  setText('statUsers',     allUsers.length);
+  renderSvcChart('svcChart'); renderStatusChart('statusChart');
+  renderRows('recentTbl', allBookings.slice(0, 8), true);
+  renderServicesPanel(); renderAnalytics(); renderKanban();
+}
+
+function autoStageBookings() {
+  var today = new Date().toISOString().split('T')[0];
+  allBookings.forEach(function(b) {
+    if (!b.pipeline) b.pipeline = 'New Enquiry';
+    if (!b.status)   b.status   = 'pending';
+    if (b.status === 'declined' && b.pipeline !== 'Declined') b.pipeline = 'Declined';
+    if (b.status === 'confirmed' && b.pipeline === 'Confirmed' && b.eventDate && b.eventDate < today) {
+      b.pipeline = 'Completed'; b.status = 'completed';
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════
+//  REVENUE ANALYTICS
+// ════════════════════════════════════════════════════
+function renderAnalytics() {
+  var confirmed   = allBookings.filter(function(b) { return b.status === 'confirmed' || b.status === 'completed'; });
+  var priceData   = confirmed.filter(function(b) { return b.finalPrice; });
+  var priceSum    = priceData.reduce(function(s, b) { return s + (parseInt((b.finalPrice || '').replace(/[^0-9]/g, '')) || 0); }, 0);
+  var avg         = priceData.length ? Math.round(priceSum / priceData.length) : 0;
+  var conv        = allBookings.length ? Math.round(confirmed.length / allBookings.length * 100) : 0;
+  var now         = new Date();
+  var months      = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var thisMonth   = allBookings.filter(function(b) {
+    if (!b.createdAt || !b.createdAt.seconds) return false;
+    var d = new Date(b.createdAt.seconds * 1000);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
+  setText('anaRevenue',    priceSum > 0 ? '\u20b9' + priceSum.toLocaleString('en-IN') : 'Set final prices');
+  setText('anaAvg',        avg > 0 ? '\u20b9' + avg.toLocaleString('en-IN') : '\u2014');
+  setText('anaConv',       conv + '%');
+  setText('anaThisMonth',  thisMonth);
+  setText('anaMonthLabel', months[now.getMonth()] + ' ' + now.getFullYear());
+
+  // Monthly bar chart
+  var monthData = [];
+  for (var i = 5; i >= 0; i--) {
+    var d2   = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var cnt  = allBookings.filter(function(b) {
+      if (!b.createdAt || !b.createdAt.seconds) return false;
+      var bd = new Date(b.createdAt.seconds * 1000);
+      return bd.getMonth() === d2.getMonth() && bd.getFullYear() === d2.getFullYear();
+    }).length;
+    monthData.push({ label: months[d2.getMonth()], count: cnt });
+  }
+  var maxCnt = Math.max.apply(null, monthData.map(function(m) { return m.count; }).concat([1]));
+  var bc = document.getElementById('revBarChart');
+  if (bc) bc.innerHTML = monthData.map(function(m) {
+    return '<div class="rev-bar-col"><div class="rev-bar-val">' + (m.count || '') + '</div>' +
+      '<div class="rev-bar" style="height:' + Math.max(m.count / maxCnt * 150, 4) + 'px"></div>' +
+      '<div class="rev-bar-lbl">' + m.label + '</div></div>';
+  }).join('');
+
+  renderSvcChart('anaSvcChart');
+
+  var evtCounts = {};
+  allBookings.forEach(function(b) { if (b.eventType) evtCounts[b.eventType] = (evtCounts[b.eventType] || 0) + 1; });
+  var evtSorted = Object.entries(evtCounts).sort(function(a, b) { return b[1] - a[1]; });
+  var evtMax    = evtSorted.length ? evtSorted[0][1] : 1;
+  var ec = document.getElementById('anaEventChart');
+  if (ec) ec.innerHTML = evtSorted.map(function(pair) {
+    return '<div class="mbc-row"><div class="mbc-label" title="' + pair[0] + '">' + pair[0] + '</div>' +
+      '<div class="mbc-track"><div class="mbc-fill" style="width:' + Math.round(pair[1] / evtMax * 100) + '%"></div></div>' +
+      '<div class="mbc-val">' + pair[1] + '</div></div>';
+  }).join('');
+
+  var pendingPriceCount = confirmed.filter(function(b) { return !b.finalPrice; }).length;
+  var insightMsg = '';
+  if (!confirmed.length) insightMsg = 'No confirmed bookings yet.';
+  else if (pendingPriceCount > 0) insightMsg = '\u26a0\ufe0f ' + pendingPriceCount + ' confirmed booking' + (confirmed.length > 1 ? 's' : '') + ' missing final price. Open each booking to set the price.';
+  else insightMsg = '\u2713 All ' + confirmed.length + ' confirmed bookings have final prices set.';
+  var pi = document.getElementById('anaPendingPrice');
+  if (pi) { pi.textContent = insightMsg; pi.style.color = pendingPriceCount > 0 ? 'var(--yellow)' : 'var(--green)'; }
+}
+
+// ════════════════════════════════════════════════════
+//  KANBAN PIPELINE
+// ════════════════════════════════════════════════════
+function renderKanban() {
+  autoStageBookings();
+  var board = document.getElementById('kanbanBoard');
+  if (!board) return;
+  board.innerHTML = PIPELINE_STAGES.map(function(stage, si) {
+    var cards = allBookings.filter(function(b) { return (b.pipeline || 'New Enquiry') === stage; });
+    var cardHtml = cards.map(function(b) {
+      return '<div class="kb-card" draggable="true" ondragstart="dragCard(event,\'' + b.id + '\')" onclick="viewDetail(\'' + b.id + '\')">' +
+        '<div class="kb-card-name">' + (b.name || b.userEmail || '—') + '</div>' +
+        (b.bookingId ? '<div style="font-family:monospace;font-size:.62rem;color:var(--gold);opacity:.85;margin:1px 0">' + b.bookingId + '</div>' : '') +
+        '<div class="kb-card-svc">' + (b.service || '—').split(' ').slice(0, 3).join(' ') + '</div>' +
+        '<div class="kb-card-date">&#128197; ' + (b.eventDate || 'Date TBD') + '</div></div>';
+    }).join('');
+    return '<div class="kb-col" ondragover="event.preventDefault();this.classList.add(\'kb-drag-over\')" ondragleave="this.classList.remove(\'kb-drag-over\')" ondrop="dropOnStage(event,\'' + stage + '\',this)">' +
+      '<div class="kb-col-hdr" style="color:' + STAGE_COLORS[si] + '">' + stage + '<span class="kb-col-count">' + cards.length + '</span></div>' +
+      cardHtml + '</div>';
+  }).join('');
+}
+
+window.dragCard = function(e, id) { draggedCardId = id; e.dataTransfer.effectAllowed = 'move'; };
+window.dropOnStage = function(e, stage, col) {
+  e.preventDefault(); col.classList.remove('kb-drag-over');
+  if (!draggedCardId) return;
+  var idx  = allBookings.findIndex(function(b) { return b.id === draggedCardId; });
+  var upd  = { pipeline: stage, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+  if (stage === 'Confirmed') { upd.status = 'confirmed'; }
+  else if (stage === 'Declined') { upd.status = 'declined'; }
+  else if (stage === 'Completed') { upd.status = 'completed'; }
+  db.collection('bookings').doc(draggedCardId).update(upd).then(function() {
+    if (idx > -1) Object.assign(allBookings[idx], upd);
+    renderKanban(); applyBkFilters(); updateBadges(); renderDashboard();
+    showToast('Moved to ' + stage + ' \u2713');
+    if (stage === 'Confirmed' || stage === 'Declined') sendBookingNotification(draggedCardId, upd.status);
+    draggedCardId = null;
+  });
+};
+
+window.openKanbanMove = function(id) {
+  var b = allBookings.find(function(b) { return b.id === id; });
+  if (!b) return;
+  var labels  = PIPELINE_STAGES.map(function(s, i) { return i + ': ' + s; }).join('\n');
+  var current = b.pipeline || 'New Enquiry';
+  var choice  = prompt('Move to stage:\n' + labels + '\n\nCurrent: ' + current + '\nEnter number:');
+  if (choice === null || choice.trim() === '') return;
+  var stage = PIPELINE_STAGES[parseInt(choice)];
+  if (stage) { draggedCardId = id; window.dropOnStage({ preventDefault: function(){} }, stage, { classList: { remove: function(){} } }); }
+};
+
+// ════════════════════════════════════════════════════
+//  BOOKINGS TABLE
+// ════════════════════════════════════════════════════
+function renderRows(tbodyId, data, short) {
+  var tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="' + (short ? 7 : 9) + '" class="empty-rows">No bookings found.</td></tr>'; return; }
+  tbody.innerHTML = data.map(function(b) {
+    var sCls = b.status === 'confirmed' ? 'bdg-confirmed' : b.status === 'declined' ? 'bdg-declined' : b.status === 'completed' ? 'bdg-completed' : b.status === 'modified' ? 'bdg-modified' : 'bdg-pending';
+    var sLbl = b.pipeline || (b.status === 'pending' ? 'New Enquiry' : b.status || 'New Enquiry');
+    var dt   = b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '—';
+    var bkId = b.bookingId || '—';
+    var bkIdCell = '<td><span style="font-family:monospace;font-size:.68rem;color:var(--gold);background:rgba(201,168,76,.1);padding:2px 7px;border-radius:3px;white-space:nowrap;letter-spacing:.04em">' + bkId + '</span></td>';
+    var extra    = short ? '' : '<td style="font-size:.75rem">' + (b.eventType || '—') + '</td>';
+    var priceCol = short ? '' : '<td style="color:var(--gold);font-size:.75rem">' + (b.finalPrice || '—') + '</td>';
+    var confirmBtn = b.status !== 'confirmed' && b.status !== 'completed' ? '<button class="act-btn act-ok" onclick="updateStatus(\'' + b.id + '\',\'confirmed\')">&#10003;</button>' : '';
+    var declineBtn = b.status !== 'declined'  ? '<button class="act-btn act-no" onclick="updateStatus(\'' + b.id + '\',\'declined\')">&#10005;</button>' : '';
+    return '<tr>' + bkIdCell +
+      '<td><div class="cell-primary">' + (b.name || b.userEmail || '—') + '</div><div class="cell-sub">' + (b.email || '') + '</div></td>' +
       '<td style="font-size:.75rem">' + (b.service || '—') + '</td>' +
       extra + '<td style="white-space:nowrap;font-size:.75rem">' + dt + '</td>' +
       '<td style="white-space:nowrap;font-size:.75rem">' + (b.budget || '—') + '</td>' +

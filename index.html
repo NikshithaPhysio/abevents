@@ -349,6 +349,31 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 @media(max-width:1024px){.svc-grid{grid-template-columns:1fr 1fr;}.bk-wrap{grid-template-columns:1fr;gap:40px;}.t-grid{grid-template-columns:1fr 1fr;}.ft-grid{grid-template-columns:1fr 1fr;}.rev-grid{grid-template-columns:1fr 1fr;}}
 @media(max-width:768px){nav{padding:0 18px;height:60px;}.mob-nav{top:60px;}.nav-mid,.nav-right .btn{display:none;}.hamburger{display:flex;}section{padding:64px 0;}.con{padding:0 20px;}.svc-grid{grid-template-columns:1fr;}.proc{grid-template-columns:1fr 1fr;gap:32px;}.proc::before{display:none;}.t-grid,.rev-grid{grid-template-columns:1fr;}.ft-grid{grid-template-columns:1fr 1fr;}.bk-form-box{padding:22px 18px;}.fr{grid-template-columns:1fr;}.dyn-gallery-grid{grid-template-columns:1fr 1fr;}}
 @media(max-width:520px){.dyn-gallery-grid{grid-template-columns:1fr;}.ft-grid{grid-template-columns:1fr;}.proc{grid-template-columns:1fr;}.bk-wrap{gap:28px;}.wa-fab{bottom:16px;right:16px;width:50px;height:50px;}}
+
+/* -- BOOKING ID BADGE -- */
+.bk-id-badge{font-size:.6rem;letter-spacing:.1em;font-family:monospace;color:var(--gold);background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);padding:3px 8px;border-radius:3px;margin-top:5px;display:inline-block;}
+
+/* -- REVIEW MODAL -- */
+.rev-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:20px;}
+.rev-modal.open{display:flex;}
+.rev-modal-box{background:var(--dark2);border:1px solid rgba(201,168,76,.2);width:92%;max-width:520px;padding:36px;border-radius:var(--r);position:relative;animation:mIn .3s var(--ease);max-height:92vh;overflow-y:auto;}
+.rev-modal-box h3{font-family:var(--fd);font-size:1.6rem;color:var(--cream);margin-bottom:4px;}
+.rev-modal-box p{font-size:.78rem;color:var(--muted);margin-bottom:20px;line-height:1.7;}
+.rev-star-row{display:flex;gap:10px;margin:14px 0 20px;}
+.rev-star-row span{font-size:2.2rem;cursor:pointer;color:rgba(201,168,76,.25);transition:color .15s,transform .15s;}
+.rev-star-row span:hover,.rev-star-row span.sel{color:var(--gold);transform:scale(1.15);}
+.rev-booking-ref{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.12);border-radius:var(--r);padding:12px 16px;margin-bottom:18px;font-size:.78rem;color:var(--muted);}
+.rev-booking-ref strong{color:var(--cream);}
+
+/* -- FEEDBACK BUTTON on completed booking -- */
+.bk-feedback-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:.7rem;padding:6px 14px;border-radius:100px;cursor:pointer;font-family:var(--fb);transition:var(--tr);margin-top:8px;letter-spacing:.04em;}
+.bk-feedback-btn:hover{background:rgba(201,168,76,.18);border-color:var(--gold);}
+
+/* -- GUEST BLOCK -- */
+.guest-block{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);padding:22px 24px;border-radius:var(--r);text-align:center;}
+.guest-block h4{font-family:var(--fd);font-size:1.2rem;color:var(--cream);margin-bottom:8px;}
+.guest-block p{font-size:.8rem;color:var(--muted);margin-bottom:18px;line-height:1.7;}
+.guest-block-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 </style>
 </head>
 <body>
@@ -495,7 +520,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
         <p>Ready to turn your vision into reality? Sign in, create an account, or continue as a guest. Our event specialists will reach out within 24 hours.</p>
         <div class="bk-contacts">
           <div class="c-item"><div class="c-icon">📍</div><span>Jubilee Hills, Hyderabad, Telangana</span></div>
-          <div class="c-item"><div class="c-icon">📞</div><span>+91 7386030321</span></div>
+          <div class="c-item"><div class="c-icon">📞</div><span>+91 98765 43210</span></div>
           <div class="c-item"><div class="c-icon">✉️</div><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e9818c858586a9888b8c9f8c879d9ac78087">[email&#160;protected]</a></span></div>
           <div class="c-item"><div class="c-icon">🕐</div><span>Mon–Sat: 10 AM – 7 PM</span></div>
         </div>
@@ -517,7 +542,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
         <form id="bkForm" onsubmit="submitBooking(event)" style="display:none;">
           <div class="fr">
             <div class="fg"><label class="fl">Full Name *</label><input class="fi" id="bkName" placeholder="Your name" required/></div>
-            <div class="fg"><label class="fl">Phone *</label><input class="fi" id="bkPhone" placeholder="+91 XXXXX XXXXX" required/></div>
+            <div class="fg"><label class="fl">Phone *</label><input class="fi" id="bkPhone" placeholder="+91 XXXXX XXXXX" required inputmode="tel" oninput="this.value=this.value.replace(/[^0-9+\-\s]/g,'')" maxlength="15"/></div>
           </div>
           <div class="fg"><label class="fl">Email *</label><input class="fi" type="email" id="bkEmail" placeholder="you@example.com" required/></div>
           <div class="fr">
@@ -664,17 +689,16 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
       <div id="authSt"></div>
       <div style="text-align:right;margin-top:10px;"><button class="back-link" onclick="switchTab('forgot')">Forgot password?</button></div>
       <div class="or-divider">or</div>
-      <button class="guest-btn" onclick="doGuestFromModal()">👤 Continue as Guest</button>
+      <button class="guest-btn" onclick="doGuestFromModal()">&#128100; Continue as Guest</button>
+      <div style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px;line-height:1.6;">Guest mode lets you explore our website freely.<br>You will need to sign in to submit a booking.</div>
     </div>
     <div class="a-panel" id="regPanel">
       <div class="fr"><div class="fg"><label class="fl">First Name</label><input class="fi" id="rFirst" placeholder="First"/></div><div class="fg"><label class="fl">Last Name</label><input class="fi" id="rLast" placeholder="Last"/></div></div>
       <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="rEmail" placeholder="you@example.com"/></div>
-      <div class="fg"><label class="fl">Phone</label><input class="fi" id="rPhone" placeholder="+91 XXXXX XXXXX"/></div>
+      <div class="fg"><label class="fl">Phone</label><input class="fi" id="rPhone" placeholder="+91 XXXXX XXXXX" inputmode="tel" oninput="this.value=this.value.replace(/[^0-9+\-\s]/g,'')" maxlength="15"/></div>
       <div class="fg"><label class="fl">Password</label><input class="fi" type="password" id="rPwd" placeholder="Min. 6 characters"/></div>
       <button class="sub-btn" onclick="doRegister()" style="padding:12px;font-size:.9rem;">Create Account →</button>
       <div id="authSt2"></div>
-      <div class="or-divider">or</div>
-      <button class="guest-btn" onclick="doGuestFromModal()">👤 Continue as Guest</button>
     </div>
     <div class="a-panel" id="forgotPanel">
       <button class="back-link" onclick="switchTab('login')">← Back to Sign In</button>
@@ -692,7 +716,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
     <h3>Profile Settings</h3>
     <div class="prof-av-wrap"><div class="prof-av-lg" id="profAvLg">?</div><div><div id="profNameDisp" style="font-size:.9rem;color:var(--cream);font-weight:500;"></div><div class="prof-email" id="profEmailDisp"></div></div></div>
     <div class="fg"><label class="fl">Full Name</label><input class="fi" id="profName" placeholder="Your full name"/></div>
-    <div class="fg"><label class="fl">Phone Number</label><input class="fi" id="profPhone" placeholder="+91 XXXXX XXXXX"/></div>
+    <div class="fg"><label class="fl">Phone Number</label><input class="fi" id="profPhone" placeholder="+91 XXXXX XXXXX" inputmode="tel" oninput="this.value=this.value.replace(/[^0-9+\-\s]/g,'')" maxlength="15"/></div>
     <div class="fg"><label class="fl">Email (cannot change)</label><input class="fi" id="profEmail" disabled style="opacity:.45;"/></div>
     <button class="sub-btn" onclick="saveProfile()" style="margin-top:4px;">Save Changes →</button>
     <div id="profSt" style="margin-top:10px;font-size:.78rem;min-height:16px;"></div>
@@ -706,7 +730,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
     <h3>Modify Booking</h3>
     <p>Update your booking details. Changes will be reviewed by our team.</p>
     <input type="hidden" id="modifyBkId"/>
-    <div class="fr"><div class="fg"><label class="fl">Full Name</label><input class="fi" id="modName"/></div><div class="fg"><label class="fl">Phone</label><input class="fi" id="modPhone"/></div></div>
+    <div class="fr"><div class="fg"><label class="fl">Full Name</label><input class="fi" id="modName"/></div><div class="fg"><label class="fl">Phone</label><input class="fi" id="modPhone" inputmode="tel" oninput="this.value=this.value.replace(/[^0-9+\-\s]/g,'')" maxlength="15"/></div></div>
     <div class="fg"><label class="fl">Event Date</label><input class="fi" type="date" id="modDate"/></div>
     <div class="fg"><label class="fl">Venue / Location</label><input class="fi" id="modVenue"/></div>
     <div class="fg"><label class="fl">Updated Vision / Message</label><textarea class="fta" id="modMsg" style="min-height:80px;"></textarea></div>
@@ -731,13 +755,41 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
   </button>
 </div>
 
+
+<!-- REVIEW MODAL -->
+<div class="rev-modal" id="reviewModal">
+  <div class="rev-modal-box">
+    <button class="m-x" onclick="closeReviewModal()">&#215;</button>
+    <h3>Share Your Experience &#10024;</h3>
+    <p>Your feedback helps other families choose the right event partner. We would love to hear about your celebration!</p>
+    <div class="rev-booking-ref" id="revBookingRef">
+      <strong>Booking:</strong> <span id="revBookingInfo">&#8212;</span>
+    </div>
+    <div class="fl" style="font-size:.8rem;color:var(--cream);margin-bottom:4px;display:block;">Your Rating *</div>
+    <div class="rev-star-row" id="revStarRow">
+      <span onclick="setRevRating(1)">&#9733;</span>
+      <span onclick="setRevRating(2)">&#9733;</span>
+      <span onclick="setRevRating(3)">&#9733;</span>
+      <span onclick="setRevRating(4)">&#9733;</span>
+      <span onclick="setRevRating(5)">&#9733;</span>
+    </div>
+    <div class="fg"><label class="fl">Your Review *</label><textarea class="fta" id="revModalText" placeholder="Tell us about your experience &#8212; the decor, the team, the magic&#8230;" style="min-height:100px;"></textarea></div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Your Name (shown publicly)</label><input class="fi" id="revModalName" placeholder="e.g. Priya &amp; Rahul"/></div>
+      <div class="fg"><label class="fl">Event Summary</label><input class="fi" id="revModalEvent" placeholder="e.g. Wedding &#183; Taj Falaknuma"/></div>
+    </div>
+    <button class="sub-btn" onclick="submitReviewFromModal()" style="margin-top:4px;">Submit Feedback &#8594;</button>
+    <div id="revModalSt" style="margin-top:10px;font-size:.78rem;min-height:16px;"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- ══ FIREBASE ══ -->
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, getDoc, doc, updateDoc, orderBy, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, doc, updateDoc, serverTimestamp, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDo8u-SZMHPXBLdJV4oq5rNiPz6p33KSF4",
@@ -754,6 +806,38 @@ window._db = db; window._auth = auth;
 
 let currentUser = null;
 let myBookings = [];
+
+// ── BOOKING ID GENERATOR ──
+// Format: EEMMYYNNNN (2+2+2+4 = 10 chars, always fixed length)
+const EVENT_CODES = {
+  'Wedding':'WE','Reception':'RC','Engagement':'EN','Sangeet':'SG',
+  'Mehendi':'MH','Birthday Party':'BD','Anniversary':'AN','Baby Shower':'BS',
+  'Housewarming':'HW','Naming Ceremony':'NC','Corporate Event':'CO',
+  'Farewell':'FA','Multiple Services':'MU','Graduation':'GD',
+  'Retirement':'RT','Product Launch':'PR','Conference':'CN',
+  'Kids Party':'KI','Photoshoot':'PH','Exhibition':'EX','Other':'GN'
+};
+async function generateBookingId(eventType, eventDate) {
+  const code = EVENT_CODES[eventType] || (eventType||'GN').replace(/\s+/g,'').slice(0,2).toUpperCase() || 'GN';
+  const d = eventDate ? new Date(eventDate) : new Date();
+  const month = String(d.getMonth()+1).padStart(2,'0');
+  const year  = String(d.getFullYear()).slice(-2);
+  const counterKey = code + month + year;
+  const counterRef = doc(db, 'booking_counters', counterKey);
+  try {
+    const seq = await runTransaction(db, async tx => {
+      const snap = await tx.get(counterRef);
+      const next = snap.exists() ? snap.data().count + 1 : 1;
+      tx.set(counterRef, { count: next });
+      return next;
+    });
+    return code + month + year + String(seq).padStart(4,'0');
+  } catch(e) {
+    // Fallback: timestamp-based if transaction fails
+    const ts = String(Date.now()).slice(-4);
+    return code + month + year + ts;
+  }
+}
 
 // ── AUTH STATE ──
 onAuthStateChanged(auth, async user => {
@@ -772,7 +856,6 @@ onAuthStateChanged(auth, async user => {
     document.getElementById('profEmail').value = user.email;
     document.getElementById('profNameDisp').textContent = user.displayName || 'No name set';
     document.getElementById('profName').value = user.displayName || '';
-    // Load phone from users collection
     try {
       const snap = await getDocs(query(collection(db,'users'),where('uid','==',user.uid)));
       if(!snap.empty){ const d=snap.docs[0].data(); document.getElementById('profPhone').value=d.phone||''; }
@@ -783,9 +866,6 @@ onAuthStateChanged(auth, async user => {
     loadFirestoreGallery();
     checkMaintenanceMode();
     loadReviews();
-    // Check for confirmed booking to show review form
-    const hasConfirmed = myBookings.some(b=>b.status==='confirmed');
-    if(hasConfirmed) document.getElementById('revSubmitCard').classList.remove('hidden');
   } else {
     currentUser = null; myBookings = [];
     document.getElementById('guestNav').classList.remove('hidden');
@@ -793,7 +873,7 @@ onAuthStateChanged(auth, async user => {
     document.getElementById('mobGuest').classList.remove('hidden');
     document.getElementById('mobUser').classList.add('hidden');
     document.getElementById('myBookings').classList.add('hidden');
-    if(!window._guestMode) showForm(false, false);
+    showForm(false, false);
     loadFirestoreGallery();
     checkMaintenanceMode();
     loadReviews();
@@ -803,25 +883,25 @@ onAuthStateChanged(auth, async user => {
 // ── SIGN IN ──
 window.doLogin = async () => {
   const st = document.getElementById('authSt');
-  st.innerHTML='<span style="color:var(--gold)">Signing in…</span>';
+  st.innerHTML='<span style="color:var(--gold)">Signing in...</span>';
   try {
     await signInWithEmailAndPassword(auth, document.getElementById('lEmail').value.trim(), document.getElementById('lPwd').value);
-    closeAuth(); showToast('Welcome back! 🎉');
-  } catch(e){ st.innerHTML=`<span class="a-err">${fe(e.code)}</span>`; }
+    closeAuth(); showToast('Welcome back!');
+  } catch(e){ st.innerHTML='<span class="a-err">'+fe(e.code)+'</span>'; }
 };
 
 // ── REGISTER ──
 window.doRegister = async () => {
   const st = document.getElementById('authSt2');
-  st.innerHTML='<span style="color:var(--gold)">Creating account…</span>';
+  st.innerHTML='<span style="color:var(--gold)">Creating account...</span>';
   try {
     const c = await createUserWithEmailAndPassword(auth, document.getElementById('rEmail').value.trim(), document.getElementById('rPwd').value);
     const fname = document.getElementById('rFirst').value.trim();
     const lname = document.getElementById('rLast').value.trim();
     await updateProfile(c.user, {displayName: fname+' '+lname});
     await addDoc(collection(db,'users'),{uid:c.user.uid,firstName:fname,lastName:lname,email:c.user.email,phone:document.getElementById('rPhone').value.trim(),role:'customer',createdAt:serverTimestamp()});
-    closeAuth(); showToast('Account created! Welcome 🌟');
-  } catch(e){ st.innerHTML=`<span class="a-err">${fe(e.code)}</span>`; }
+    closeAuth(); showToast('Account created! Welcome!');
+  } catch(e){ st.innerHTML='<span class="a-err">'+fe(e.code)+'</span>'; }
 };
 
 // ── FORGOT PASSWORD ──
@@ -829,12 +909,12 @@ window.doForgotPwd = async () => {
   const st = document.getElementById('authSt3');
   const email = document.getElementById('fpEmail').value.trim();
   if(!email){ st.innerHTML='<span class="a-err">Please enter your email.</span>'; return; }
-  st.innerHTML='<span style="color:var(--gold)">Sending reset link…</span>';
+  st.innerHTML='<span style="color:var(--gold)">Sending reset link...</span>';
   try {
     await sendPasswordResetEmail(auth, email);
-    st.innerHTML='<span class="a-ok">✓ Reset link sent! Check your inbox.</span>';
-    showToast('Password reset email sent 📧');
-  } catch(e){ st.innerHTML=`<span class="a-err">${fe(e.code)}</span>`; }
+    st.innerHTML='<span class="a-ok">Reset link sent! Check your inbox.</span>';
+    showToast('Password reset email sent');
+  } catch(e){ st.innerHTML='<span class="a-err">'+fe(e.code)+'</span>'; }
 };
 
 // ── SIGN OUT ──
@@ -851,18 +931,17 @@ window.saveProfile = async () => {
   const name = document.getElementById('profName').value.trim();
   const phone = document.getElementById('profPhone').value.trim();
   if(!name){ st.innerHTML='<span class="a-err">Name is required.</span>'; return; }
-  st.innerHTML='<span style="color:var(--gold)">Saving…</span>';
+  st.innerHTML='<span style="color:var(--gold)">Saving...</span>';
   try {
     await updateProfile(auth.currentUser, {displayName: name});
-    // Update in users collection
     const snap = await getDocs(query(collection(db,'users'),where('uid','==',currentUser.uid)));
     if(!snap.empty){ await updateDoc(doc(db,'users',snap.docs[0].id),{firstName:name.split(' ')[0],lastName:name.split(' ').slice(1).join(' ')||'',phone}); }
     document.getElementById('profNameDisp').textContent = name;
     document.getElementById('uAvBtn').textContent = name[0].toUpperCase();
     document.getElementById('profAvLg').textContent = name[0].toUpperCase();
-    st.innerHTML='<span class="a-ok">✓ Profile updated!</span>';
-    showToast('Profile saved ✓');
-  } catch(e){ st.innerHTML=`<span class="a-err">${e.message}</span>`; }
+    st.innerHTML='<span class="a-ok">Profile updated!</span>';
+    showToast('Profile saved');
+  } catch(e){ st.innerHTML='<span class="a-err">'+e.message+'</span>'; }
 };
 
 // ── MAINTENANCE MODE CHECK ──
@@ -872,14 +951,11 @@ async function checkMaintenanceMode(){
     if(!snap.empty){
       const s = snap.docs[0].data();
       const banner = document.getElementById('maintenanceBanner');
-      const body = document.body;
       if(s.maintenance){
-        banner.textContent = s.maintenanceMsg || '🔧 We are performing scheduled maintenance. Back shortly!';
-        banner.classList.add('show');
-        body.classList.add('has-banner');
+        banner.textContent = s.maintenanceMsg || 'We are performing scheduled maintenance. Back shortly!';
+        banner.classList.add('show'); document.body.classList.add('has-banner');
       } else {
-        banner.classList.remove('show');
-        body.classList.remove('has-banner');
+        banner.classList.remove('show'); document.body.classList.remove('has-banner');
       }
     }
   } catch(e){}
@@ -893,102 +969,115 @@ window.checkDuplicate = async () => {
   const warn = document.getElementById('dupWarn');
   const sub = document.getElementById('subBtn');
   const existing = myBookings.filter(b=>b.service===svc && (b.status==='pending'||b.status==='confirmed'));
-  if(existing.length > 0){
-    warn.style.display='block';
-    sub.disabled=true;
-  } else {
-    warn.style.display='none';
-    sub.disabled=false;
-  }
+  if(existing.length > 0){ warn.style.display='block'; sub.disabled=true; }
+  else { warn.style.display='none'; sub.disabled=false; }
 };
 
 // ── SUBMIT BOOKING ──
 window.submitBooking = async (ev) => {
   ev.preventDefault();
   const user = auth.currentUser;
+  // BLOCK: Must be logged in — no guest booking allowed
+  if(!user){
+    showToast('Please sign in or create an account to book.');
+    openAuth('login');
+    return;
+  }
   const btn = document.getElementById('subBtn');
   const st = document.getElementById('bkSt');
-  // Final duplicate check
   const svc = document.getElementById('bkService').value;
-  if(user){
-    const existing = myBookings.filter(b=>b.service===svc&&(b.status==='pending'||b.status==='confirmed'));
-    if(existing.length>0){ st.innerHTML='<span class="s-err">You already have an active booking for this service.</span>'; return; }
-  }
-  btn.disabled=true; btn.textContent='Sending…';
-  const bSel=document.getElementById('bkBudget').value;
-  const finalBudget=bSel==='custom'?'₹'+Number(document.getElementById('bkCustomAmt').value||0).toLocaleString('en-IN'):bSel;
+  const existing = myBookings.filter(b=>b.service===svc&&(b.status==='pending'||b.status==='confirmed'));
+  if(existing.length>0){ st.innerHTML='<span class="s-err">You already have an active booking for this service.</span>'; return; }
+  btn.disabled=true; btn.textContent='Sending...';
+  const bSel = document.getElementById('bkBudget').value;
+  const finalBudget = bSel==='custom' ? 'Rs.'+Number(document.getElementById('bkCustomAmt').value||0).toLocaleString('en-IN') : bSel;
+  const eventType = document.getElementById('bkEventType').value;
+  const eventDate = document.getElementById('bkDate').value;
   try {
+    const bookingId = await generateBookingId(eventType||'Other', eventDate);
     await addDoc(collection(db,'bookings'),{
-      userId:user?user.uid:'guest',
-      userEmail:user?user.email:document.getElementById('bkEmail').value,
-      name:document.getElementById('bkName').value,
-      phone:document.getElementById('bkPhone').value,
-      email:document.getElementById('bkEmail').value,
-      service:svc,
-      eventType:document.getElementById('bkEventType').value,
-      eventDate:document.getElementById('bkDate').value,
-      budget:finalBudget,
-      venue:document.getElementById('bkVenue').value,
-      message:document.getElementById('bkMsg').value,
-      isGuest:!user,
-      status:'pending',
-      pipeline:'New Enquiry',
-      createdAt:serverTimestamp()
+      bookingId,
+      userId: user.uid,
+      userEmail: user.email,
+      name: document.getElementById('bkName').value.trim(),
+      phone: document.getElementById('bkPhone').value.trim(),
+      email: document.getElementById('bkEmail').value.trim(),
+      service: svc,
+      eventType,
+      eventDate,
+      budget: finalBudget,
+      venue: document.getElementById('bkVenue').value.trim(),
+      message: document.getElementById('bkMsg').value.trim(),
+      isGuest: false,
+      status: 'pending',
+      pipeline: 'New Enquiry',
+      createdAt: serverTimestamp()
     });
-    st.innerHTML='<span class="s-ok">✓ Booking request sent! We\'ll contact you within 24 hours.</span>';
+    st.innerHTML = '<span class="s-ok">Booking submitted! Your Booking ID: <strong style="color:var(--gold);font-family:monospace;font-size:.95em">'+bookingId+'</strong>. We will contact you within 24 hours.</span>';
     document.getElementById('bkForm').reset();
     document.getElementById('budgetCustom').style.display='none';
     document.getElementById('dupWarn').style.display='none';
-    if(user) await loadMyBookings(user.uid);
-    showToast('Booking submitted! 🎊');
-    // WhatsApp confirmation
-    const waMsgEnc = encodeURIComponent(`Hi AB Events! My booking for *${svc}* on ${document.getElementById('bkDate').value||'TBD'} has been submitted. Please confirm at your earliest.`);
-    // Pre-fill WA suggestion with booking details
-    window._lastBookingMsg = `Hi AB Events! My booking for *${svc}* on ${document.getElementById('bkDate').value||'TBD'} has been submitted. Please confirm at your earliest. Name: ${document.getElementById('bkName').value}`;
-  } catch(err){ st.innerHTML=`<span class="s-err">Error: ${err.message}</span>`; }
-  btn.disabled=false; btn.textContent='Send Booking Request →';
+    await loadMyBookings(user.uid);
+    showToast('Booking submitted! ID: '+bookingId);
+  } catch(err){
+    st.innerHTML='<span class="s-err">Error: '+err.message+'</span>';
+    btn.disabled=false; btn.textContent='Send Booking Request';
+  } finally {
+    if(!st.innerHTML.includes('Booking submitted')){
+      btn.disabled=false; btn.textContent='Send Booking Request';
+    }
+  }
 };
 
 // ── LOAD MY BOOKINGS ──
 async function loadMyBookings(uid) {
   const list = document.getElementById('bkList');
-  list.innerHTML='<div class="empty-st">Loading…</div>';
   try {
-    // Simple query without orderBy — avoids composite index requirement
     const q = query(collection(db,'bookings'),where('userId','==',uid));
     const snap = await getDocs(q);
     myBookings = snap.docs.map(d=>({id:d.id,...d.data()}));
-    // Sort client-side — no Firestore composite index needed
     myBookings.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    if(snap.empty){ list.innerHTML='<div class="empty-st">No bookings yet. <a href="#booking" style="color:var(--gold)">Make your first request →</a></div>'; return; }
-    const icons={'Luxury Decor & Styling':'🌸','Professional Photography':'📷','Live Music & Entertainment':'🎵','Premium Lighting Design':'✨','Gourmet Catering':'🍽️','Complete Event Management':'🎊','Multiple Services':'🎉'};
-    list.innerHTML = myBookings.map(b=>{
-      const sc=b.status==='confirmed'||b.status==='completed'?'bk-confirmed':b.status==='declined'?'bk-declined':b.status==='pending'||b.status==='New Enquiry'?'bk-pending':'bk-pending';
-      const statusMap={'New Enquiry':'🔔 New Enquiry','pending':'🔔 New Enquiry','consultation':'📞 Consultation Scheduled','proposal':'📋 Proposal Sent','confirmed':'✅ Confirmed','declined':'✕ Declined','completed':'🎊 Completed'};
-      const sl=statusMap[b.status]||statusMap[b.pipeline]||'🔔 New Enquiry';
-      const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):'Date TBD';
+    if(snap.empty){
+      list.innerHTML='<div class="empty-st">No bookings yet. <a href="#booking" style="color:var(--gold)">Make your first request</a></div>';
+      return;
+    }
+    const icons = {
+      'Luxury Decor & Styling':'&#127800;','Professional Photography':'&#128247;',
+      'Live Music & Entertainment':'&#127925;','Premium Lighting Design':'&#10024;',
+      'Gourmet Catering':'&#127869;','Complete Event Management':'&#127882;','Multiple Services':'&#127881;'
+    };
+    const statusMap = {
+      'New Enquiry':'New Enquiry','pending':'New Enquiry','consultation':'Consultation Scheduled',
+      'proposal':'Proposal Sent','confirmed':'Confirmed','declined':'Declined','completed':'Completed'
+    };
+    list.innerHTML = myBookings.map(b => {
+      const sc = b.status==='confirmed'||b.status==='completed' ? 'bk-confirmed' : b.status==='declined' ? 'bk-declined' : 'bk-pending';
+      const sl = statusMap[b.pipeline] || statusMap[b.status] || 'New Enquiry';
+      const dt = b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : 'Date TBD';
+      const isCompleted = b.status==='completed';
       const canModify = b.status==='pending';
-      const priceHtml = b.finalPrice?`<div class="bk-price">💰 Final Price: ${b.finalPrice}</div>`:'';
-      return `<div class="bk-item">
-        <div class="bk-ico">${icons[b.service]||'🎊'}</div>
-        <div class="bk-det">
-          <div class="bk-svc">${b.service}</div>
-          <div class="bk-meta">${b.eventType||'Event'} · ${dt} · ${b.budget}</div>
-          <div class="bk-meta">📍 ${b.venue||'Venue TBD'}</div>
-          ${priceHtml}
-          ${canModify?`<button class="bk-modify-btn" onclick="openModify('${b.id}')">✏️ Modify Booking</button>`:''}
-        </div>
-        <div class="bk-stat ${sc}">${sl}</div>
-      </div>`;
+      const priceHtml = b.finalPrice ? '<div class="bk-price">Final Price: '+b.finalPrice+'</div>' : '';
+      const idBadge = b.bookingId ? '<div class="bk-id-badge">Booking ID: '+b.bookingId+'</div>' : '';
+      const feedbackBtn = isCompleted
+        ? '<button class="bk-feedback-btn" onclick="openReviewModal(\''+b.id+'\',\''+encodeURIComponent(b.service||'')+'\',\''+encodeURIComponent(b.eventType||'')+'\',\''+encodeURIComponent(b.eventDate||'')+'\',\''+encodeURIComponent(b.bookingId||'')+'\')">&#9733; Share Your Experience</button>'
+        : '';
+      const modifyBtn = canModify ? '<button class="bk-modify-btn" onclick="openModify(\''+b.id+'\')">&#9998; Modify Booking</button>' : '';
+      return '<div class="bk-item">'+
+        '<div class="bk-ico">'+(icons[b.service]||'&#127882;')+'</div>'+
+        '<div class="bk-det">'+
+          '<div class="bk-svc">'+b.service+'</div>'+
+          idBadge+
+          '<div class="bk-meta">'+(b.eventType||'Event')+' · '+dt+' · '+b.budget+'</div>'+
+          '<div class="bk-meta">'+b.venue+'</div>'+
+          priceHtml+modifyBtn+feedbackBtn+
+        '</div>'+
+        '<div class="bk-stat '+sc+'">'+sl+'</div>'+
+      '</div>';
     }).join('');
-    // Check for confirmed booking for review
-    const hasConfirmed = myBookings.some(b=>b.status==='confirmed');
-    if(hasConfirmed) document.getElementById('revSubmitCard').classList.remove('hidden');
   } catch(err){
     console.error('Bookings load error:', err);
-    list.innerHTML='<div class="empty-st">Could not load bookings.<br><small style="color:#888;font-size:.7rem;">'+err.message+'</small><br><a href="#" onclick="window._loadMyBookings(window._auth?.currentUser?.uid);return false;" style="color:var(--gold);font-size:.8rem;">↺ Try again</a></div>';
-    // Show setup notice if it looks like a rules/permissions issue
-    if(err.message && (err.message.includes('permission') || err.message.includes('Missing') || err.message.includes('insufficient'))){
+    list.innerHTML='<div class="empty-st">Could not load bookings. '+err.message+'</div>';
+    if(err.message && (err.message.includes('permission')||err.message.includes('Missing')||err.message.includes('insufficient'))){
       const notice=document.getElementById('firestoreNotice');
       if(notice) notice.style.display='block';
     }
@@ -1010,26 +1099,74 @@ window.openModify = async (id) => {
   document.getElementById('modifyModal').classList.add('open');
   document.body.style.overflow='hidden';
 };
-window.closeModify=()=>{document.getElementById('modifyModal').classList.remove('open');document.body.style.overflow='';};
+window.closeModify = () => { document.getElementById('modifyModal').classList.remove('open'); document.body.style.overflow=''; };
 window.saveModify = async () => {
-  const id=document.getElementById('modifyBkId').value;
-  const st=document.getElementById('modSt');
-  st.innerHTML='<span style="color:var(--gold)">Saving…</span>';
+  const id = document.getElementById('modifyBkId').value;
+  const st = document.getElementById('modSt');
+  st.innerHTML='<span style="color:var(--gold)">Saving...</span>';
   try{
     await updateDoc(doc(db,'bookings',id),{
-      name:document.getElementById('modName').value,
-      phone:document.getElementById('modPhone').value,
-      eventDate:document.getElementById('modDate').value,
-      venue:document.getElementById('modVenue').value,
-      message:document.getElementById('modMsg').value,
-      modifiedAt:serverTimestamp(),
-      status:'pending'
+      name: document.getElementById('modName').value,
+      phone: document.getElementById('modPhone').value,
+      eventDate: document.getElementById('modDate').value,
+      venue: document.getElementById('modVenue').value,
+      message: document.getElementById('modMsg').value,
+      modifiedAt: serverTimestamp(),
+      status: 'pending'
     });
-    st.innerHTML='<span class="a-ok">✓ Booking updated! Our team will review and confirm.</span>';
-    showToast('Booking updated ✓');
+    st.innerHTML='<span class="a-ok">Booking updated! Our team will review and confirm.</span>';
+    showToast('Booking updated');
     if(currentUser) await loadMyBookings(currentUser.uid);
     setTimeout(()=>closeModify(),2000);
-  }catch(e){st.innerHTML=`<span class="a-err">${e.message}</span>`;}
+  }catch(e){st.innerHTML='<span class="a-err">'+e.message+'</span>';}
+};
+
+// ── REVIEW MODAL ──
+let _revBookingDocId = '', _revRating = 0;
+window.openReviewModal = (id, svc, evtType, evtDate, bkCode) => {
+  _revBookingDocId = id; _revRating = 0;
+  const service = decodeURIComponent(svc);
+  const eventType = decodeURIComponent(evtType);
+  const eventDate = decodeURIComponent(evtDate);
+  const bookingCode = decodeURIComponent(bkCode);
+  const dt = eventDate ? new Date(eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : 'Date TBD';
+  document.getElementById('revBookingInfo').innerHTML =
+    '<strong>'+service+'</strong> &middot; '+eventType+' &middot; '+dt+
+    (bookingCode ? ' &middot; <span style="font-family:monospace;color:var(--gold)">'+bookingCode+'</span>' : '');
+  document.getElementById('revModalText').value='';
+  document.getElementById('revModalName').value = currentUser ? (currentUser.displayName||'') : '';
+  document.getElementById('revModalEvent').value = (eventType?eventType+' - ':'')+service;
+  document.getElementById('revModalSt').innerHTML='';
+  document.querySelectorAll('#revStarRow span').forEach(s=>s.classList.remove('sel'));
+  document.getElementById('reviewModal').classList.add('open');
+  document.body.style.overflow='hidden';
+};
+window.closeReviewModal = () => { document.getElementById('reviewModal').classList.remove('open'); document.body.style.overflow=''; };
+window.setRevRating = (n) => {
+  _revRating = n;
+  document.querySelectorAll('#revStarRow span').forEach((s,i)=>s.classList.toggle('sel',i<n));
+};
+window.submitReviewFromModal = async () => {
+  const st = document.getElementById('revModalSt');
+  if(!_revRating){ st.innerHTML='<span class="a-err">Please select a star rating.</span>'; return; }
+  const text = document.getElementById('revModalText').value.trim();
+  if(!text){ st.innerHTML='<span class="a-err">Please write your review.</span>'; return; }
+  st.innerHTML='<span style="color:var(--gold)">Submitting...</span>';
+  try{
+    await addDoc(collection(db,'reviews'),{
+      rating: _revRating,
+      text,
+      name: document.getElementById('revModalName').value.trim() || 'Anonymous',
+      event: document.getElementById('revModalEvent').value.trim(),
+      bookingDocId: _revBookingDocId,
+      userId: currentUser ? currentUser.uid : '',
+      approved: false,
+      createdAt: serverTimestamp()
+    });
+    st.innerHTML='<span class="a-ok">Thank you! Your review will appear after admin approval.</span>';
+    showToast('Review submitted! Thank you');
+    setTimeout(()=>closeReviewModal(), 2200);
+  }catch(e){ st.innerHTML='<span class="a-err">'+e.message+'</span>'; }
 };
 
 // ── FIRESTORE GALLERY LOAD ──
@@ -1046,109 +1183,84 @@ window.loadFirestoreGallery=loadFirestoreGallery;
 window.loadSvcGallery = async (name) => {
   document.getElementById('glTtl').textContent=name;
   document.getElementById('glCount').textContent='';
-  document.getElementById('glGrid').innerHTML='<div class="gl-empty">Loading photos…</div>';
+  document.getElementById('glGrid').innerHTML='<div class="gl-empty">Loading photos...</div>';
   openGl();
   try{
-    const snap=await getDocs(query(collection(db,'gallery'),where('service','==',name)));
-    const fbImgs=snap.docs.map(d=>({url:d.data().url,caption:d.data().caption||name}));
-    const staticImgs=(window._svcPhotos[name]||[]).map(u=>({url:u,caption:name}));
-    const all=[...fbImgs,...staticImgs];
-    window._glImgs=all;
-    document.getElementById('glCount').textContent=`${all.length} photo${all.length!==1?'s':''}`;
+    const snap = await getDocs(query(collection(db,'gallery'),where('service','==',name)));
+    const fbImgs = snap.docs.map(d=>({url:d.data().url,caption:d.data().caption||name}));
+    const staticImgs = (window._svcPhotos[name]||[]).map(u=>({url:u,caption:name}));
+    const all = [...fbImgs,...staticImgs];
+    window._glImgs = all;
+    document.getElementById('glCount').textContent = all.length+' photo'+(all.length!==1?'s':'');
     if(!all.length){document.getElementById('glGrid').innerHTML='<div class="gl-empty">No photos yet for this service.</div>';return;}
-    document.getElementById('glGrid').innerHTML=all.map((img,i)=>`<div class="gl-item" onclick="openViewer(${i})"><img src="${img.url}" alt="${img.caption}" loading="lazy"/><div class="gl-item-lbl">${img.caption}</div><button class="gl-zoom-btn" onclick="event.stopPropagation();openViewer(${i})">🔍</button></div>`).join('');
+    document.getElementById('glGrid').innerHTML = all.map((img,i)=>'<div class="gl-item" onclick="openViewer('+i+')"><img src="'+img.url+'" alt="'+img.caption+'" loading="lazy"/><div class="gl-item-lbl">'+img.caption+'</div><button class="gl-zoom-btn" onclick="event.stopPropagation();openViewer('+i+')">View</button></div>').join('');
   }catch(err){document.getElementById('glGrid').innerHTML='<div class="gl-empty">Could not load photos.</div>';}
 };
 
-// ── REVIEWS ──
+// ── REVIEWS (public display) ──
 async function loadReviews(){
   try{
-    // Fetch without orderBy to avoid composite index requirement, sort client-side
-    const snap=await getDocs(query(collection(db,'reviews'),where('approved','==',true)));
-    const revs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    // Stars avg
+    const snap = await getDocs(query(collection(db,'reviews'),where('approved','==',true)));
+    const revs = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     if(revs.length){
-      const avg=(revs.reduce((a,r)=>a+r.rating,0)/revs.length).toFixed(1);
-      document.getElementById('revAvgNum').textContent=avg;
-      document.getElementById('revAvgCount').textContent=`Based on ${revs.length} verified review${revs.length!==1?'s':''}`;
-      const starsHtml=Array.from({length:5},(_,i)=>`<span>${i<Math.round(avg)?'★':'☆'}</span>`).join('');
-      document.getElementById('revAvgStars').innerHTML=starsHtml;
-      document.getElementById('revGrid').innerHTML=revs.slice(0,6).map(r=>{
-        const stars=Array.from({length:5},(_,i)=>`<span class="${i<r.rating?'':'empty'}">★</span>`).join('');
-        return `<div class="rev-card"><div class="rev-stars">${stars}</div><p class="rev-txt">${r.text}</p><div class="rev-auth"><div class="rev-av">${(r.name||'A')[0].toUpperCase()}</div><div><div class="rev-nm">${r.name||'Anonymous'}</div><div class="rev-ev">${r.event||''}</div></div></div></div>`;
+      const avg = (revs.reduce((a,r)=>a+r.rating,0)/revs.length).toFixed(1);
+      document.getElementById('revAvgNum').textContent = avg;
+      document.getElementById('revAvgCount').textContent = 'Based on '+revs.length+' verified review'+(revs.length!==1?'s':'');
+      document.getElementById('revAvgStars').innerHTML = Array.from({length:5},(_,i)=>'<span>'+(i<Math.round(avg)?'&#9733;':'&#9734;')+'</span>').join('');
+      document.getElementById('revGrid').innerHTML = revs.slice(0,6).map(r=>{
+        const stars = Array.from({length:5},(_,i)=>'<span class="'+(i<r.rating?'':'empty')+'">&#9733;</span>').join('');
+        return '<div class="rev-card"><div class="rev-stars">'+stars+'</div><p class="rev-txt">'+r.text+'</p><div class="rev-auth"><div class="rev-av">'+((r.name||'A')[0].toUpperCase())+'</div><div><div class="rev-nm">'+(r.name||'Anonymous')+'</div><div class="rev-ev">'+(r.event||'')+'</div></div></div></div>';
       }).join('');
     } else {
-      document.getElementById('revAvgNum').textContent='—';
-      document.getElementById('revAvgCount').textContent='No reviews yet — be the first!';
+      document.getElementById('revAvgNum').textContent='--';
+      document.getElementById('revAvgCount').textContent='No reviews yet -- be the first!';
       document.getElementById('revGrid').innerHTML='<div class="rev-empty">No reviews yet. Be the first to share your experience!</div>';
     }
   }catch(e){
-    // Fallback static reviews
     document.getElementById('revAvgNum').textContent='5.0';
     document.getElementById('revAvgCount').textContent='Based on verified reviews';
-    document.getElementById('revGrid').innerHTML=`<div class="rev-card"><div class="rev-stars">★★★★★</div><p class="rev-txt">AB Events transformed our wedding into an absolute fairytale. Every detail was perfect — from the floral mandap to the candlelit reception. Truly unforgettable.</p><div class="rev-auth"><div class="rev-av">P</div><div><div class="rev-nm">Priya &amp; Rahul Sharma</div><div class="rev-ev">Wedding · Taj Falaknuma</div></div></div></div>
-    <div class="rev-card"><div class="rev-stars">★★★★★</div><p class="rev-txt">Our daughter's first birthday was beyond magical. The decor, the photography — everything handled with such care and professionalism.</p><div class="rev-auth"><div class="rev-av">A</div><div><div class="rev-nm">Anita Reddy</div><div class="rev-ev">Birthday · Gachibowli</div></div></div></div>
-    <div class="rev-card"><div class="rev-stars">★★★★★</div><p class="rev-txt">For our corporate gala, AB Events delivered an experience that left 400 guests speechless. An outstanding team through and through.</p><div class="rev-auth"><div class="rev-av">V</div><div><div class="rev-nm">Vikram Nair</div><div class="rev-ev">Corporate Gala · HICC</div></div></div></div>`;
+    document.getElementById('revGrid').innerHTML='<div class="rev-card"><div class="rev-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="rev-txt">AB Events transformed our wedding into an absolute fairytale. Every detail was perfect.</p><div class="rev-auth"><div class="rev-av">P</div><div><div class="rev-nm">Priya &amp; Rahul Sharma</div><div class="rev-ev">Wedding &middot; Taj Falaknuma</div></div></div></div><div class="rev-card"><div class="rev-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="rev-txt">Our daughter\'s first birthday was beyond magical. The decor, the photography -- everything handled with such care.</p><div class="rev-auth"><div class="rev-av">A</div><div><div class="rev-nm">Anita Reddy</div><div class="rev-ev">Birthday &middot; Gachibowli</div></div></div></div><div class="rev-card"><div class="rev-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="rev-txt">For our corporate gala, AB Events delivered an experience that left 400 guests speechless.</p><div class="rev-auth"><div class="rev-av">V</div><div><div class="rev-nm">Vikram Nair</div><div class="rev-ev">Corporate Gala &middot; HICC</div></div></div></div>';
   }
 }
 
-let selectedRating=0;
-window.setRating=(n)=>{
-  selectedRating=n;
-  document.querySelectorAll('#starPicker span').forEach((s,i)=>s.classList.toggle('sel',i<n));
-};
-window.submitReview=async()=>{
-  const st=document.getElementById('revSt');
-  if(!selectedRating){st.innerHTML='<span class="a-err">Please select a star rating.</span>';return;}
-  const text=document.getElementById('revText').value.trim();
-  if(!text){st.innerHTML='<span class="a-err">Please write a review.</span>';return;}
-  st.innerHTML='<span style="color:var(--gold)">Submitting…</span>';
-  try{
-    await addDoc(collection(db,'reviews'),{
-      rating:selectedRating,
-      text,
-      name:document.getElementById('revName').value.trim()||'Anonymous',
-      event:document.getElementById('revEvent').value.trim(),
-      userId:currentUser?currentUser.uid:'',
-      approved:false,
-      createdAt:serverTimestamp()
-    });
-    st.innerHTML='<span class="a-ok">✓ Thank you! Your review will appear after admin approval.</span>';
-    showToast('Review submitted! Thank you 🌟');
-    document.getElementById('revText').value='';
-    document.getElementById('revName').value='';
-    document.getElementById('revEvent').value='';
-    selectedRating=0;
-    document.querySelectorAll('#starPicker span').forEach(s=>s.classList.remove('sel'));
-  }catch(e){st.innerHTML=`<span class="a-err">${e.message}</span>`;}
-};
-
 // ── CUSTOMER NOTIFICATIONS ──
 function loadCustomerNotifications(uid){
-  // Use simple where query to avoid composite index requirement
-  const q=query(collection(db,'notifications'),where('userId','==',uid));
-  onSnapshot(q,snap=>{
-    const notifs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    const unread=notifs.filter(n=>!n.read).length;
-    const badge=document.getElementById('custNotifBadge');
+  const q = query(collection(db,'notifications'),where('userId','==',uid));
+  onSnapshot(q, snap=>{
+    const notifs = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    const unread = notifs.filter(n=>!n.read).length;
+    const badge = document.getElementById('custNotifBadge');
     if(unread>0){badge.textContent=unread;badge.classList.add('show');}else{badge.classList.remove('show');}
-    const list=document.getElementById('custNotifList');
+    const list = document.getElementById('custNotifList');
     if(!notifs.length){list.innerHTML='<div class="notif-empty">No notifications yet</div>';return;}
-    list.innerHTML=notifs.slice(0,10).map(n=>`<div class="notif-item ${n.read?'':'unread'}" onclick="readNotif('${n.id}')"><div>${n.message||''}</div><div class="notif-time">${n.createdAt?.toDate?n.createdAt.toDate().toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</div></div>`).join('');
+    list.innerHTML = notifs.slice(0,10).map(n=>'<div class="notif-item '+(n.read?'':'unread')+'" onclick="readNotif(\''+n.id+'\')"><div>'+(n.message||'')+'</div><div class="notif-time">'+(n.createdAt?.toDate?n.createdAt.toDate().toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'')+' </div></div>').join('');
   });
 }
-window.readNotif=async(id)=>{
+window.readNotif = async(id) => {
   try{await updateDoc(doc(db,'notifications',id),{read:true});}catch(e){}
 };
-window.markAllRead=async(e)=>{
+window.markAllRead = async(e) => {
   e.stopPropagation();
-  if(!currentUser)return;
-  const snap=await getDocs(query(collection(db,'notifications'),where('userId','==',currentUser.uid)));
+  if(!currentUser) return;
+  const snap = await getDocs(query(collection(db,'notifications'),where('userId','==',currentUser.uid)));
   snap.docs.filter(d=>!d.data().read).forEach(d=>updateDoc(doc(db,'notifications',d.id),{read:true}));
 };
 
-function fe(c){const m={'auth/user-not-found':'No account with that email.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'Email already registered.','auth/weak-password':'Password needs 6+ characters.','auth/invalid-email':'Invalid email address.','auth/too-many-requests':'Too many attempts. Try later.','auth/missing-password':'Please enter your password.'};return m[c]||'Something went wrong. Try again.';}
+function fe(c){
+  const m={
+    'auth/user-not-found':'No account with that email.',
+    'auth/wrong-password':'Incorrect password.',
+    'auth/invalid-credential':'Invalid email or password.',
+    'auth/email-already-in-use':'Email already registered.',
+    'auth/weak-password':'Password needs 6+ characters.',
+    'auth/invalid-email':'Invalid email address.',
+    'auth/too-many-requests':'Too many attempts. Try later.',
+    'auth/missing-password':'Please enter your password.'
+  };
+  return m[c]||'Something went wrong. Try again.';
+}
 </script>
+
 
 <!-- ══ UI JS ══ -->
 <script>
@@ -1166,7 +1278,7 @@ const SVCS=[
    comingSoon:true,
    photos:['https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80','https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80']},
   {name:'Complete Event Management',icon:'🎊',desc:'Full-spectrum orchestration from concept to cleanup. Weddings, galas, birthdays, anniversaries and corporate events.',tags:['Wedding','Corporate','Birthday','Anniversary'],
-   photos:['https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80','https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80','https://images.unsplash.com/photo-1522771930-78848d9293e8?w=800&q=80']}
+   photos:['https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80','https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80','https://images.unsplash.com/photo-1520854221256-17452cc3a785?w=800&q=80']}
 ];
 window._svcPhotos={};
 SVCS.forEach(s=>{window._svcPhotos[s.name]=s.photos;});
@@ -1228,7 +1340,7 @@ const STATIC_GALLERY=[
   {url:'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=800&q=80',caption:'Bridal Floral Setup',eventCategory:'Engagement',service:'Luxury Decor & Styling'},
   {url:'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80',caption:'Engagement Photography',eventCategory:'Engagement',service:'Professional Photography'},
   {url:'https://images.unsplash.com/photo-1561489413-985b06da5bee?w=800&q=80',caption:'Rose Petal Decor',eventCategory:'Engagement',service:'Luxury Decor & Styling'},
-  {url:'https://images.unsplash.com/photo-1522771930-78848d9293e8?w=800&q=80',caption:'Baby Shower Decor',eventCategory:'Baby Shower',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1520854221256-17452cc3a785?w=800&q=80',caption:'Baby Shower Decor',eventCategory:'Baby Shower',service:'Luxury Decor & Styling'},
   {url:'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80',caption:'Pastel Balloon Setup',eventCategory:'Baby Shower',service:'Luxury Decor & Styling'},
   {url:'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80',caption:'Soft Fairy Lights',eventCategory:'Baby Shower',service:'Premium Lighting Design'},
   {url:'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80',caption:'Birthday Celebration',eventCategory:'Birthday',service:'Complete Event Management'},
@@ -1290,12 +1402,13 @@ window.viewNav=(d)=>{vIdx=(vIdx+d+window._glImgs.length)%window._glImgs.length;s
 
 window._guestMode=false;
 function showForm(show,guest){
-  document.getElementById('bkPrompt').style.display=show||guest?'none':'block';
-  document.getElementById('guestBanner').style.display=guest?'flex':'none';
-  document.getElementById('bkForm').style.display=show||guest?'block':'none';
+  document.getElementById('bkPrompt').style.display=(show||guest)?'none':'block';
+  var gb=document.getElementById('guestBanner');
+  if(gb) gb.style.display=guest?'flex':'none';
+  document.getElementById('bkForm').style.display=(show||guest)?'block':'none';
 }
-window.setGuestMode=(on)=>{window._guestMode=on;if(on)showForm(false,true);else if(!window._auth?.currentUser)showForm(false,false);};
-window.doGuestFromModal=()=>{closeAuth();window._guestMode=true;showForm(false,true);document.getElementById('booking').scrollIntoView({behavior:'smooth'});showToast('Continuing as guest 👤');};
+window.setGuestMode=(on)=>{};
+window.doGuestFromModal=()=>{closeAuth();window._guestMode=true;showForm(false,true);document.getElementById('booking').scrollIntoView({behavior:'smooth'});showToast('Browsing as guest. Sign in to book.');};
 window.onBudgetChange=(v)=>{document.getElementById('budgetCustom').style.display=v==='custom'?'block':'none';};
 window.syncSlider=(v)=>{const n=Number(v)||0;document.getElementById('bkSlider').value=Math.min(Math.max(n,10000),2000000);document.getElementById('bkBudgetDisplay').textContent='₹'+n.toLocaleString('en-IN');};
 window.syncAmount=(v)=>{document.getElementById('bkCustomAmt').value=v;document.getElementById('bkBudgetDisplay').textContent='₹'+Number(v).toLocaleString('en-IN');};
@@ -1343,9 +1456,10 @@ window.switchTab=(t)=>{
 document.getElementById('authModal').addEventListener('click',e=>{if(e.target===document.getElementById('authModal'))closeAuth();});
 document.getElementById('profileModal').addEventListener('click',e=>{if(e.target===document.getElementById('profileModal'))closeProfile();});
 document.getElementById('modifyModal').addEventListener('click',e=>{if(e.target===document.getElementById('modifyModal'))closeModify();});
+document.getElementById('reviewModal').addEventListener('click',e=>{if(e.target===document.getElementById('reviewModal'))closeReviewModal();});
 
 // WhatsApp helpers
-const WA_NUMBER='7386030321'; // ← Change to your WhatsApp number
+const WA_NUMBER='919876543210'; // ← Change to your WhatsApp number
 window.sendWA=(msg)=>{
   window.open('https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(msg),'_blank');
   document.getElementById('waSuggestions').style.display='none';
@@ -1372,7 +1486,7 @@ window.quickBook=(svc)=>{
 window.showToast=(msg)=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);};
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeAuth();closeGl();closeViewer();}
+  if(e.key==='Escape'){closeAuth();closeGl();closeViewer();if(typeof closeReviewModal!=='undefined')closeReviewModal();}
   if(e.key==='ArrowRight'&&document.getElementById('glViewer').classList.contains('open')) viewNav(1);
   if(e.key==='ArrowLeft'&&document.getElementById('glViewer').classList.contains('open')) viewNav(-1);
 });
