@@ -351,30 +351,22 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 @media(max-width:520px){.dyn-gallery-grid{grid-template-columns:1fr;}.ft-grid{grid-template-columns:1fr;}.proc{grid-template-columns:1fr;}.bk-wrap{gap:28px;}.wa-fab{bottom:16px;right:16px;width:50px;height:50px;}}
 
 /* ── BOOKING ID BADGE ── */
-.bk-id-badge{font-size:.62rem;font-family:monospace;letter-spacing:.06em;color:var(--gold);background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.18);padding:2px 8px;border-radius:3px;display:inline-block;margin-top:4px;}
+.bk-id-badge{font-size:.62rem;font-family:monospace;letter-spacing:.05em;color:var(--gold);background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.16);padding:2px 8px;border-radius:3px;display:inline-block;margin-top:3px;margin-bottom:2px;}
 
-/* ── FEEDBACK BUTTON (beside completed booking) ── */
-.bk-feedback-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid rgba(201,168,76,.28);color:var(--gold);font-size:.68rem;padding:4px 11px;border-radius:100px;cursor:pointer;font-family:var(--fb);transition:var(--tr);margin-top:6px;letter-spacing:.04em;}
+/* ── FEEDBACK BUTTON (completed bookings only) ── */
+.bk-feedback-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:.69rem;padding:5px 12px;border-radius:100px;cursor:pointer;font-family:var(--fb);transition:var(--tr);margin-top:6px;letter-spacing:.03em;}
 .bk-feedback-btn:hover{background:rgba(201,168,76,.1);border-color:var(--gold);}
 
-/* ── REVIEW POPUP MODAL ── */
-.rev-pop-ov{position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:2500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:20px;}
+/* ── REVIEW POPUP OVERLAY ── */
+.rev-pop-ov{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:2500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:18px;}
 .rev-pop-ov.open{display:flex;}
-.rev-pop-box{background:var(--dark2);border:1px solid rgba(201,168,76,.18);width:92%;max-width:500px;padding:38px;border-radius:var(--r);position:relative;animation:mIn .3s var(--ease);max-height:92vh;overflow-y:auto;}
-.rev-pop-box h3{font-family:var(--fd);font-size:1.5rem;color:var(--cream);margin-bottom:4px;}
-.rev-pop-box p{font-size:.78rem;color:var(--muted);margin-bottom:18px;line-height:1.7;}
-.rev-pop-ref{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.14);border-radius:var(--r);padding:10px 14px;margin-bottom:18px;font-size:.76rem;color:var(--muted);}
-.rev-pop-ref strong{color:var(--cream);}
+.rev-pop-box{background:var(--dark2);border:1px solid rgba(201,168,76,.18);width:92%;max-width:500px;padding:36px;border-radius:var(--r);position:relative;animation:mIn .28s var(--ease);max-height:92vh;overflow-y:auto;}
+.rev-pop-box h3{font-family:var(--fd);font-size:1.5rem;color:var(--cream);margin-bottom:5px;}
+.rev-pop-box>.rev-pop-sub{font-size:.8rem;color:var(--muted);margin-bottom:18px;line-height:1.7;}
+.rev-pop-ref{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.13);border-radius:var(--r);padding:10px 14px;margin-bottom:18px;font-size:.76rem;color:var(--muted);}
 .rev-pop-stars{display:flex;gap:8px;margin:10px 0 18px;}
-.rev-pop-stars span{font-size:2rem;cursor:pointer;color:rgba(201,168,76,.2);transition:color .15s,transform .12s;}
-.rev-pop-stars span.sel{color:var(--gold);}
-.rev-pop-stars span:hover{transform:scale(1.15);color:var(--gold);}
-
-/* ── GUEST LOGIN PROMPT inside booking form ── */
-.bk-login-prompt{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);border-radius:var(--r);padding:20px 22px;text-align:center;}
-.bk-login-prompt h4{font-family:var(--fd);font-size:1.1rem;color:var(--cream);margin-bottom:6px;}
-.bk-login-prompt p{font-size:.8rem;color:var(--muted);margin-bottom:16px;line-height:1.7;}
-.bk-login-prompt-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.rev-pop-stars span{font-size:2rem;cursor:pointer;color:rgba(201,168,76,.2);transition:color .12s,transform .1s;}
+.rev-pop-stars span.sel,.rev-pop-stars span:hover{color:var(--gold);transform:scale(1.14);}
 </style>
 </head>
 <body>
@@ -518,7 +510,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
         <div class="s-lbl">Get In Touch</div>
         <h2 class="s-ttl">Let's Create<br>Something <em>Beautiful</em></h2>
         <div class="divider"></div>
-        <p>Ready to turn your vision into reality? Sign in or create an account to submit your booking. Our event specialists will reach out within 24 hours.</p>
+        <p>Ready to turn your vision into reality? Sign in, create an account, or continue as a guest. Our event specialists will reach out within 24 hours.</p>
         <div class="bk-contacts">
           <div class="c-item"><div class="c-icon">📍</div><span>Jubilee Hills, Hyderabad, Telangana</span></div>
           <div class="c-item"><div class="c-icon">📞</div><span>+91 7386030321</span></div>
@@ -528,17 +520,14 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
       </div>
       <div class="bk-form-box">
         <div class="bk-prompt" id="bkPrompt">
-          <div class="bk-login-prompt">
-            <h4>Sign In to Book</h4>
-            <p>Create a free account or sign in to submit your booking request and track your event in real time.</p>
-            <div class="bk-login-prompt-btns">
-              <button class="btn btn-gold" onclick="openAuth('register')">Create Account →</button>
-              <button class="btn btn-ghost" onclick="openAuth('login')">Sign In</button>
-            </div>
+          <p>Sign in or create an account to submit a booking request and track your event status in real time.</p>
+          <div class="bk-prompt-btns">
+            <button class="btn btn-gold" onclick="openAuth('register')">Create Account →</button>
+            <button class="btn btn-ghost" onclick="openAuth('login')">Sign In</button>
           </div>
         </div>
         <div class="guest-banner" id="guestBanner">
-          <span>👤 Booking as guest — <a href="#" onclick="openAuth('register');return false;">Create account</a> to track bookings.</span>
+          <span>👤 Exploring as guest. <a href="#" onclick="openAuth('login');return false;">Sign in</a> or <a href="#" onclick="openAuth('register');return false;">register</a> to book.</span>
           <button onclick="setGuestMode(false)" style="background:none;border:none;color:var(--muted);cursor:pointer;">✕</button>
         </div>
         <div class="dup-warn" id="dupWarn">⚠️ You already have a pending or confirmed booking for this service. Please modify your existing booking or contact us.</div>
@@ -763,28 +752,26 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 <!-- REVIEW FEEDBACK POPUP -->
 <div class="rev-pop-ov" id="revPopOv">
   <div class="rev-pop-box">
-    <button class="m-x" onclick="closeRevPop()">×</button>
-    <h3>Share Your Experience</h3>
-    <p>Your honest feedback helps other families choose the right event partner for their special day.</p>
-    <div class="rev-pop-ref" id="revPopRef">
-      <strong>Booking:</strong> <span id="revPopRefText">—</span>
-    </div>
+    <button class="m-x" onclick="closeRevPopup()">×</button>
+    <h3>Share Your Experience ✨</h3>
+    <p class="rev-pop-sub">Your honest feedback helps other families choose the right event partner.</p>
+    <div class="rev-pop-ref" id="revPopRef">Loading…</div>
     <label class="fl">Your Rating *</label>
     <div class="rev-pop-stars" id="revPopStars">
-      <span onclick="setPopRating(1)">★</span>
-      <span onclick="setPopRating(2)">★</span>
-      <span onclick="setPopRating(3)">★</span>
-      <span onclick="setPopRating(4)">★</span>
-      <span onclick="setPopRating(5)">★</span>
+      <span onclick="setRevPopRating(1)">★</span>
+      <span onclick="setRevPopRating(2)">★</span>
+      <span onclick="setRevPopRating(3)">★</span>
+      <span onclick="setRevPopRating(4)">★</span>
+      <span onclick="setRevPopRating(5)">★</span>
     </div>
     <div class="fg"><label class="fl">Your Review *</label>
-      <textarea class="fta" id="revPopText" placeholder="Tell us about your experience with AB Events — the decor, the team, the magic…" style="min-height:90px;"></textarea>
+      <textarea class="fta" id="revPopText" placeholder="Tell us about your experience — the decor, the team, the magic…" style="min-height:90px;"></textarea>
     </div>
     <div class="fr">
       <div class="fg"><label class="fl">Your Name (public)</label><input class="fi" id="revPopName" placeholder="e.g. Priya &amp; Rahul"/></div>
-      <div class="fg"><label class="fl">Event</label><input class="fi" id="revPopEvent" placeholder="e.g. Wedding · Taj Falaknuma"/></div>
+      <div class="fg"><label class="fl">Event Summary</label><input class="fi" id="revPopEvent" placeholder="e.g. Wedding · Taj Falaknuma"/></div>
     </div>
-    <button class="sub-btn" onclick="submitPopReview()" style="margin-top:4px;">Submit Review →</button>
+    <button class="sub-btn" onclick="submitRevPopup()">Submit Review →</button>
     <div id="revPopSt" style="margin-top:10px;font-size:.78rem;min-height:16px;"></div>
   </div>
 </div>
@@ -794,7 +781,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 <!-- ══ FIREBASE ══ -->
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile, setPersistence, browserLocalStoragePersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, getDoc, doc, updateDoc, serverTimestamp, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -812,22 +799,24 @@ window._db = db; window._auth = auth;
 
 let currentUser = null;
 let myBookings = [];
-let _popRating = 0; let _popBkId = '';
+let _revPopRating = 0;
+let _revPopBkDocId = '';
+
 // ── BOOKING ID GENERATOR ──
-// Format: EEMMYYNNNN — EventCode(2) + Month(2) + Year(2) + Sequence(4) = 10 chars fixed
-const EVENT_CODES = {
+// Format: EEMMYYNNNN — EventCode(2)+Month(2)+Year(2)+Sequence(4)
+const BK_EVENT_CODES = {
   'Wedding':'WE','Reception':'RC','Engagement':'EN','Sangeet':'SG','Mehendi':'MH',
   'Birthday Party':'BD','Anniversary':'AN','Baby Shower':'BS','Housewarming':'HW',
   'Naming Ceremony':'NC','Corporate Event':'CO','Farewell':'FA',
   'Multiple Services':'MU','Other':'GN'
 };
 async function generateBookingId(eventType, eventDate) {
-  const code = EVENT_CODES[eventType] || (eventType||'').replace(/\s+/g,'').slice(0,2).toUpperCase() || 'GN';
+  const code = BK_EVENT_CODES[eventType] || (eventType||'').replace(/\s+/g,'').slice(0,2).toUpperCase() || 'GN';
   const d = eventDate ? new Date(eventDate) : new Date();
-  const month = String(d.getMonth()+1).padStart(2,'0');
-  const year  = String(d.getFullYear()).slice(-2);
-  const key   = code + month + year;
-  const cref  = doc(db, 'booking_counters', key);
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yy = String(d.getFullYear()).slice(-2);
+  const counterKey = code + mm + yy;
+  const cref = doc(db, 'booking_counters', counterKey);
   try {
     const seq = await runTransaction(db, async tx => {
       const snap = await tx.get(cref);
@@ -835,16 +824,17 @@ async function generateBookingId(eventType, eventDate) {
       tx.set(cref, { count: next });
       return next;
     });
-    return code + month + year + String(seq).padStart(4,'0');
+    return code + mm + yy + String(seq).padStart(4,'0');
   } catch(e) {
-    return code + month + year + String(Date.now()).slice(-4);
+    return code + mm + yy + String(Date.now()).slice(-4);
   }
 }
 
-
-
-// ── AUTH STATE ──
-onAuthStateChanged(auth, async user => {
+// ── AUTH STATE — set LOCAL persistence first so sessions survive refreshes ──
+setPersistence(auth, browserLocalStoragePersistence)
+  .catch(e => console.warn('Persistence warning:', e.message))
+  .finally(() => {
+    onAuthStateChanged(auth, async user => {
   currentUser = user;
   if (user) {
     document.getElementById('guestNav').classList.add('hidden');
@@ -886,7 +876,8 @@ onAuthStateChanged(auth, async user => {
     checkMaintenanceMode();
     loadReviews();
   }
-});
+  }); // end onAuthStateChanged
+}); // end setPersistence
 
 // ── SIGN IN ──
 window.doLogin = async () => {
@@ -994,25 +985,34 @@ window.checkDuplicate = async () => {
 window.submitBooking = async (ev) => {
   ev.preventDefault();
   const user = auth.currentUser;
-  // REQUIRE LOGIN — guests cannot submit bookings
-  if(!user){
-    openAuth('login');
-    showToast('Please sign in to submit a booking request.');
-    return;
-  }
   const btn = document.getElementById('subBtn');
   const st  = document.getElementById('bkSt');
+
+  // ── REQUIRE LOGIN — guests cannot submit bookings ──
+  if (!user) {
+    openAuth('login');
+    showToast('Please sign in to submit a booking.');
+    return;
+  }
+
   const svc = document.getElementById('bkService').value;
   const existing = myBookings.filter(b=>b.service===svc&&(b.status==='pending'||b.status==='confirmed'));
-  if(existing.length>0){ st.innerHTML='<span class="s-err">You already have an active booking for this service.</span>'; return; }
-  btn.disabled=true; btn.textContent='Sending…';
-  const bSel        = document.getElementById('bkBudget').value;
-  const finalBudget = bSel==='custom'?'₹'+Number(document.getElementById('bkCustomAmt').value||0).toLocaleString('en-IN'):bSel;
-  const eventType   = document.getElementById('bkEventType').value;
-  const eventDate   = document.getElementById('bkDate').value;
+  if (existing.length > 0) {
+    st.innerHTML = '<span class="s-err">You already have an active booking for this service.</span>';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Sending…';
+  const bSel = document.getElementById('bkBudget').value;
+  const finalBudget = bSel === 'custom'
+    ? '₹' + Number(document.getElementById('bkCustomAmt').value || 0).toLocaleString('en-IN')
+    : bSel;
+  const eventType = document.getElementById('bkEventType').value;
+  const eventDate = document.getElementById('bkDate').value;
+
   try {
-    const bookingId = await generateBookingId(eventType||'Other', eventDate);
-    await addDoc(collection(db,'bookings'),{
+    const bookingId = await generateBookingId(eventType || 'Other', eventDate);
+    await addDoc(collection(db, 'bookings'), {
       bookingId,
       userId:    user.uid,
       userEmail: user.email,
@@ -1030,15 +1030,16 @@ window.submitBooking = async (ev) => {
       pipeline:  'New Enquiry',
       createdAt: serverTimestamp()
     });
-    st.innerHTML='<span class="s-ok">✓ Booking submitted! Your Booking ID: <strong style="font-family:monospace;color:var(--gold);">'+bookingId+'</strong> — We'll contact you within 24 hours.</span>';
+    st.innerHTML = '<span class="s-ok">✓ Booking submitted! Your Booking ID: <strong style="font-family:monospace;color:var(--gold)">' + bookingId + '</strong>. We'll contact you within 24 hours.</span>';
     document.getElementById('bkForm').reset();
-    document.getElementById('budgetCustom').style.display='none';
-    document.getElementById('dupWarn').style.display='none';
+    document.getElementById('budgetCustom').style.display = 'none';
+    document.getElementById('dupWarn').style.display = 'none';
     await loadMyBookings(user.uid);
-    showToast('Booking submitted! ID: '+bookingId+' 🎊');
-    window._lastBookingMsg = 'Hi AB Events! My booking (ID: '+bookingId+') for '+svc+' on '+(eventDate||'TBD')+' has been submitted. Please confirm.';
-  } catch(err){ st.innerHTML='<span class="s-err">Error: '+err.message+'</span>'; }
-  btn.disabled=false; btn.textContent='Send Booking Request →';
+    showToast('Booking submitted! 🎊 ID: ' + bookingId);
+  } catch(err) {
+    st.innerHTML = '<span class="s-err">Error: ' + err.message + '</span>';
+  }
+  btn.disabled = false; btn.textContent = 'Send Booking Request →';
 };
 
 // ── LOAD MY BOOKINGS ──
@@ -1060,10 +1061,12 @@ async function loadMyBookings(uid) {
       const sl=statusMap[b.status]||statusMap[b.pipeline]||'🔔 New Enquiry';
       const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):'Date TBD';
       const canModify = b.status==='pending';
+      const isCompleted = b.status==='completed';
       const priceHtml = b.finalPrice?`<div class="bk-price">💰 Final Price: ${b.finalPrice}</div>`:'';
-      const idBadge = b.bookingId ? `<div class="bk-id-badge">ID: ${b.bookingId}</div>` : '';
-      const feedbackBtn = (b.status==='completed')
-        ? `<button class="bk-feedback-btn" onclick="openRevPop('${b.id}','${b.service||''}','${b.bookingId||''}','${b.eventType||''}','${b.eventDate||''}')">★ Share Feedback</button>`
+      const idBadge = b.bookingId?`<div class="bk-id-badge">📋 ID: ${b.bookingId}</div>`:'';
+      const svcSafe = (b.service||'').replace(/\\/g,'').replace(/'/g,'');
+      const feedbackBtn = isCompleted
+        ? `<button class="bk-feedback-btn" onclick="openRevPopup('${b.id}','${svcSafe}','${b.bookingId||''}','${b.eventType||''}','${b.eventDate||''}')">⭐ Share Your Experience</button>`
         : '';
       return `<div class="bk-item">
         <div class="bk-ico">${icons[b.service]||'🎊'}</div>
@@ -1245,55 +1248,57 @@ window.markAllRead=async(e)=>{
   snap.docs.filter(d=>!d.data().read).forEach(d=>updateDoc(doc(db,'notifications',d.id),{read:true}));
 };
 
-
-// ── REVIEW POPUP (for completed bookings) ──
-window.openRevPop = (bkDocId, service, bookingId, eventType, eventDate) => {
-  _popBkId = bkDocId; _popRating = 0;
+// ── REVIEW POPUP (completed bookings) ──
+window.openRevPopup = (bkDocId, service, bookingId, eventType, eventDate) => {
+  _revPopBkDocId = bkDocId; _revPopRating = 0;
   const dt = eventDate ? new Date(eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : '';
-  document.getElementById('revPopRefText').innerHTML =
-    '<strong>'+(service||'')+'</strong>'+(eventType?' · '+eventType:'')+(dt?' · '+dt:'')+
-    (bookingId?' · <span style="font-family:monospace;color:var(--gold)">'+bookingId+'</span>':'');
-  document.getElementById('revPopText').value  = '';
-  document.getElementById('revPopName').value  = currentUser?(currentUser.displayName||''):'';
-  document.getElementById('revPopEvent').value = (eventType||'')+(service?' · '+service:'');
+  document.getElementById('revPopRef').innerHTML =
+    '<strong>' + (service||'—') + '</strong>' +
+    (eventType ? ' &middot; ' + eventType : '') +
+    (dt ? ' &middot; ' + dt : '') +
+    (bookingId ? ' &middot; <span style="font-family:monospace;color:var(--gold)">' + bookingId + '</span>' : '');
+  document.getElementById('revPopText').value = '';
+  document.getElementById('revPopName').value = currentUser ? (currentUser.displayName || '') : '';
+  document.getElementById('revPopEvent').value = (eventType || '') + (eventType && service ? ' · ' : '') + (service || '');
   document.getElementById('revPopSt').innerHTML = '';
-  document.querySelectorAll('#revPopStars span').forEach(s=>s.classList.remove('sel'));
+  document.querySelectorAll('#revPopStars span').forEach(s => s.classList.remove('sel'));
   document.getElementById('revPopOv').classList.add('open');
-  document.body.style.overflow='hidden';
+  document.body.style.overflow = 'hidden';
 };
-window.closeRevPop = () => {
+window.closeRevPopup = () => {
   document.getElementById('revPopOv').classList.remove('open');
-  document.body.style.overflow='';
+  document.body.style.overflow = '';
 };
-window.setPopRating = n => {
-  _popRating = n;
-  document.querySelectorAll('#revPopStars span').forEach((s,i)=>s.classList.toggle('sel',i<n));
+window.setRevPopRating = n => {
+  _revPopRating = n;
+  document.querySelectorAll('#revPopStars span').forEach((s,i) => s.classList.toggle('sel', i < n));
 };
-window.submitPopReview = async () => {
+window.submitRevPopup = async () => {
   const st = document.getElementById('revPopSt');
-  if(!_popRating){ st.innerHTML='<span class="a-err">Please select a star rating.</span>'; return; }
+  if (!_revPopRating) { st.innerHTML = '<span class="a-err">Please select a star rating.</span>'; return; }
   const text = document.getElementById('revPopText').value.trim();
-  if(!text){ st.innerHTML='<span class="a-err">Please write your review.</span>'; return; }
-  st.innerHTML='<span style="color:var(--gold)">Submitting…</span>';
+  if (!text) { st.innerHTML = '<span class="a-err">Please write your review.</span>'; return; }
+  st.innerHTML = '<span style="color:var(--gold)">Submitting…</span>';
   try {
-    await addDoc(collection(db,'reviews'),{
-      rating:   _popRating,
+    await addDoc(collection(db, 'reviews'), {
+      rating:    _revPopRating,
       text,
-      name:     document.getElementById('revPopName').value.trim()||'Anonymous',
-      event:    document.getElementById('revPopEvent').value.trim(),
-      bookingId: _popBkId,
-      userId:   currentUser ? currentUser.uid : '',
-      approved: false,
-      createdAt:serverTimestamp()
+      name:      document.getElementById('revPopName').value.trim() || 'Anonymous',
+      event:     document.getElementById('revPopEvent').value.trim(),
+      bookingId: _revPopBkDocId,
+      userId:    currentUser ? currentUser.uid : '',
+      approved:  false,
+      createdAt: serverTimestamp()
     });
-    st.innerHTML='<span class="a-ok">✓ Thank you! Your review will appear after admin approval.</span>';
+    st.innerHTML = '<span class="a-ok">✓ Thank you! Your review will appear after approval.</span>';
     showToast('Review submitted! Thank you 🌟');
-    setTimeout(()=>closeRevPop(), 2000);
-  } catch(e){ st.innerHTML='<span class="a-err">'+e.message+'</span>'; }
+    setTimeout(() => closeRevPopup(), 2200);
+  } catch(e) { st.innerHTML = '<span class="a-err">' + e.message + '</span>'; }
 };
-document.getElementById('revPopOv').addEventListener('click', e=>{
-  if(e.target===document.getElementById('revPopOv')) closeRevPop();
+document.getElementById('revPopOv').addEventListener('click', e => {
+  if (e.target === document.getElementById('revPopOv')) closeRevPopup();
 });
+
 
 function fe(c){const m={'auth/user-not-found':'No account with that email.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'Email already registered.','auth/weak-password':'Password needs 6+ characters.','auth/invalid-email':'Invalid email address.','auth/too-many-requests':'Too many attempts. Try later.','auth/missing-password':'Please enter your password.'};return m[c]||'Something went wrong. Try again.';}
 </script>
@@ -1514,18 +1519,17 @@ document.addEventListener('click',function(e){
 window.quickBook=(svc)=>{
   if(svc==='Gourmet Catering'){showToast('🍽️ Catering is coming soon! Please choose another service.');return;}
   document.getElementById('bkService').value=svc;
-  updateWaLink(svc);
   document.getElementById('booking').scrollIntoView({behavior:'smooth'});
 };
 window.showToast=(msg)=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);};
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeAuth();closeGl();closeViewer();closeRevPop();}
+  if(e.key==='Escape'){closeAuth();closeGl();closeViewer();if(typeof closeRevPopup==='function')closeRevPopup();}
   if(e.key==='ArrowRight'&&document.getElementById('glViewer').classList.contains('open')) viewNav(1);
   if(e.key==='ArrowLeft'&&document.getElementById('glViewer').classList.contains('open')) viewNav(-1);
 });
 
-initHero(); initServices(); initStrip(); renderDynGallery();
+initHero(); initServices(); renderDynGallery();
 setTimeout(()=>{if(window.loadFirestoreGallery) window.loadFirestoreGallery();},1000);
 
 // ── SERVICE WORKER REGISTRATION (PWA) ──
