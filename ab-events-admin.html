@@ -720,12 +720,11 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-// ── SET LOCAL PERSISTENCE before auth state listener ──
-// This ensures admin stays logged in across page refreshes and
-// does NOT get logged out during Firestore operations.
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(e){
-  console.warn('Auth persistence warning:', e.message);
-});
+// ── AUTH PERSISTENCE: LOCAL keeps admin logged in across refreshes ──
+// Without this, Firebase defaults to SESSION persistence and logs out
+// during Firestore operations that internally refresh the auth token.
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .catch(function(e){ console.warn('Persistence warning:', e.message); });
 
 // ── CLOUDINARY CONFIG ──
 // Replace YOUR_CLOUD_NAME with your Cloudinary cloud name from cloudinary.com
@@ -802,7 +801,7 @@ window.adminLogin = function() {
     .catch(function(e) {
       console.error('Login error:', e.code, e.message);
       if (e.code === 'auth/unauthorized-domain') {
-        if (el) el.innerHTML = 'Domain not authorized. Add <b>' + location.hostname + '</b> in Firebase Console &rarr; Auth &rarr; Settings &rarr; Authorized Domains.';
+        if (el) el.innerHTML = 'Domain not authorized. Add <b>' + location.hostname + '</b> to Firebase Console → Auth → Authorized Domains.';
         var dn = document.getElementById('domainNotice');
         if (dn) dn.style.display = 'block';
       } else {
@@ -1210,8 +1209,8 @@ function renderRows(tbodyId, data, short) {
     var priceCol = short ? '' : '<td style="color:var(--gold);font-size:.75rem">' + (b.finalPrice || '—') + '</td>';
     var confirmBtn = b.status !== 'confirmed' && b.status !== 'completed' ? '<button class="act-btn act-ok" onclick="updateStatus(\'' + b.id + '\',\'confirmed\')">&#10003;</button>' : '';
     var declineBtn = b.status !== 'declined'  ? '<button class="act-btn act-no" onclick="updateStatus(\'' + b.id + '\',\'declined\')">&#10005;</button>' : '';
-    var bkIdCell = '<td><span style="font-family:monospace;font-size:.68rem;color:var(--gold);background:rgba(201,168,76,.08);padding:2px 7px;border-radius:3px;letter-spacing:.04em">' + (b.bookingId || '—') + '</span></td>';
-    return '<tr>' + bkIdCell + '<td><div class="cell-primary">' + (b.name || b.userEmail || '—') + '</div><div class="cell-sub">' + (b.email || '') + '</div></td>' +
+    var bkBadge = '<td><span style="font-family:monospace;font-size:.67rem;color:var(--gold);background:rgba(201,168,76,.08);padding:2px 7px;border-radius:3px;letter-spacing:.04em">' + (b.bookingId || '—') + '</span></td>';
+    return '<tr>' + bkBadge + '<td><div class="cell-primary">' + (b.name || b.userEmail || '—') + '</div><div class="cell-sub">' + (b.email || '') + '</div></td>' +
       '<td style="font-size:.75rem">' + (b.service || '—') + '</td>' +
       extra + '<td style="white-space:nowrap;font-size:.75rem">' + dt + '</td>' +
       '<td style="white-space:nowrap;font-size:.75rem">' + (b.budget || '—') + '</td>' +
