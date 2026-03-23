@@ -802,12 +802,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-// Explicitly set LOCAL persistence so user stays logged in across page refreshes and tab reopens
-setPersistence(auth, browserLocalStoragePersistence).catch(function(e){ console.warn('Auth persistence:', e); });
 window._db = db; window._auth = auth;
 
 let currentUser = null;
 let myBookings = [];
+
+// Set LOCAL persistence BEFORE auth state listener so sessions survive page refreshes
+// Wrapped in async IIFE to ensure persistence is set before onAuthStateChanged fires
 
 // ── BOOKING ID GENERATOR ──
 // Format: EEMMYYNNNN (2+2+2+4 = 10 chars, always fixed length)
@@ -842,7 +843,8 @@ async function generateBookingId(eventType, eventDate) {
 }
 
 // ── AUTH STATE ──
-onAuthStateChanged(auth, async user => {
+// Persistence set BEFORE auth listener to guarantee sessions survive page refreshes
+async function _authHandler(user) {
   currentUser = user;
   if (user) {
     document.getElementById('guestNav').classList.add('hidden');
@@ -880,7 +882,11 @@ onAuthStateChanged(auth, async user => {
     checkMaintenanceMode();
     loadReviews();
   }
-});
+}
+
+setPersistence(auth, browserLocalStoragePersistence)
+  .then(() => { onAuthStateChanged(auth, _authHandler); })
+  .catch(e => { console.warn('Persistence:', e.message); onAuthStateChanged(auth, _authHandler); });
 
 // ── SIGN IN ──
 window.doLogin = async () => {
@@ -981,19 +987,18 @@ window.submitBooking = async (ev) => {
   const user = auth.currentUser;
   // BLOCK: Must be logged in — guests cannot submit bookings
   if(!user){
-    // Show inline message in the form status area
     const stEl = document.getElementById('bkSt');
     if(stEl){
       stEl.innerHTML = '<div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:4px;padding:14px 16px;margin-top:4px;">' +
-        '<div style="font-size:.85rem;color:var(--cream);font-weight:500;margin-bottom:10px;">&#128274; Please sign in to complete your booking</div>' +
+        '<div style="font-size:.85rem;color:var(--cream);font-weight:500;margin-bottom:10px;">&#128274; Sign in to complete your booking</div>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-        '<button onclick="openAuth('login')" style="background:var(--gold);color:#000;border:none;padding:9px 20px;border-radius:4px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:var(--fb);">Sign In</button>' +
-        '<button onclick="openAuth('register')" style="background:transparent;border:1px solid rgba(201,168,76,.4);color:var(--gold);padding:9px 20px;border-radius:4px;font-size:.78rem;cursor:pointer;font-family:var(--fb);">Create Account</button>' +
+        '<button onclick="openAuth(&apos;login&apos;)" style="background:var(--gold);color:#000;border:none;padding:9px 20px;border-radius:4px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:var(--fb);">Sign In</button>' +
+        '<button onclick="openAuth(&apos;register&apos;)" style="background:transparent;border:1px solid rgba(201,168,76,.4);color:var(--gold);padding:9px 20px;border-radius:4px;font-size:.78rem;cursor:pointer;font-family:var(--fb);">Create Account</button>' +
         '</div>' +
-        '<div style="font-size:.72rem;color:var(--muted);margin-top:8px;">Your form details are saved. Sign in and submit to confirm.</div>' +
+        '<div style="font-size:.72rem;color:var(--muted);margin-top:8px;">Your form details are preserved. Sign in and click submit again.</div>' +
         '</div>';
+      stEl.scrollIntoView({behavior:'smooth', block:'center'});
     }
-    document.getElementById('bkSt').scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
   const btn = document.getElementById('subBtn');

@@ -718,9 +718,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
-// Keep admin logged in across refreshes
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(e){ console.warn('Auth persistence:', e.message); });
-
 // ── CLOUDINARY CONFIG ──
 // Replace YOUR_CLOUD_NAME with your Cloudinary cloud name from cloudinary.com
 var CLOUDINARY_CLOUD  = 'di0ihwmg0';
@@ -753,7 +750,7 @@ var adminNotifList=[];
 // ════════════════════════════════════════════════════
 //  AUTH
 // ════════════════════════════════════════════════════
-auth.onAuthStateChanged(function(user) {
+function _handleAuthState(user) {
   if (user && ADMIN_EMAILS.includes(user.email)) {
     document.getElementById('loginScreen').classList.add('gone');
     document.getElementById('sbName').textContent   = user.displayName || user.email.split('@')[0];
@@ -773,7 +770,17 @@ auth.onAuthStateChanged(function(user) {
   } else {
     document.getElementById('loginScreen').classList.remove('gone');
   }
-});
+}
+
+// Set persistence BEFORE registering auth state listener to prevent premature logout
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .then(function() {
+    auth.onAuthStateChanged(_handleAuthState);
+  })
+  .catch(function(e) {
+    console.warn('Auth persistence:', e.message);
+    auth.onAuthStateChanged(_handleAuthState);
+  });
 
 function showLoginErr(msg) {
   var el = document.getElementById('loginErr');
